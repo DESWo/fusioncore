@@ -1,0 +1,224 @@
+{
+  "nrl": {
+    "title": "NRL Plasma Formulary: D-T reactivity tables",
+    "source": "Naval Research Laboratory, 2019 revision",
+    "url": "https://www.nrl.navy.mil/News-Media/Publications/nrl-plasma-formulary/",
+    "note": "The <σv> polynomial is fit through six NRL table points (1–50 keV). Slightly simplified for gameplay: true Bosch-Hale parameterization uses a rational function with NRL-tabulated coefficients."
+  },
+  "ipb98": {
+    "title": "ITER Physics Basis, Chapter 2: confinement scaling IPB98(y,2)",
+    "source": "Nuclear Fusion 39, 2175 (1999)",
+    "url": "https://doi.org/10.1088/0029-5515/39/12/302",
+    "note": "Game uses τ_E ∝ H·B^0.15·P^-0.69·n^0.41 with machine size folded into one calibration constant. The full law also scales with plasma current I_p^0.93, major radius R^1.97, elongation, and isotope mass."
+  },
+  "lawson": {
+    "title": "Lawson criterion. Power balance in a burning plasma",
+    "source": "J.D. Lawson, Proc. Phys. Soc. B 70, 6 (1957)",
+    "url": "https://doi.org/10.1088/0370-1301/70/1/303",
+    "note": "Ignition threshold n·T·τ_E ≥ 3×10²¹ keV·s·m⁻³ for D-T at optimum temperature."
+  },
+  "greenwald": {
+    "title": "Density limits in toroidal plasmas",
+    "source": "M. Greenwald, Plasma Phys. Control. Fusion 44, R27 (2002)",
+    "url": "https://doi.org/10.1088/0741-3335/44/8/201",
+    "note": "Empirical limit n_GW = I_p/(πa²) in 10²⁰ m⁻³. Exceeding it triggers edge radiative collapse and disruption. Game maps plasma current to the toroidal field setting."
+  },
+  "troyon": {
+    "title": "MHD-limit to plasma confinement (Troyon beta limit)",
+    "source": "F. Troyon et al., Plasma Phys. Control. Fusion 26, 209 (1984)",
+    "url": "https://doi.org/10.1088/0741-3335/26/1A/319",
+    "note": "Normalized beta limit β_N ≈ 2.8. Game uses a fixed β limit of 2.8% for simplicity."
+  },
+  "jet_record": {
+    "title": "JET D-T record campaign: 16.1 MW fusion power, Q ≈ 0.67",
+    "source": "M. Keilhacker et al., Nuclear Fusion 39, 209 (1999)",
+    "url": "https://doi.org/10.1088/0029-5515/39/2/306",
+    "note": "The 1997 world record that stood for a generation; JET's 2021 campaign later set the total-energy record of 59 MJ."
+  },
+  "divertor_iter": {
+    "title": "ITER divertor design: tungsten monoblock targets, ~10-20 MW/m² steady state",
+    "source": "R.A. Pitts et al., Nuclear Materials and Energy 20, 100696 (2019)",
+    "url": "https://doi.org/10.1016/j.nme.2019.100696",
+    "note": "Tungsten recrystallizes around 1200-1300 °C; actively-cooled monoblocks push tolerable surface temperatures toward 2000 °C transiently."
+  },
+  "dpa_materials": {
+    "title": "Neutron-induced displacement damage in first-wall materials",
+    "source": "S.J. Zinkle & G.S. Was, Acta Materialia 61, 735 (2013)",
+    "url": "https://doi.org/10.1016/j.actamat.2012.11.004",
+    "note": "A commercial plant's first wall accumulates tens of dpa per full-power year. Game compresses this to a 120-minute depletion at 500 MW for playability."
+  },
+  "quench": {
+    "title": "Superconducting magnet quench: stored-energy dump dynamics",
+    "source": "ITER magnet system technical basis / L. Bottura, CERN Yellow Reports",
+    "url": "https://www.iter.org/mach/Magnets",
+    "note": "ITER's toroidal field coils store 41 GJ. A quench converts superconductor to resistive metal in milliseconds; the energy must go somewhere."
+  },
+  "rebco_arc": {
+    "title": "ARC: a compact high-field reactor enabled by REBCO superconductors",
+    "source": "B.N. Sorbom et al., Fusion Eng. Des. 100, 378 (2015)",
+    "url": "https://doi.org/10.1016/j.fusengdes.2015.07.008",
+    "note": "REBCO tape allows ~20 T on-coil fields. Fusion power density scales roughly as B⁴. The entire premise of compact commercial fusion (and of SPARC/CFS)."
+  },
+  "tbr": {
+    "title": "Tritium breeding blankets and fuel self-sufficiency",
+    "source": "M. Abdou et al., Nuclear Fusion 61, 013001 (2021)",
+    "url": "https://doi.org/10.1088/1741-4326/abbf35",
+    "note": "A power reactor must breed its own tritium from ⁶Li(n,α)T with TBR slightly above 1. No operating reactor has yet demonstrated this at scale."
+  },
+  "tritium_price": {
+    "title": "Tritium supply: CANDU byproduct, ~$30,000/gram, kg-scale world inventory",
+    "source": "Abdou et al. (2021); DOE Fusion Energy Sciences supply assessments",
+    "url": "https://doi.org/10.1088/1741-4326/abbf35",
+    "note": "World civilian tritium inventory is only ~25 kg. A 500 MW D-T plant burns ~28 kg/year. Market fuel is economically impossible; breeding is mandatory."
+  },
+  "recirc": {
+    "title": "Recirculating power and net electric output in fusion plant designs",
+    "source": "ARIES Advanced Tokamak Power Plant Studies, UC San Diego",
+    "url": "https://aries.ucsd.edu/ARIES/",
+    "note": "Heating systems, cryogenics, and pumping can consume 20-30% of gross electric output. Q_engineering, not Q_plasma, decides commercial viability."
+  },
+  "lcoe_lazard": {
+    "title": "Lazard's Levelized Cost of Energy Analysis (v16)",
+    "source": "Lazard, 2023",
+    "url": "https://www.lazard.com/research-insights/levelized-cost-of-energyplus/",
+    "note": "Utility-scale solar/wind: $24-96/MWh; gas combined cycle: $39-101/MWh. Fusion must land inside this band to matter commercially."
+  },
+  "thermal_eff": {
+    "title": "Balance-of-plant thermal conversion efficiency (~35% Rankine baseline)",
+    "source": "ARIES systems studies; conventional steam-cycle engineering",
+    "url": "https://aries.ucsd.edu/ARIES/",
+    "note": "Advanced Brayton cycles project 45%+, but 35% is the conservative baseline for a first-of-a-kind plant."
+  },
+  "iter_physics": {
+    "title": "ITER Physics Basis (full volume)",
+    "source": "Nuclear Fusion 39, issue 12 (1999) and Progress in ITER Physics Basis, NF 47 (2007)",
+    "url": "https://doi.org/10.1088/0029-5515/39/12/301",
+    "note": "The consensus physics reference underpinning burning-plasma tokamak design."
+  },
+  "doe_fusion": {
+    "title": "DOE Office of Science: Fusion Energy Sciences",
+    "source": "U.S. Department of Energy",
+    "url": "https://www.energy.gov/science/fes/fusion-energy-sciences",
+    "note": "Fuel energy density comparison: fusion fuel yields ~10 million times the energy of an equal mass of coal."
+  },
+  "nbi": {
+    "title": "Neutral beam injection heating: deposition and shine-through",
+    "source": "E. Speth, Reports on Progress in Physics 52, 57 (1989)",
+    "url": "https://doi.org/10.1088/0034-4885/52/1/002",
+    "note": "Beam ions deposit via collisions, so absorption falls with plasma density; at low density a large fraction shines through to the far wall. Real NBI systems interlock on shine-through power to protect the vessel."
+  },
+  "hmode": {
+    "title": "Regime of improved confinement (H-mode) discovered on ASDEX",
+    "source": "F. Wagner et al., Phys. Rev. Lett. 49, 1408 (1982)",
+    "url": "https://doi.org/10.1103/PhysRevLett.49.1408",
+    "note": "The spontaneous edge transport barrier that roughly doubles confinement. The operating regime of every modern tokamak design."
+  },
+  "stellarator_w7x": {
+    "title": "Wendelstein 7-X: optimized stellarator confinement without plasma current",
+    "source": "T. Klinger et al., Nuclear Fusion 59, 112004 (2019)",
+    "url": "https://doi.org/10.1088/1741-4326/ab03a7",
+    "note": "Stellarators need no driven current, eliminating current-driven disruptions. At the cost of fearsome coil complexity and maintenance."
+  },
+  "scram": {
+    "title": "Disruption mitigation and machine protection in tokamaks",
+    "source": "E.M. Hollmann et al., Physics of Plasmas 22, 021802 (2015)",
+    "url": "https://doi.org/10.1063/1.4901251",
+    "note": "Real machines fire shattered-pellet injectors to radiate plasma energy before it hits the wall. Historical disruptions at JET and TFTR informed the failure modes in this game."
+  },
+  "point_kinetics": {
+    "title": "Point reactor kinetics with delayed neutrons",
+    "source": "J.R. Lamarsh, Introduction to Nuclear Reactor Theory (1966), ch. 7",
+    "url": "https://www.ans.org/store/item-350105/",
+    "note": "Delayed neutrons (β ≈ 0.65% for U-235) are why reactors are controllable at all. Game uses the prompt-jump approximation of the kinetics equations."
+  },
+  "prompt_crit": {
+    "title": "Prompt criticality and the Chernobyl excursion",
+    "source": "INSAG-7: The Chernobyl Accident (IAEA, 1992)",
+    "url": "https://www.iaea.org/publications/3786/the-chernobyl-accident-updating-of-insag-1",
+    "note": "When reactivity exceeds the delayed-neutron fraction, power multiplies on prompt neutrons alone. Microseconds, not seconds. No control system can follow it."
+  },
+  "doppler": {
+    "title": "Doppler fuel-temperature coefficient",
+    "source": "NRC Reactor Concepts Manual; Lamarsh ch. 7",
+    "url": "https://www.nrc.gov/reading-rm/basic-ref/students/for-educators/06.pdf",
+    "note": "Hot U-238 absorbs more neutrons (broadened resonances), automatically damping power rises. The key inherent safety feature of light-water reactors."
+  },
+  "xenon": {
+    "title": "Xenon-135 poisoning and the iodine pit",
+    "source": "Lamarsh ch. 11; WNA physics of reactor kinetics",
+    "url": "https://world-nuclear.org/information-library/nuclear-fuel-cycle/introduction/physics-of-nuclear-energy",
+    "note": "Xe-135 has a huge neutron appetite. After a power drop it builds from iodine decay for ~9 hours and can make restart impossible. A factor in the Chernobyl test setup."
+  },
+  "decay_heat": {
+    "title": "Decay heat and the Three Mile Island accident",
+    "source": "NRC: The TMI-2 Accident (NUREG-0600); ANS decay-heat standard",
+    "url": "https://www.nrc.gov/reading-rm/doc-collections/fact-sheets/3mile-isle.html",
+    "note": "Fission products keep releasing ~6-7% of full power immediately after shutdown. TMI-2 melted hours after its reactor had already tripped. Cooling must continue."
+  },
+  "pwr": {
+    "title": "Pressurized water reactor systems",
+    "source": "NRC Reactor Concepts Manual, ch. 4",
+    "url": "https://www.nrc.gov/reading-rm/basic-ref/students/for-educators/04.pdf",
+    "note": "Game models a ~3400 MWth PWR: two-node thermal hydraulics, ~33% steam-cycle efficiency, and steam generators fatigued by thermal cycling."
+  },
+  "asme": {
+    "title": "ASME Boiler & Pressure Vessel Code, Section III. Nuclear components",
+    "source": "American Society of Mechanical Engineers",
+    "url": "https://www.asme.org/codes-standards/find-codes-standards/bpvc-iii-1-ncd-rules-construction-nuclear-facility-components",
+    "note": "Sets allowable stress intensities (Sm) and the fatigue design rules (cumulative usage factor via Miner's rule) every nuclear pressure part is licensed against."
+  },
+  "pts": {
+    "title": "Pressurized thermal shock and vessel embrittlement screening",
+    "source": "10 CFR 50.61; NRC Regulatory Guide 1.99 rev. 2",
+    "url": "https://www.nrc.gov/reading-rm/doc-collections/cfr/part050/part050-0061.html",
+    "note": "Fast-neutron fluence shifts the vessel steel's ductile-to-brittle transition (RT_NDT). Exceed the screening limit and the vessel can no longer be shown safe against cold-water shock."
+  },
+  "dnbr": {
+    "title": "Departure from nucleate boiling ratio (W-3 correlation)",
+    "source": "L.S. Tong, Boiling Crisis and Critical Heat Flux (1972)",
+    "url": "https://www.nrc.gov/reading-rm/basic-ref/students/for-educators/05.pdf",
+    "note": "If the heat flux exceeds the critical value, a vapor film blankets the fuel and clad temperature jumps hundreds of degrees. Plants keep DNBR above ~1.3 with 95/95 confidence."
+  },
+  "ecc": {
+    "title": "Emergency core cooling acceptance criteria",
+    "source": "10 CFR 50.46",
+    "url": "https://www.nrc.gov/reading-rm/doc-collections/cfr/part050/part050-0046.html",
+    "note": "Peak cladding temperature must stay below 2200 °F (1204 °C) in design-basis accidents. Above that, zirconium cladding oxidizes runaway-fast in steam."
+  },
+  "case_chernobyl": {
+    "title": "INSAG-7: The Chernobyl Accident, Updating of INSAG-1",
+    "source": "IAEA Safety Series 75-INSAG-7 (1992)",
+    "url": "https://www-pub.iaea.org/MTCD/publications/PDF/Pub913e_web.pdf",
+    "note": "The definitive post-Soviet analysis: reactor design flaws (positive void coefficient, positive scram effect) combined with operation outside the permitted regime."
+  },
+  "case_tmi": {
+    "title": "Report of the President's Commission on the Accident at Three Mile Island (Kemeny Commission)",
+    "source": "U.S. Government Printing Office (1979); NRC backgrounder",
+    "url": "https://www.nrc.gov/reading-rm/doc-collections/fact-sheets/3mile-isle.html",
+    "note": "A stuck-open relief valve, misleading instrumentation, and operators trained to fear a full pressurizer let decay heat destroy half the core."
+  },
+  "case_fukushima": {
+    "title": "The Fukushima Daiichi Accident: Report by the Director General",
+    "source": "IAEA (2015)",
+    "url": "https://www.iaea.org/publications/10962/the-fukushima-daiichi-accident",
+    "note": "The reactors survived the earthquake and scrammed correctly. The tsunami drowned the diesel generators, and without power for cooling, decay heat did the rest."
+  },
+  "case_sl1": {
+    "title": "SL-1 accident investigation (U.S. AEC, 1961-1962)",
+    "source": "U.S. Atomic Energy Commission / General Electric final report (IDO series)",
+    "url": "https://en.wikipedia.org/wiki/SL-1",
+    "note": "Overview with the primary AEC reports in its references. A single manually-withdrawn control rod took a small core prompt critical in about 4 milliseconds."
+  },
+  "case_windscale": {
+    "title": "The Windscale fire of October 1957 (Penney inquiry)",
+    "source": "UKAEA Penney Report (1957, declassified 1988)",
+    "url": "https://en.wikipedia.org/wiki/Windscale_fire",
+    "note": "Overview with the declassified inquiry in its references. Stored Wigner energy in the graphite, released during an annealing run with sparse instrumentation, set the uranium cartridges alight."
+  },
+  "case_tokaimura": {
+    "title": "Report on the preliminary fact-finding mission following the accident at the nuclear fuel processing facility in Tokaimura, Japan",
+    "source": "IAEA (1999)",
+    "url": "https://www-pub.iaea.org/MTCD/Publications/PDF/TOAC_web.pdf",
+    "note": "Workers mixed enriched uranium solution in a wide precipitation tank by bucket, bypassing geometry controls. The solution went critical in the tank."
+  }
+}

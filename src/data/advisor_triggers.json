@@ -1,0 +1,259 @@
+[
+  {
+    "id": "adv_greenwald_warn",
+    "type": "warning",
+    "conditions": [
+      {
+        "metric": "greenwaldFrac",
+        "op": ">=",
+        "value": 0.85
+      },
+      {
+        "metric": "greenwaldFrac",
+        "op": "<",
+        "value": 0.98
+      }
+    ],
+    "cooldownTicks": 600,
+    "text": "Density nearing the Greenwald limit. Ease fueling or raise field.",
+    "cite": "greenwald"
+  },
+  {
+    "id": "adv_greenwald_crit",
+    "type": "critical",
+    "conditions": [
+      {
+        "metric": "greenwaldFrac",
+        "op": ">=",
+        "value": 0.98
+      }
+    ],
+    "cooldownTicks": 300,
+    "text": "Density limit exceeded. Cut fueling now.",
+    "cite": "greenwald"
+  },
+  {
+    "id": "adv_beta_warn",
+    "type": "warning",
+    "conditions": [
+      {
+        "metric": "beta",
+        "op": ">=",
+        "value": {
+          "metric": "betaLimit",
+          "times": 0.85
+        }
+      }
+    ],
+    "cooldownTicks": 600,
+    "text": "Pressure nearing the beta limit. Raise field or cut heating.",
+    "cite": "troyon"
+  },
+  {
+    "id": "adv_divertor_hot",
+    "type": "critical",
+    "conditions": [
+      {
+        "metric": "divertorTempC",
+        "op": ">",
+        "value": {
+          "metric": "divertorLimitC"
+        }
+      }
+    ],
+    "cooldownTicks": 300,
+    "text": "Divertor past its damage threshold. Add cooling or cut heating.",
+    "cite": "divertor_iter"
+  },
+  {
+    "id": "adv_divertor_warm",
+    "type": "warning",
+    "conditions": [
+      {
+        "metric": "divertorTempC",
+        "op": ">",
+        "value": {
+          "metric": "divertorLimitC",
+          "times": 0.85
+        }
+      },
+      {
+        "metric": "divertorTempC",
+        "op": "<=",
+        "value": {
+          "metric": "divertorLimitC"
+        }
+      }
+    ],
+    "cooldownTicks": 900,
+    "text": "Divertor running hot. Consider more cooling.",
+    "cite": "divertor_iter"
+  },
+  {
+    "id": "adv_magnet_over",
+    "type": "warning",
+    "conditions": [
+      {
+        "metric": "B",
+        "op": ">",
+        "value": {
+          "metric": "magnetSafeB"
+        }
+      }
+    ],
+    "cooldownTicks": 600,
+    "text": "Field above magnet rating. Quench risk. Ease back.",
+    "cite": "quench"
+  },
+  {
+    "id": "adv_tritium_low",
+    "type": "warning",
+    "conditions": [
+      {
+        "metric": "tritiumG",
+        "op": "<",
+        "value": 5
+      },
+      {
+        "metric": "tritiumG",
+        "op": ">",
+        "value": 0.001
+      }
+    ],
+    "cooldownTicks": 1200,
+    "text": "Under 5 g tritium. A breeding blanket means free fuel.",
+    "cite": "tritium_price"
+  },
+  {
+    "id": "adv_tritium_out",
+    "type": "critical",
+    "conditions": [
+      {
+        "metric": "tritiumG",
+        "op": "<=",
+        "value": 0.001
+      }
+    ],
+    "cooldownTicks": 1200,
+    "text": "Out of tritium. Burn stopped. Buy fuel or breed it.",
+    "cite": "tritium_price"
+  },
+  {
+    "id": "adv_maintenance_due",
+    "type": "warning",
+    "conditions": [
+      {
+        "metric": "integrity",
+        "op": "<",
+        "value": 55
+      },
+      {
+        "metric": "integrity",
+        "op": ">",
+        "value": 0
+      }
+    ],
+    "cooldownTicks": 1800,
+    "text": "Wear past 45%. Shut down and service. It's cheap.",
+    "cite": "dpa_materials"
+  },
+  {
+    "id": "adv_shinethrough",
+    "type": "info",
+    "conditions": [
+      {
+        "metric": "heat",
+        "op": ">=",
+        "value": 20
+      },
+      {
+        "metric": "beamCoupling",
+        "op": "<",
+        "value": 0.45
+      }
+    ],
+    "cooldownTicks": 1500,
+    "text": "Beam power is missing the thin plasma. Add density.",
+    "cite": "nbi"
+  },
+  {
+    "id": "adv_q_close",
+    "type": "info",
+    "conditions": [
+      {
+        "metric": "Q",
+        "op": ">=",
+        "value": 0.8
+      },
+      {
+        "metric": "Q",
+        "op": "<",
+        "value": 1.0
+      }
+    ],
+    "cooldownTicks": 1800,
+    "text": "Q above 0.8: JET's record was 0.67. Push.",
+    "cite": "jet_record"
+  },
+  {
+    "id": "adv_ignition",
+    "type": "info",
+    "once": true,
+    "conditions": [
+      {
+        "metric": "ignition",
+        "op": "==",
+        "value": 1
+      }
+    ],
+    "text": "IGNITION. The plasma now heats itself.",
+    "cite": "lawson"
+  },
+  {
+    "id": "adv_wall_low",
+    "type": "warning",
+    "conditions": [
+      {
+        "metric": "firstWall",
+        "op": "<",
+        "value": 30
+      }
+    ],
+    "cooldownTicks": 900,
+    "text": "First wall below 30%. Service it soon.",
+    "cite": "dpa_materials"
+  },
+  {
+    "id": "adv_net_negative",
+    "type": "info",
+    "conditions": [
+      {
+        "metric": "pFusionMW",
+        "op": ">",
+        "value": 10
+      },
+      {
+        "metric": "netElecMW",
+        "op": "<",
+        "value": 0
+      }
+    ],
+    "cooldownTicks": 1800,
+    "text": "Fusing, but the plant still draws more than it makes.",
+    "cite": "recirc"
+  },
+  {
+    "id": "adv_breeding_on",
+    "type": "info",
+    "once": true,
+    "conditions": [
+      {
+        "metric": "tbr",
+        "op": ">",
+        "value": 1.0
+      }
+    ],
+    "text": "TBR 1.05. Fuel self-sufficiency achieved.",
+    "cite": "tbr"
+  }
+]

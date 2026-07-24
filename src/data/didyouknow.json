@@ -1,0 +1,50 @@
+[
+  {
+    "text": "Did you know? A pineapple-sized amount of hydrogen isotope fuel yields as much energy as about 10,000 tonnes of coal. Fusion fuel has roughly ten million times coal's energy density.",
+    "cite": "doe_fusion"
+  },
+  {
+    "text": "Did you know? The plasma in your chamber runs at over 100 million °C. Roughly ten times hotter than the core of the Sun. The Sun compensates with crushing gravitational density.",
+    "cite": "iter_physics"
+  },
+  {
+    "text": "Did you know? The world's entire civilian tritium inventory is only about 25 kilograms, almost all of it a byproduct of Canadian CANDU fission reactors.",
+    "cite": "tritium_price"
+  },
+  {
+    "text": "Did you know? JET held the fusion power record: 16.1 MW at Q ≈ 0.67. For over two decades after its 1997 deuterium-tritium campaign.",
+    "cite": "jet_record"
+  },
+  {
+    "text": "Did you know? Fusion power density scales roughly as the fourth power of magnetic field strength. Doubling your field can mean sixteen times the fusion power from the same vessel.",
+    "cite": "rebco_arc"
+  },
+  {
+    "text": "Did you know? ITER's toroidal field magnets store 41 gigajoules of magnetic energy. About the kinetic energy of an aircraft carrier at battle speed.",
+    "cite": "quench"
+  },
+  {
+    "text": "Did you know? The H-mode confinement regime every reactor design depends on was discovered essentially by accident on the ASDEX tokamak in 1982.",
+    "cite": "hmode"
+  },
+  {
+    "text": "Did you know? No fusion device has ever demonstrated tritium breeding self-sufficiency. A commercial reactor must breed slightly more tritium than it burns. It's one of fusion's hardest unsolved problems.",
+    "cite": "tbr"
+  },
+  {
+    "text": "Did you know? A 500 MW D-T reactor burns about 28 kg of tritium per year. At market prices near $30,000/gram, that's $840 million in fuel. Which is why your breeding blanket matters more than your Q factor.",
+    "cite": "tritium_price"
+  },
+  {
+    "text": "Did you know? Wendelstein 7-X's stellarator coils were so hard to design that the optimization consumed years of supercomputer time. In exchange, the machine physically cannot have current-driven disruptions.",
+    "cite": "stellarator_w7x"
+  },
+  {
+    "text": "Did you know? 'Q = 1' isn't profitability. After thermal conversion (~35%) and recirculating power, a plant needs plasma Q above ~10 before it sends meaningful electricity to the grid.",
+    "cite": "recirc"
+  },
+  {
+    "text": "Did you know? Real tokamaks protect themselves from disruptions by firing frozen neon 'shattered pellets' into the plasma, radiating away its energy in milliseconds before it can carve into the wall.",
+    "cite": "scram"
+  }
+]

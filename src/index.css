@@ -1,0 +1,277 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+
+/* Design language after helionenergy.com: deep navy instead of black, one
+   sans (Inter) doing both UI and giant display caps, a technical mono for
+   labels and numbers, and the machine itself as the hero of every screen. */
+@theme {
+  --color-base: #16233A;      /* deep navy: the stage */
+  --color-panel: #1C2B44;     /* Helion body navy: panel surfaces */
+  --color-raise: #24344F;     /* raised elements on panels */
+  --color-ink: #EEF2F5;       /* warm off-white typography */
+  --color-accent: #38BDF8;    /* data / interactive accent */
+  --color-safe: #22C55E;      /* safe operating */
+  --color-warn: #F59E0B;      /* warning threshold */
+  --color-crit: #EF4444;      /* critical fault */
+  --font-sans: "Inter Variable", Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("/fonts/OpenDyslexic-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "OpenDyslexic";
+  src: url("/fonts/OpenDyslexic-Bold.woff2") format("woff2");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --ui-scale: 1;
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-size: calc(16px * var(--ui-scale));
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+/* ---- Helion-style display and instrumentation type ---- */
+.display-caps {
+  font-weight: 550;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+  line-height: 0.95;
+}
+.label-mono {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 400;
+}
+/* Floating instrument surfaces over the 3D stage */
+.glass {
+  background: color-mix(in srgb, var(--color-panel) 82%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(238, 242, 245, 0.08);
+}
+.hero-number {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  text-shadow: 0 0 32px rgba(56, 189, 248, 0.28);
+}
+/* ---- Instrument framing and power-on reveals ----
+   Hand-built rather than pulling in a sci-fi UI kit: the bracket is the motif
+   this game already speaks in ([ MISSION 2 / ... ]), so the panels get the
+   same mark at their corners. Both utilities are pure CSS, which means the
+   existing reduced-motion policy below (and the OS preference) already clamps
+   them without any component needing to know. */
+
+/* Two opposite corner brackets that draw outward on mount. Diagonal rather
+   than all four: enough to read as an instrument surface, quiet enough to
+   sit behind live data for a whole session. */
+/* Declared in @layer base so Tailwind's `utilities` layer still outranks it:
+   unlayered CSS beats every layered rule regardless of specificity, and a
+   plain `.framed { position: relative }` here silently overrode `absolute`
+   on the control column and yanked it out of place. Elements with no
+   positioning utility of their own still get the containing block they need. */
+@layer base {
+  .framed { position: relative; }
+}
+.framed::before,
+.framed::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  animation: bracket-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+}
+/* The colour rides in the shorthand deliberately: a separate `border-color`
+   declaration gets reset to currentColor by the `border-top: 1px solid`
+   shorthands below, which silently renders the brackets off-white. */
+.framed {
+  --frame-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+}
+/* --frame-inset pulls the brackets inward; rounded panels that also clip
+   (overflow-hidden) need enough inset to clear their corner radius. */
+.framed::before {
+  top: var(--frame-inset, -1px);
+  left: var(--frame-inset, -1px);
+  border-top: 1px solid var(--frame-color);
+  border-left: 1px solid var(--frame-color);
+}
+.framed::after {
+  bottom: var(--frame-inset, -1px);
+  right: var(--frame-inset, -1px);
+  border-bottom: 1px solid var(--frame-color);
+  border-right: 1px solid var(--frame-color);
+  animation-delay: 0.1s;
+}
+/* width/height rather than transform: scaling a 1px border blurs it */
+@keyframes bracket-in {
+  from { width: 0; height: 0; opacity: 0; }
+  to   { width: 14px; height: 14px; opacity: 1; }
+}
+
+/* Sequenced fade-and-rise. Set --reveal-i per child to order the sequence;
+   `backwards` keeps each item hidden until its own delay elapses, so the
+   panel reads as powering on rather than everything arriving at once. */
+.reveal {
+  animation: reveal-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  animation-delay: calc(var(--reveal-i, 0) * 70ms);
+}
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Legibility scrim behind hero type, over the machine */
+.stage-scrim {
+  background: linear-gradient(to top, rgba(12, 20, 34, 0.88) 0%, rgba(12, 20, 34, 0.35) 45%, transparent 75%);
+}
+
+body.font-dyslexic,
+body.font-dyslexic * {
+  font-family: "OpenDyslexic", ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* ---- Colorblind palette overlays: swap the semantic status hues ---- */
+body.cb-protanopia {
+  --color-safe: #3B82F6;  /* blue reads as "good" */
+  --color-warn: #FDE047;  /* bright yellow */
+  --color-crit: #F97316;  /* orange, higher luminance than red */
+}
+body.cb-deuteranopia {
+  --color-safe: #38BDF8;
+  --color-warn: #FACC15;
+  --color-crit: #C026D3;  /* magenta */
+}
+body.cb-tritanopia {
+  --color-safe: #34D399;
+  --color-warn: #FB7185;
+  --color-crit: #E11D48;
+}
+
+/* Status shape-coding (colorblind-safe redundancy) */
+.status-safe { border: 1px solid var(--color-safe); outline: 1px solid var(--color-safe); outline-offset: 2px; }
+.status-warn { border: 1px dashed var(--color-warn); }
+.status-crit { border: 2px solid var(--color-crit); animation: crit-pulse 0.8s ease-in-out infinite; }
+
+@keyframes crit-pulse {
+  0%, 100% { border-color: var(--color-crit); }
+  50% { border-color: transparent; }
+}
+
+body.reduced-motion .status-crit { animation: none; }
+body.reduced-motion *, body.reduced-motion *::before, body.reduced-motion *::after {
+  animation-duration: 0.001s !important;
+  transition-duration: 0.001s !important;
+}
+
+/* ---- Interaction affordances ---- */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary,
+label:has(> input[type="checkbox"]) {
+  cursor: pointer;
+}
+button {
+  transition: background-color 0.2s ease-out, color 0.2s ease-out,
+    border-color 0.2s ease-out, opacity 0.2s ease-out, filter 0.2s ease-out;
+}
+
+/* 44px minimum touch targets on touch-primary devices (WCAG 2.5.8) */
+@media (pointer: coarse) {
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Honor the OS-level motion preference in addition to the in-game toggle */
+@media (prefers-reduced-motion: reduce) {
+  .status-crit { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* ---- Focus visibility (keyboard accessibility) ---- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ---- Range sliders (industrial look) ---- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: #334155;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-ink);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+input[type="range"]:disabled::-webkit-slider-thumb {
+  background: #475569;
+  box-shadow: none;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-ink);
+}
+
+/* ---- Scrollbars ---- */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ---- Terminal feed ---- */
+.terminal-line { font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.5; }
+
+/* ---- Onboarding mask ---- */
+.ui-locked { pointer-events: none; opacity: 0.35; filter: saturate(0.4); }
+.ui-highlight {
+  position: relative;
+  box-shadow: 0 0 0 2px var(--color-accent), 0 0 24px rgba(56, 189, 248, 0.35);
+  border-radius: 8px;
+  z-index: 30;
+}

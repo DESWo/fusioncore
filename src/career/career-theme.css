@@ -1,0 +1,237 @@
+/* Career mode has its own skin. The reactor game is a control room: cold navy,
+   cyan, uppercase mono, instrument panels. This is a book about a person's
+   working life, so it reads warm and editorial instead: paper-dark ground,
+   ember accent, serif prose. Scoped to .career-theme so nothing leaks back
+   into the reactor UI. */
+
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/literata";
+
+.career-theme {
+  /* warm charcoal, not blue-black */
+  --c-bg: #14100D;
+  --c-surface: #1E1814;
+  --c-raise: #2A211B;
+  --c-line: rgba(240, 226, 210, 0.10);
+  --c-ink: #F4EDE4;
+  --c-muted: #A2907F;
+  --c-faint: #6E6055;
+  /* ember: warmth without the reactor's electric cyan */
+  --c-accent: #E08A3C;
+  --c-accent-soft: rgba(224, 138, 60, 0.14);
+  --c-good: #86A96B;
+  --c-bad: #C4634A;
+  --c-violet: #A98BC4;
+
+  --font-display: 'Fraunces Variable', Georgia, serif;
+  --font-prose: 'Literata Variable', Georgia, serif;
+
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--font-prose);
+}
+
+/* A faint paper grain so large dark areas are not dead flat */
+.career-theme::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background:
+    radial-gradient(900px 500px at 50% -10%, rgba(224, 138, 60, 0.07), transparent 70%),
+    radial-gradient(600px 400px at 0% 100%, rgba(169, 139, 196, 0.05), transparent 70%);
+}
+.career-theme > * { position: relative; z-index: 1; }
+
+.career-theme .c-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-variation-settings: 'SOFT' 20, 'WONK' 1;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+}
+
+.career-theme .c-prose {
+  font-family: var(--font-prose);
+  font-size: 15px;
+  line-height: 1.68;
+  letter-spacing: 0.001em;
+  color: #E7DCCF;
+}
+
+/* Small caps label, but set in the serif so it stays in the book world */
+.career-theme .c-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+
+.career-theme .c-num {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-variation-settings: 'SOFT' 0, 'WONK' 0;
+  letter-spacing: -0.01em;
+}
+
+.career-theme .c-card {
+  background: linear-gradient(180deg, rgba(255, 246, 236, 0.045), rgba(255, 246, 236, 0.015));
+  border: 1px solid var(--c-line);
+  border-radius: 14px;
+}
+
+/* Choice buttons: a ruled list you tap, not a control panel */
+.career-theme .c-choice {
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 246, 236, 0.028);
+  border: 1px solid var(--c-line);
+  border-left: 2px solid rgba(224, 138, 60, 0.35);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background-color 200ms ease, border-color 200ms ease;
+  min-height: 44px;
+}
+.career-theme .c-choice:hover {
+  background: rgba(224, 138, 60, 0.09);
+  border-left-color: var(--c-accent);
+}
+.career-theme .c-choice:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}
+
+.career-theme .c-btn {
+  background: var(--c-accent);
+  color: #1A1109;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: filter 200ms ease, background-color 200ms ease;
+  min-height: 44px;
+}
+.career-theme .c-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.career-theme .c-btn:disabled { background: rgba(255, 246, 236, 0.07); color: var(--c-faint); cursor: not-allowed; }
+
+.career-theme .c-btn-ghost {
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  color: var(--c-muted);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease;
+  min-height: 44px;
+}
+.career-theme .c-btn-ghost:hover { background: rgba(255, 246, 236, 0.05); color: var(--c-ink); }
+
+/* ---- The stat readout ----
+   The old version filled only inside the current integer segment, so a 9 and
+   a 4 both rendered as an empty track. This fills against the full 1..12
+   range so magnitude is legible at a glance, with hairline ticks marking each
+   whole point and a brighter cap showing progress toward the next one. */
+.career-theme .c-stat-track {
+  position: relative;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 246, 236, 0.07);
+  overflow: hidden;
+}
+.career-theme .c-stat-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #B4652A, var(--c-accent));
+  transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.career-theme .c-stat-cap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: #FFD9A8;
+  box-shadow: 0 0 8px rgba(255, 217, 168, 0.7);
+  transition: left 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.career-theme .c-stat-ticks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+.career-theme .c-stat-ticks span {
+  flex: 1;
+  border-right: 1px solid rgba(20, 16, 13, 0.55);
+}
+.career-theme .c-stat-ticks span:last-child { border-right: 0; }
+
+/* Range inputs inside career mode: warm, flat, no reactor glow */
+.career-theme input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 246, 236, 0.12);
+  cursor: pointer;
+}
+.career-theme input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 3px solid #14100D;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+.career-theme input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  border: 3px solid #14100D;
+}
+
+.career-theme input[type="text"],
+.career-theme input:not([type="range"]) {
+  font-family: var(--font-prose);
+  background: rgba(255, 246, 236, 0.05);
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  color: var(--c-ink);
+}
+.career-theme input:not([type="range"]):focus {
+  outline: none;
+  border-color: rgba(224, 138, 60, 0.55);
+}
+
+/* a rule with a diamond, for section breaks between prose */
+.career-theme .c-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--c-faint);
+}
+.career-theme .c-rule::before,
+.career-theme .c-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--c-line);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .career-theme .c-stat-fill,
+  .career-theme .c-stat-cap { transition: none; }
+}

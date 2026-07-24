@@ -1,0 +1,92 @@
+[
+  {
+    "id": "fis_cold_heatup",
+    "type": "info",
+    "conditions": [
+      { "metric": "coldPlant", "op": "==", "value": 1 },
+      { "metric": "heaters", "op": "==", "value": 0 }
+    ],
+    "cooldownTicks": 1200,
+    "text": "The primary is cold and the rods are locked in. Heaters on and pumps to 100%: hot standby unlocks criticality at 280 degrees.",
+    "cite": "pwr"
+  },
+  {
+    "id": "fis_sync_ready",
+    "type": "info",
+    "conditions": [
+      { "metric": "gridConnected", "op": "==", "value": 1 },
+      { "metric": "genOnline", "op": "==", "value": 0 },
+      { "metric": "fluxFrac", "op": ">", "value": 0.12 },
+      { "metric": "scrammed", "op": "==", "value": 0 }
+    ],
+    "cooldownTicks": 1800,
+    "text": "Steam is up and the turbine is spinning free. Sync the generator: nothing sells until the breaker is closed.",
+    "cite": "pwr"
+  },
+  {
+    "id": "fis_rho_high",
+    "type": "warning",
+    "conditions": [{ "metric": "reactivityPcm", "op": ">", "value": 400 }],
+    "cooldownTicks": 450,
+    "text": "Reactivity high. Power is climbing fast. Ease rods back in.",
+    "cite": "point_kinetics"
+  },
+  {
+    "id": "fis_prompt_close",
+    "type": "critical",
+    "conditions": [{ "metric": "reactivityPcm", "op": ">", "value": 550 }],
+    "cooldownTicks": 300,
+    "text": "Approaching prompt criticality. Insert rods NOW.",
+    "cite": "prompt_crit"
+  },
+  {
+    "id": "fis_coolant_warm",
+    "type": "warning",
+    "conditions": [
+      { "metric": "TcoolC", "op": ">", "value": 330 },
+      { "metric": "TcoolC", "op": "<=", "value": 345 }
+    ],
+    "cooldownTicks": 600,
+    "text": "Coolant near boiling. More pump flow or less power.",
+    "cite": "pwr"
+  },
+  {
+    "id": "fis_decay_pumps",
+    "type": "critical",
+    "conditions": [
+      { "metric": "critical", "op": "==", "value": 0 },
+      { "metric": "decayMW", "op": ">", "value": 30 },
+      { "metric": "pumps", "op": "<", "value": 40 }
+    ],
+    "cooldownTicks": 600,
+    "text": "Decay heat still needs cooling after shutdown. Pumps up. (This is the Three Mile Island lesson.)",
+    "cite": "decay_heat"
+  },
+  {
+    "id": "fis_xenon_pit",
+    "type": "warning",
+    "conditions": [
+      { "metric": "critical", "op": "==", "value": 0 },
+      { "metric": "xenonPcm", "op": ">", "value": 3200 }
+    ],
+    "cooldownTicks": 2400,
+    "text": "Xenon pit. The core may not restart for hours. Wait it out or refuel.",
+    "cite": "xenon"
+  },
+  {
+    "id": "fis_burnup",
+    "type": "info",
+    "conditions": [{ "metric": "burnup", "op": ">", "value": 0.7 }],
+    "cooldownTicks": 3000,
+    "text": "Core 70% burned. Excess reactivity fading. Plan a refuel outage.",
+    "cite": "pwr"
+  },
+  {
+    "id": "fis_first_crit",
+    "type": "info",
+    "once": true,
+    "conditions": [{ "metric": "P", "op": ">", "value": 10 }],
+    "text": "Self-sustaining chain reaction. Doppler feedback is your co-pilot from here.",
+    "cite": "doppler"
+  }
+]
