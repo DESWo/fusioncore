@@ -2,3 +2,7 @@ node_modules
 dist
 .DS_Store
 *.local
+
+# Pages is built and published by .github/workflows/deploy-pages.yml.
+# Never commit a build: the old committed docs/ drifted six days behind source.
+docs
