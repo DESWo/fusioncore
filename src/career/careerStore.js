@@ -29,6 +29,7 @@ import { CAREER_EVENTS } from './data/events_career.js';
 import { TRANSITION_EVENTS, CALLBACK_EVENTS } from './data/events_transitions.js';
 import { TEXTURE_EVENTS } from './data/events_texture.js';
 import { LIFE_EVENTS } from './data/events_life.js';
+import { EXTRA_EVENTS } from './data/events_extra.js';
 import { dueSim, simById } from './data/sims.js';
 
 export const ALL_EVENTS = [
@@ -38,6 +39,7 @@ export const ALL_EVENTS = [
   ...CALLBACK_EVENTS,
   ...TEXTURE_EVENTS,
   ...LIFE_EVENTS,
+  ...EXTRA_EVENTS,
 ];
 
 const SAVE_KEY = 'fusioncore_career_v1';
