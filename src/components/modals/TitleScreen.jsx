@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useReactorStore, levelsFor } from '../../store/reactorStore.js';
 import { DIFFICULTIES } from '../../engine/constants.js';
 import { getPosting, CAREER_POSTINGS } from '../../engine/career.js';
 import { dailySeedKey } from '../../engine/tolerances.js';
 import { useCareerStore } from '../../career/careerStore.js';
-import ReactorScene from '../reactor3d/ReactorScene.jsx';
+// The hero is three.js and the heaviest thing we ship. Let the menu paint and
+// become clickable first; the machine fades in when its chunk lands.
+const ReactorScene = lazy(() => import('../reactor3d/ReactorScene.jsx'));
 
 // Helion-style hero: the machine full-bleed and slowly turning, one giant
 // caption, a quiet mono menu. The reactor sells the game; the UI stays out
@@ -44,7 +46,9 @@ export default function TitleScreen() {
     <div className="h-full relative overflow-hidden bg-base">
       {/* the machine, turning slowly in the dark */}
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
-        <ReactorScene bare />
+        <Suspense fallback={null}>
+          <ReactorScene bare />
+        </Suspense>
       </div>
       <div className="stage-scrim absolute inset-x-0 bottom-0 h-[75%]" />
 

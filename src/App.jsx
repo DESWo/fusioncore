@@ -1,25 +1,38 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useReactorStore, scheduleLoop } from './store/reactorStore.js';
 import { initAudio, applyVolumes, updateSoundscape } from './audio/synth.js';
 import TopHUD from './components/TopHUD.jsx';
-import ReactorScene from './components/reactor3d/ReactorScene.jsx';
-import FissionScene from './components/reactor3d/FissionScene.jsx';
 import Dashboard from './components/dashboard/Dashboard.jsx';
-import FissionDashboard from './components/dashboard/FissionDashboard.jsx';
 import AdvisorPanel from './components/advisor/AdvisorPanel.jsx';
 import TitleScreen from './components/modals/TitleScreen.jsx';
-import CareerMode from './career/CareerMode.jsx';
 import { useCareerStore } from './career/careerStore.js';
 import HeroOverlay from './components/HeroOverlay.jsx';
 import TutorialOverlay from './components/TutorialOverlay.jsx';
 import NotificationStack from './components/advisor/NotificationStack.jsx';
 import LevelUpCutscene from './components/modals/LevelUpCutscene.jsx';
-import GameOverModal from './components/modals/GameOverModal.jsx';
-import SettingsModal from './components/modals/SettingsModal.jsx';
-import CaseFilesModal from './components/modals/CaseFilesModal.jsx';
-import CareerModal from './components/modals/CareerModal.jsx';
 import AckModal from './components/modals/AckModal.jsx';
 import SourcesFooter from './components/common/SourcesFooter.jsx';
+
+// Split the heavy and the rarely-opened out of the first download.
+// three + @react-three/* is the bulk of the bundle, career mode is a whole
+// second game, and a modal nobody opens should not cost anything up front.
+const ReactorScene = lazy(() => import('./components/reactor3d/ReactorScene.jsx'));
+const FissionScene = lazy(() => import('./components/reactor3d/FissionScene.jsx'));
+const FissionDashboard = lazy(() => import('./components/dashboard/FissionDashboard.jsx'));
+const CareerMode = lazy(() => import('./career/CareerMode.jsx'));
+const GameOverModal = lazy(() => import('./components/modals/GameOverModal.jsx'));
+const SettingsModal = lazy(() => import('./components/modals/SettingsModal.jsx'));
+const CaseFilesModal = lazy(() => import('./components/modals/CaseFilesModal.jsx'));
+const CareerModal = lazy(() => import('./components/modals/CareerModal.jsx'));
+
+/** Holds the stage's shape while the 3D chunk arrives, so nothing reflows. */
+function SceneFallback() {
+  return (
+    <div className="h-full w-full flex items-center justify-center bg-base">
+      <span className="label-mono text-[10px] text-slate-500">[ spinning up the machine ]</span>
+    </div>
+  );
+}
 
 const TABS = [
   { id: 'controls', label: 'Controls' },
@@ -108,14 +121,18 @@ export default function App() {
   // Career mode is its own game: a life sim that borrows the physics engine
   // for five set-pieces. It takes the whole screen when active.
   if (careerScreen !== 'title') {
-    return <CareerMode onExit={() => useCareerStore.getState().exit()} />;
+    return (
+      <Suspense fallback={<SceneFallback />}>
+        <CareerMode onExit={() => useCareerStore.getState().exit()} />
+      </Suspense>
+    );
   }
 
   if (screen === 'title') {
     return (
       <>
         <TitleScreen />
-        {settingsOpen && <SettingsModal />}
+        <Suspense fallback={null}>{settingsOpen && <SettingsModal />}</Suspense>
       </>
     );
   }
@@ -128,7 +145,9 @@ export default function App() {
       {/* The stage: the machine full-bleed on desktop, top block on tablet */}
       <div className="flex-1 relative min-h-0">
         <div className="h-[38%] lg:h-full lg:absolute lg:inset-0">
-          {mode === 'fission' ? <FissionScene /> : <ReactorScene />}
+          <Suspense fallback={<SceneFallback />}>
+            {mode === 'fission' ? <FissionScene /> : <ReactorScene />}
+          </Suspense>
         </div>
 
         {showPaused && (
@@ -170,7 +189,9 @@ export default function App() {
             <AdvisorPanel />
           ) : (
             <>
-              {mode === 'fission' ? <FissionDashboard tabletTab={tab} /> : <Dashboard tabletTab={tab} />}
+              <Suspense fallback={null}>
+                {mode === 'fission' ? <FissionDashboard tabletTab={tab} /> : <Dashboard tabletTab={tab} />}
+              </Suspense>
               <SourcesFooter />
             </>
           )}
@@ -178,10 +199,12 @@ export default function App() {
       </div>
 
       {pendingCutscene && <LevelUpCutscene />}
-      {gameOver && <GameOverModal />}
-      {settingsOpen && <SettingsModal />}
-      {careerOpen && <CareerModal />}
-      {caseFilesOpen && <CaseFilesModal />}
+      <Suspense fallback={null}>
+        {gameOver && <GameOverModal />}
+        {settingsOpen && <SettingsModal />}
+        {careerOpen && <CareerModal />}
+        {caseFilesOpen && <CaseFilesModal />}
+      </Suspense>
       <AckModal />
     </div>
   );

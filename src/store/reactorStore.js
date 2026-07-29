@@ -1374,7 +1374,9 @@ export const useReactorStore = create((set, get) => ({
         const next = levelFor(s.mode, s.level.id + 1, sim.plantKey);
         get().pushAdvisor({
           type: 'info',
-          text: `MISSION ${next.id}, ${next.name}: ${next.objective}. ${next.brief}`,
+          // The idea, not the setpoints. Numbers live behind the mission
+          // panel's "stuck?" toggle so the player gets to work them out.
+          text: `MISSION ${next.id}, ${next.name}: ${next.objective}. ${next.hint ?? ''}`.trim(),
         });
       }
       get().saveGame();

@@ -146,11 +146,15 @@ export default function LevelUpCutscene() {
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">
                   Next mission {next.id} of {modeLevels.length}: {next.name}
                 </span>
-                <SpeakerIcon text={`Next mission: ${next.name}. ${next.objective}. ${next.why} ${next.brief}`} />
+                <SpeakerIcon text={`Next mission: ${next.name}. ${next.objective}. ${next.why} ${next.hint ?? ''}`} />
               </div>
               <p className="text-sm font-semibold mt-1.5">{next.objective}</p>
               <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">{next.why}</p>
-              <p className="text-[11px] text-accent mt-1.5 leading-relaxed">▸ {next.brief}</p>
+              {/* The idea, not the answer. The exact setpoints live behind the
+                  in-game "stuck?" toggle so the mission stays a problem. */}
+              {next.hint && (
+                <p className="text-[11px] text-accent mt-1.5 leading-relaxed">▸ {next.hint}</p>
+              )}
               {next.terms?.length > 0 && (
                 <div className="mt-3 pt-2 border-t border-slate-700">
                   <div className="text-[9px] uppercase tracking-widest text-slate-500 mb-1.5">

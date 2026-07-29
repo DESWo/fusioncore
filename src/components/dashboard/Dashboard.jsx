@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useReactorStore, SERVICE_COSTS, levelsFor, levelFor } from '../../store/reactorStore.js';
 import { unlockedFeatures } from '../../engine/levels.js';
@@ -93,6 +93,9 @@ export function ObjectiveBanner() {
   const plantKey = useReactorStore((s) => s.sim.plantKey);
   const level = levelFor(mode, levelId, plantKey);
   const progress = Math.min(sustain / level.sustainTicks, 1);
+  // Re-hides on every new mission, so the numbers are always asked for.
+  const [showBrief, setShowBrief] = useState(false);
+  useEffect(() => setShowBrief(false), [levelId, mode]);
 
   if (completed) {
     if (career) {
@@ -134,10 +137,25 @@ export function ObjectiveBanner() {
         <span className="text-[10px] uppercase tracking-widest text-accent">
           Mission {level.id}: {level.name}
         </span>
-        <SpeakerIcon text={`Mission ${level.id}, ${level.name}. Objective: ${level.objective}. ${level.brief}`} />
+        <SpeakerIcon text={`Mission ${level.id}, ${level.name}. Objective: ${level.objective}. ${showBrief ? level.brief : (level.hint ?? '')}`} />
       </div>
       <p className="text-xs font-semibold mt-1">{level.objective}</p>
-      <p className="text-[10px] text-slate-400 mt-0.5">{level.brief}</p>
+      {/* The idea, always. The exact setpoints only if you ask: handing over
+          "field 11.5 T, density 1.0" turns the mission into data entry. */}
+      {level.hint && <p className="text-[10px] text-slate-400 mt-0.5">{level.hint}</p>}
+      {level.brief && (
+        showBrief ? (
+          <p className="text-[10px] text-accent mt-1 leading-relaxed">▸ {level.brief}</p>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowBrief(true)}
+            className="mt-1 label-mono text-[9px] text-slate-500 hover:text-accent"
+          >
+            [ stuck? show the settings ]
+          </button>
+        )
+      )}
       <div className="h-1.5 bg-slate-700 rounded-full mt-2 overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
         <motion.div
           className="h-full bg-accent"

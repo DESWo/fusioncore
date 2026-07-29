@@ -12,7 +12,9 @@ import { sigmaV } from '../src/engine/reactivity.js';
 import { buildFailureReport } from '../src/engine/failure.js';
 import {
   applyManufacturingTolerances, worstCaseAsBuilt, TOLERANCE_SPECS,
+  dailySeedKey, seededRng,
 } from '../src/engine/tolerances.js';
+import { scoreCampaign, gradeFor } from '../src/engine/scorecard.js';
 import { SIM_DT_S, Z_EFF_BASE, QUENCH_DAMAGE_PCT } from '../src/engine/constants.js';
 import {
   CAREER_POSTINGS, firstPosting, nextPosting, buildPerformanceReview,
@@ -28,6 +30,8 @@ const steadyPrice = () => 0.5;  // zero gaussian noise -> price pinned at $50
 let sim = createSimState();
 let econ = createEconState();
 let failures = 0;
+// Mirrors the store's stats accumulator so the walkthrough can be graded.
+const runStats = { maxQ: 0, disruptions: 0, quenches: 0, repairs: 0, peakNetMW: 0 };
 
 function applyControls(controls) {
   sim = { ...sim, controls: { ...sim.controls, ...controls } };
@@ -54,6 +58,8 @@ function run(ticks) {
       },
     };
     econ = econTick(econ, sim, steadyPrice);
+    runStats.maxQ = Math.max(runStats.maxQ, sim.physics.Q ?? 0);
+    runStats.peakNetMW = Math.max(runStats.peakNetMW, sim.physics.netElecMW ?? 0);
     // keep fuel topped up for the physics check; economics tested separately
     if (sim.fuel.tritium < 5) sim.fuel.tritium += 20;
     if (sim.fuel.deuterium < 5) sim.fuel.deuterium += 20;
@@ -158,6 +164,81 @@ phase(7, 'City Scale', { B: 19.4, density: 3.0, heat: 50, cooling: 100 }, ['shap
   console.log(
     `${ok ? 'PASS' : 'FAIL'}  L8 Commercial Era   LCOE=$${econ.lcoe?.toFixed(0)}/MWh  ` +
     `net=${sim.physics.netElecMW.toFixed(0)}MWe  funds=$${(econ.funds / 1e9).toFixed(2)}B`,
+  );
+  if (!ok) failures++;
+}
+
+// ---- Campaign scorecard ----
+// The walkthrough above IS a finished campaign: clean (noDisrupt), commercial
+// LCOE, hardware intact. Grading it proves the scorecard reads real run state
+// and lands where a competent player should land.
+{
+  const card = scoreCampaign({
+    stats: runStats,
+    econ,
+    structure: sim.structure,
+    simSeconds: sim.time.simSeconds,
+    difficulty: 'Operator',
+  });
+  const weightsOk = card.parts.reduce((s, p) => s + p.weight, 0) === 100;
+  const rangeOk = card.score >= 0 && card.score <= 100;
+  const fractionsOk = card.parts.every((p) => p.fraction >= 0 && p.fraction <= 1);
+  // A clean run that actually reached Commercial Era should not grade below B.
+  const earnedOk = card.score >= 74;
+  const verdictOk = typeof card.verdict === 'string' && card.verdict.length > 20;
+  const ok = weightsOk && rangeOk && fractionsOk && earnedOk && verdictOk;
+  console.log(
+    `${ok ? 'PASS' : 'FAIL'}  scorecard: clean campaign grades ${card.grade} (${card.score}/100)  ` +
+    `Q=${runStats.maxQ.toFixed(1)} LCOE=$${econ.lcoe?.toFixed(0)} hull=${Math.round(Math.min(sim.structure.firstWall, sim.structure.divertor, sim.structure.magnets))}%`,
+  );
+  if (!ok) failures++;
+
+  // Monotonic where it should be: wrecking the plant can only cost you.
+  const worse = scoreCampaign({
+    stats: { ...runStats, disruptions: 12, quenches: 4 },
+    econ,
+    structure: { firstWall: 45, divertor: 42, magnets: 55 },
+    simSeconds: sim.time.simSeconds,
+    difficulty: 'Operator',
+  });
+  const mono = worse.score < card.score;
+  console.log(
+    `${mono ? 'PASS' : 'FAIL'}  scorecard: a wrecked plant grades lower (${worse.grade} ${worse.score} < ${card.grade} ${card.score})`,
+  );
+  if (!mono) failures++;
+
+  // Letter bands are ordered and cover the range.
+  const letters = [0, 55, 65, 78, 88, 95].map(gradeFor);
+  const bandsOk = JSON.stringify(letters) === JSON.stringify(['E', 'D', 'C', 'B', 'A', 'A+']);
+  console.log(`${bandsOk ? 'PASS' : 'FAIL'}  scorecard: grade bands ordered E..A+ (${letters.join(' ')})`);
+  if (!bandsOk) failures++;
+}
+
+// ---- Daily plant seed ----
+// The whole point is that two people running "today" get the same machine.
+{
+  const key = dailySeedKey(new Date('2026-07-29T12:00:00Z'));
+  const keyOk = key === '2026-07-29';
+
+  const a = {}; applyManufacturingTolerances(a, 'fusion', seededRng(`${key}:fusion:pwr`));
+  const b = {}; applyManufacturingTolerances(b, 'fusion', seededRng(`${key}:fusion:pwr`));
+  const c = {}; applyManufacturingTolerances(c, 'fusion', seededRng('2026-07-30:fusion:pwr'));
+  const same = JSON.stringify(a.asBuilt) === JSON.stringify(b.asBuilt);
+  const differs = JSON.stringify(a.asBuilt) !== JSON.stringify(c.asBuilt);
+
+  // A seeded plant must still respect the declared tolerance bounds.
+  const inBounds = TOLERANCE_SPECS.fusion.every((s) => {
+    const v = a.asBuilt[s.key];
+    return v >= s.min && v <= s.max;
+  });
+
+  // UTC, not local: the key must not drift with the machine's timezone.
+  const utcOk = dailySeedKey(new Date('2026-07-29T23:30:00Z')) === '2026-07-29';
+
+  const ok = keyOk && same && differs && inBounds && utcOk;
+  console.log(
+    `${ok ? 'PASS' : 'FAIL'}  daily seed: reproducible, date-scoped, in-bounds ` +
+    `(confinement x${a.asBuilt.confinement.toFixed(3)})`,
   );
   if (!ok) failures++;
 }
