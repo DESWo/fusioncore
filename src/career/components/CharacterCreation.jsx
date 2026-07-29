@@ -110,6 +110,7 @@ export default function CharacterCreation() {
                 <button
                   key={b.id}
                   onClick={() => setDraft({ background: b.id })}
+                  aria-pressed={active}
                   className="c-choice"
                   style={active ? {
                     background: 'var(--c-accent-soft)',
@@ -142,6 +143,7 @@ export default function CharacterCreation() {
                 <button
                   key={m.id}
                   onClick={() => setDraft({ motivation: m.id })}
+                  aria-pressed={active}
                   className="c-choice"
                   style={active ? {
                     background: 'var(--c-accent-soft)',
@@ -179,7 +181,13 @@ export default function CharacterCreation() {
         {step < 2 ? (
           <button
             onClick={() => setStep(step + 1)}
-            disabled={step === 0 && (!player.name.trim() || remaining !== 0)}
+            // Gate every step, not just the first: skipping the background step
+            // used to land you on a permanently disabled "Begin at eighteen".
+            disabled={
+              step === 0
+                ? !player.name.trim() || remaining !== 0
+                : !player.background
+            }
             className="c-btn flex-1 py-3.5 text-[14px]"
           >
             Continue
