@@ -3,9 +3,9 @@
 You run the world's first commercially viable fusion reactor. Confine a star,
 balance the books, power a city.
 
-An educational browser game built to the [FusionCore specification](../fusioncore_spec.md):
-a real-time tokamak engineering simulation where every micro-adjustment changes how
-the reactor behaves, and every number carries a citation to real plasma-physics literature.
+An educational browser game: a real-time tokamak engineering simulation where every
+micro-adjustment changes how the reactor behaves, and every number carries a citation
+to real plasma-physics literature.
 
 ## Run it
 
