@@ -14,7 +14,7 @@ import { LEVELS, getLevel, unlockedFeatures } from '../engine/levels.js';
 import { TECH_TREE, getTech, techAvailable } from '../engine/tech.js';
 import { buildAdvisorContext, evaluateTriggers } from '../engine/advisor.js';
 import { buildFailureReport } from '../engine/failure.js';
-import { applyManufacturingTolerances } from '../engine/tolerances.js';
+import { applyManufacturingTolerances, dailySeedKey, seededRng } from '../engine/tolerances.js';
 import { getPosting, nextPosting, firstPosting, buildPerformanceReview } from '../engine/career.js';
 import { CAREER_STORAGE_KEYS } from '../career/careerStore.js';
 import { directiveSetFor, createDuties, dutiesTick } from '../engine/directives.js';
@@ -285,10 +285,15 @@ export const useReactorStore = create((set, get) => ({
     }
   },
 
-  newGame(difficultyKey = 'operator', mode = 'fusion', plantKey = 'pwr') {
+  newGame(difficultyKey = 'operator', mode = 'fusion', plantKey = 'pwr', opts = {}) {
     const diff = DIFFICULTIES[difficultyKey] ?? DIFFICULTIES.operator;
     const fresh = freshGameState(mode, plantKey);
     fresh.sim.difficulty = diff;
+    // Daily plant: everyone who starts today gets the same as-built machine, so
+    // final LCOE is comparable. Seeded from the UTC date, not the local one.
+    const daily = Boolean(opts.daily);
+    const seedKey = daily ? dailySeedKey() : null;
+    fresh.sim.dailySeed = seedKey;
     // A research reactor runs on a grant, not a utility balance sheet
     const plant = mode === 'fission' ? (FISSION_PLANTS[plantKey] ?? FISSION_PLANTS.pwr) : null;
     fresh.econ.funds = diff.funds * (plant?.fundsScale ?? 1);
@@ -296,7 +301,7 @@ export const useReactorStore = create((set, get) => ({
     applyManufacturingTolerances(
       fresh.sim,
       mode === 'fission' && plantKey === 'research' ? 'research' : mode,
-      Math.random,
+      seedKey ? seededRng(`${seedKey}:${mode}:${plantKey}`) : Math.random,
     );
     fresh.notebook = [{
       id: `nb_${nextNoteId++}`, simTime: 0, kind: 'event',

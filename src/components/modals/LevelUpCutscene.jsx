@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useReactorStore, levelsFor, levelFor } from '../../store/reactorStore.js';
 import { RD_BONUS_LEVEL } from '../../engine/constants.js';
+import { scoreCampaign } from '../../engine/scorecard.js';
 import SpeakerIcon from '../common/SpeakerIcon.jsx';
 
 /** Framer Motion milestone cutscene between levels (spec §8). */
@@ -11,10 +12,20 @@ export default function LevelUpCutscene() {
   const reducedMotion = useReactorStore((s) => s.settings.reducedMotion);
   const career = useReactorStore((s) => s.career);
   const plantKey = useReactorStore((s) => s.sim.plantKey);
+  const stats = useReactorStore((s) => s.stats);
+  const econ = useReactorStore((s) => s.econ);
+  const structure = useReactorStore((s) => s.sim.structure);
+  const simSeconds = useReactorStore((s) => s.sim.time?.simSeconds);
+  const difficultyLabel = useReactorStore((s) => s.sim.difficulty?.label ?? 'Operator');
+  const dailySeed = useReactorStore((s) => s.sim.dailySeed ?? null);
   if (!level) return null;
 
   const modeLevels = levelsFor(mode, plantKey);
   const isFinal = level.id === modeLevels.length;
+  // Graded only for the standalone campaign; career mode has its own review.
+  const card = isFinal && !career
+    ? scoreCampaign({ stats, econ, structure, simSeconds, difficulty: difficultyLabel })
+    : null;
 
   return (
     <div className="fixed inset-0 z-40 bg-base/95 flex items-center justify-center p-6">
@@ -68,6 +79,56 @@ export default function LevelUpCutscene() {
             className="mt-2 text-[11px] text-slate-400"
           >
             Unlocked: {level.unlockText}
+          </motion.div>
+        )}
+
+        {/* Campaign scorecard: every figure here is read off the finished run. */}
+        {card && (
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="mt-6 rounded-lg border border-accent/40 bg-panel p-4 text-left"
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">
+                Final review · {card.summary.difficulty}
+              </span>
+              <span className="font-mono text-3xl font-black leading-none text-ink">
+                {card.grade}
+                <span className="ml-1.5 text-xs font-bold text-slate-400">{card.score}/100</span>
+              </span>
+            </div>
+
+            <p className="mt-2 text-[12px] leading-relaxed text-slate-300">{card.verdict}</p>
+
+            <div className="mt-3 grid gap-2">
+              {card.parts.map((p) => (
+                <div key={p.id}>
+                  <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                    <span className="text-slate-300">{p.label}</span>
+                    <span className="font-mono text-slate-400">{p.detail}</span>
+                  </div>
+                  <div className="mt-1 h-1.5 rounded-full bg-slate-700/70">
+                    <div
+                      className="h-full rounded-full bg-accent"
+                      style={{ width: `${Math.round(p.fraction * 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 border-t border-slate-700 pt-2 font-mono text-[10px] text-slate-500">
+              {Math.round(card.summary.hours)} h online · ${card.summary.funds.toFixed(2)}B left
+              {dailySeed && <> · daily plant {dailySeed}</>}
+            </div>
+            {dailySeed && (
+              <p className="mt-1.5 text-[10px] leading-snug text-slate-500">
+                Everyone who ran the {dailySeed} plant started from these same tolerances.
+                Cost of power is the comparable number.
+              </p>
+            )}
           </motion.div>
         )}
 

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useReactorStore, levelsFor } from '../../store/reactorStore.js';
 import { DIFFICULTIES } from '../../engine/constants.js';
 import { getPosting, CAREER_POSTINGS } from '../../engine/career.js';
+import { dailySeedKey } from '../../engine/tolerances.js';
 import { useCareerStore } from '../../career/careerStore.js';
 import ReactorScene from '../reactor3d/ReactorScene.jsx';
 
@@ -27,6 +28,8 @@ function MenuCard({ onClick, title, chip, chipTone = 'text-accent', sub, tone = 
 
 export default function TitleScreen() {
   const [choosing, setChoosing] = useState(false); // false | 'mode' | 'fusion' | 'fission' | 'career'
+  /** Daily plant: same as-built machine for everyone today, so runs compare. */
+  const [daily, setDaily] = useState(false);
   const hasSave = useReactorStore((s) => s.hasSave);
   const saves = useReactorStore((s) => s.saves);
   const newGame = useReactorStore((s) => s.newGame);
@@ -96,10 +99,37 @@ export default function TitleScreen() {
             ) : choosing ? (
               <>
                 <div className="label-mono text-[9px] text-slate-500">[ Choose the difficulty ]</div>
+                {choosing !== 'career' && (
+                  <button
+                    type="button"
+                    onClick={() => setDaily((v) => !v)}
+                    aria-pressed={daily}
+                    className={`w-full rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                      daily
+                        ? 'border-accent/60 bg-accent/10'
+                        : 'border-slate-600/70 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[13px] font-bold text-ink">Daily plant</span>
+                      <span className="label-mono text-[9px] text-slate-500">
+                        {daily ? dailySeedKey() : 'off'}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-snug text-slate-400">
+                      Everyone starting today gets the same as-built machine, tolerances and
+                      all. Compare your final cost of power against anyone else who ran it.
+                    </p>
+                  </button>
+                )}
                 {Object.values(DIFFICULTIES).map((d) => (
                   <MenuCard
                     key={d.key}
-                    onClick={() => (choosing === 'career' ? newCareerGame(d.key) : newGame(d.key, choosing))}
+                    onClick={() =>
+                      choosing === 'career'
+                        ? newCareerGame(d.key)
+                        : newGame(d.key, choosing, 'pwr', { daily })
+                    }
                     title={d.label}
                     chip={d.key === 'operator' ? 'Recommended' : undefined}
                     sub={d.tagline}

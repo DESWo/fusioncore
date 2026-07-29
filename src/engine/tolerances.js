@@ -103,6 +103,35 @@ export const TOLERANCE_SPECS = {
   ],
 };
 
+/**
+ * Today's date in UTC, used as the daily-plant seed.
+ *
+ * UTC rather than local time so that everyone racing the same daily plant is
+ * genuinely racing the same plant, whatever timezone they are in.
+ */
+export function dailySeedKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * Deterministic PRNG from a string seed: FNV-1a to mix the string down to 32
+ * bits, then mulberry32 to expand it. Same seed always yields the same plant.
+ */
+export function seededRng(seed) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return function next() {
+    h = (h + 0x6d2b79f5) >>> 0;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /** Sample this campaign's as-built plant. Mutates sim.asBuilt in place. */
 export function applyManufacturingTolerances(sim, mode, rng = Math.random) {
   const specs = TOLERANCE_SPECS[mode] ?? [];
