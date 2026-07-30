@@ -28,6 +28,8 @@ export default function CareerMode({ onExit }) {
   const setPanel = useCareerStore((s) => s.setPanel);
   const retire = useCareerStore((s) => s.retire);
   const pendingSim = useCareerStore((s) => s.pendingSim);
+  const save = useCareerStore((s) => s.save);
+  const exitCareer = useCareerStore((s) => s.exit);
 
   // leaving career mode entirely hands control back to the host app
   useEffect(() => {
@@ -65,6 +67,15 @@ export default function CareerMode({ onExit }) {
             </button>
             <button onClick={() => setPanel('log')} className="c-btn-ghost flex-1 py-2 text-[12px]">
               The log
+            </button>
+            {/* There was no way out of career mode except the browser back
+                button. Saves first, so the run is waiting when you return. */}
+            <button
+              onClick={() => { save(); exitCareer(); }}
+              title="Save this life and return to the title screen"
+              className="c-btn-ghost flex-1 py-2 text-[12px]"
+            >
+              Save &amp; quit
             </button>
             {canRetire(player) && (
               <button

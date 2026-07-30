@@ -188,6 +188,10 @@ function defaultSettings() {
     ttsPitch: 1.0,
     colorblind: 'none', // none | protanopia | deuteranopia | tritanopia
     reducedMotion: false,
+    // The camera's slow orbit, on its own switch. It used to be tied to
+    // reducedMotion, so the only way to stop the spin was to disable every
+    // other animation in the game as well.
+    autoRotate: true,
     dyslexicFont: false,
     uiScale: 1.0,
     audioEnabled: true,

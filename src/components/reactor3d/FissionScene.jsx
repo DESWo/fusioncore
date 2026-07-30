@@ -218,6 +218,7 @@ export default function FissionScene() {
   // and rod bank carry the scene; the PWR keeps its vessel and generators.
   const research = useReactorStore((s) => s.sim.plantKey === 'research');
   const reducedMotion = useReactorStore((s) => s.settings.reducedMotion);
+  const autoRotate = useReactorStore((s) => s.settings.autoRotate !== false);
   // Physics view: only the reaction chamber. The vessel, pool, and steam
   // plant would stand between the camera and the neutrons.
   const processView = useReactorStore((s) => s.viewMode === 'process');
@@ -241,7 +242,7 @@ export default function FissionScene() {
           minDistance={3.5}
           maxDistance={14}
           maxPolarAngle={Math.PI * 0.85}
-          autoRotate={!reducedMotion}
+          autoRotate={autoRotate && !reducedMotion}
           autoRotateSpeed={0.35}
         />
       </Canvas>

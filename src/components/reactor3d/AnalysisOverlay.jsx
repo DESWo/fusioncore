@@ -33,7 +33,7 @@ function ProcessLegend() {
     // pool runs 340x less power, so its crowds are smaller.
     const perDot = plantKey === 'research' ? 1e11 : 3e13;
     return (
-      <div className="absolute bottom-6 right-2 z-10 w-56 bg-slate-900/90 border border-slate-700 rounded-md px-2 py-1.5 text-[8px] text-slate-300 grid gap-1">
+      <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 w-56 bg-slate-900/90 border border-slate-700 rounded-md px-2 py-1.5 text-[8px] text-slate-300 grid gap-1">
         <div className="text-[8px] uppercase tracking-widest text-accent font-bold">
           What you are seeing
         </div>
@@ -65,7 +65,7 @@ function ProcessLegend() {
 
   const streaksPerSec = Math.min(p.pFusionMW / 30, 10);
   return (
-    <div className="absolute bottom-6 right-2 z-10 w-56 bg-slate-900/90 border border-slate-700 rounded-md px-2 py-1.5 text-[8px] text-slate-300 grid gap-1">
+    <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 w-56 bg-slate-900/90 border border-slate-700 rounded-md px-2 py-1.5 text-[8px] text-slate-300 grid gap-1">
       <div className="text-[8px] uppercase tracking-widest text-accent font-bold">
         What you are seeing
       </div>
@@ -95,7 +95,7 @@ function ProcessLegend() {
 
 function StressLegend() {
   return (
-    <div className="absolute bottom-6 right-2 z-10 bg-slate-900/85 border border-slate-700 rounded-md px-2 py-1.5 pointer-events-none">
+    <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 bg-slate-900/85 border border-slate-700 rounded-md px-2 py-1.5 pointer-events-none">
       <div
         className="h-1.5 w-32 rounded-full"
         style={{ background: 'linear-gradient(90deg, hsl(209,90%,32%), hsl(125,90%,38%), hsl(63,90%,42%), hsl(0,90%,48%))' }}
@@ -118,7 +118,10 @@ export default function AnalysisOverlay() {
   const tutHighlight = useReactorStore((s) => tutorialStep(s.onboarding)?.highlight === 'physics');
   return (
     <>
-      <div className={`absolute top-2 right-2 z-10 flex rounded overflow-hidden border border-slate-600 ${tutHighlight ? 'ui-highlight' : ''}`}>
+      {/* The instrument column is 404px wide and pinned right from lg up, so
+          a plain right-2 put this toggle underneath it on desktop. Same offset
+          the notification stack already uses in App.jsx. */}
+      <div className={`absolute top-2 right-2 lg:right-[424px] z-10 flex rounded overflow-hidden border border-slate-600 ${tutHighlight ? 'ui-highlight' : ''}`}>
         {MODES.map(([key, label]) => (
           <button
             key={key}

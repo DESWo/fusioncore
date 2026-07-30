@@ -115,6 +115,9 @@ export default function SettingsModal() {
         <Row label="Reduced motion">
           <input type="checkbox" checked={settings.reducedMotion} onChange={(e) => update({ reducedMotion: e.target.checked })} className="accent-sky-400" />
         </Row>
+        <Row label="Spin the machine">
+          <input type="checkbox" checked={settings.autoRotate !== false} onChange={(e) => update({ autoRotate: e.target.checked })} className="accent-sky-400" />
+        </Row>
         <Row label="OpenDyslexic font">
           <input type="checkbox" checked={settings.dyslexicFont} onChange={(e) => update({ dyslexicFont: e.target.checked })} className="accent-sky-400" />
         </Row>

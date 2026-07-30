@@ -8,6 +8,7 @@ import FusionProcess from './FusionProcess.jsx';
 import AnalysisOverlay from './AnalysisOverlay.jsx';
 import Effects from './Effects.jsx';
 import { heatColor, hazardPulse } from './heatmap.js';
+import { DIVERTOR_BASE_C } from '../../engine/constants.js';
 import { useReactorStore } from '../../store/reactorStore.js';
 
 const R0 = 2.0;    // major radius (scene units)
@@ -34,8 +35,12 @@ function TFCoils() {
         heatColor(m.color, load);
         m.emissive.copy(m.color).multiplyScalar(0.4 + pulse * 0.8);
       } else {
+        // Normal view used to blank the coils to flat grey, which made the
+        // magnetic field slider the one control with no visible effect
+        // anywhere in the scene. Energise them instead: the same `load` the
+        // stress view already computes, as a cool blue glow.
         m.color.set('#64748B');
-        m.emissive.set('#000000');
+        m.emissive.setRGB(0.05, 0.16, 0.42).multiplyScalar(Math.min(load, 1) * 1.6);
       }
     });
   });
@@ -137,8 +142,15 @@ function Divertor() {
     }
     u.uPattern.value = 1;
     ref.current.color.set('#3F4B5F');
-    // glow orange -> white as target temperature climbs (spec §13)
-    const t = Math.min(Math.max((p.divertorTempC - 500) / 1800, 0), 1);
+    // Glow orange -> white as the target heats, measured against THIS
+    // divertor's own limit rather than a fixed 500-2300 window. The old window
+    // ignored divertorLimitC, which is the number the tungsten upgrade raises,
+    // so buying tungsten changed the physics and nothing on screen. It also
+    // kept t near zero through most of the cooling slider's useful range.
+    const t = Math.min(
+      Math.max((p.divertorTempC - DIVERTOR_BASE_C) / (p.divertorLimitC - DIVERTOR_BASE_C), 0),
+      1,
+    );
     ref.current.emissive.setRGB(t * 1.0, t * 0.55 + t * t * 0.4, t * t * 0.5);
     ref.current.emissiveIntensity = 0.2 + t * 2.2;
   });
@@ -291,6 +303,7 @@ function StatusOverlay() {
 /** bare: hero-backdrop use (title screen): machine only, no HUD overlays. */
 export default function ReactorScene({ bare = false }) {
   const reducedMotion = useReactorStore((s) => s.settings.reducedMotion);
+  const autoRotate = useReactorStore((s) => s.settings.autoRotate !== false);
   // Physics view: strip the machine down to the reaction itself. Coils,
   // injectors, and plumbing would hide the very particles the view is for.
   const processView = useReactorStore((s) => s.viewMode === 'process') && !bare;
@@ -322,7 +335,7 @@ export default function ReactorScene({ bare = false }) {
           minDistance={3.2}
           maxDistance={12}
           maxPolarAngle={Math.PI * 0.85}
-          autoRotate={!reducedMotion}
+          autoRotate={autoRotate && !reducedMotion}
           autoRotateSpeed={0.35}
         />
       </Canvas>

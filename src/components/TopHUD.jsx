@@ -1,4 +1,5 @@
 import { useReactorStore, levelFor } from '../store/reactorStore.js';
+import { RD_PER_STABLE_SIM_HOUR, RD_BONUS_Q1, RD_BONUS_LEVEL } from '../engine/constants.js';
 import { getPosting, CAREER_POSTINGS } from '../engine/career.js';
 import Icon from './common/Icon.jsx';
 
@@ -70,7 +71,10 @@ export default function TopHUD() {
         <span className={funds < 0 ? 'text-crit' : 'text-ink'}>{fmtMoney(funds)}</span>
       </div>
 
-      <div className="whitespace-nowrap label-mono text-[9px]" title="Research and development points">
+      <div
+        className="whitespace-nowrap label-mono text-[9px]"
+        title={`Research and development points. +${RD_PER_STABLE_SIM_HOUR} per hour of stable running, +${RD_BONUS_Q1} the first time Q passes 1.0, +${RD_BONUS_LEVEL} per mission completed. Spend them in Systems.`}
+      >
         <span className="text-slate-500">R&amp;D </span>
         <span className="text-accent">{Math.floor(rdPoints)}</span>
       </div>
