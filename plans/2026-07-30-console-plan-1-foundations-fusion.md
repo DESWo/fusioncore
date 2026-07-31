@@ -2472,6 +2472,179 @@ keeps updating."
 
 ---
 
+### Task 15: Re-host the systems panels and overlays
+
+**Files:**
+- Create: `src/components/console/SystemsRack.jsx`
+- Modify: `src/components/console/FusionConsole.jsx`
+
+**Interfaces:**
+- Consumes: existing components `ObjectiveBanner` and `CampaignMap` (named exports from `src/components/dashboard/Dashboard.jsx`), `TechTree`, `FuelPanel`, `Finance`, `EngineeringPanel`, `AsBuiltPanel`, `ScenarioPanel`, `CrewPanel`, `DutiesPanel`, `SourcesFooter`, `NotificationStack`, `HeroOverlay`, `TutorialOverlay`.
+- Produces: `<SystemsRack />`.
+
+**Why this task exists.** Task 11 routes fusion mode to the console and, in doing so, drops every panel that lived in the old floating instrument column. Without this task the fusion player has no tech tree, no fuel purchasing, no finance, no structural service, no mission objective, no alert stack, and critically **no `TutorialOverlay`, so onboarding is dead on a new game**. Plan 4 restyles these panels properly as part of the copy pass; this task restores their function now so the game is playable between plans.
+
+These components keep their current navy styling inside the rack. That is deliberate and temporary: restyling them is Plan 4's job, and doing it here would duplicate that work. They will look out of place. That is the correct tradeoff against shipping a console you cannot play.
+
+- [ ] **Step 1: Write the rack**
+
+Create `src/components/console/SystemsRack.jsx`:
+
+```jsx
+import { useState } from 'react';
+import { useReactorStore } from '../../store/reactorStore.js';
+import { unlockedFeatures } from '../../engine/levels.js';
+import { ObjectiveBanner, CampaignMap } from '../dashboard/Dashboard.jsx';
+import TechTree from '../dashboard/TechTree.jsx';
+import FuelPanel from '../dashboard/FuelPanel.jsx';
+import Finance from '../dashboard/Finance.jsx';
+import EngineeringPanel from '../dashboard/EngineeringPanel.jsx';
+import AsBuiltPanel from '../dashboard/AsBuiltPanel.jsx';
+import ScenarioPanel from '../dashboard/ScenarioPanel.jsx';
+import CrewPanel from '../dashboard/CrewPanel.jsx';
+import DutiesPanel from '../dashboard/DutiesPanel.jsx';
+import SourcesFooter from '../common/SourcesFooter.jsx';
+import TrendBank from './TrendBank.jsx';
+import Well from './Well.jsx';
+import Legend from './Legend.jsx';
+
+const TABS = [
+  { id: 'trend', label: 'Trend' },
+  { id: 'systems', label: 'Systems' },
+  { id: 'mission', label: 'Mission' },
+];
+
+/**
+ * The right-hand rack. Trend strips are the default face; the sub-panels that
+ * do not belong on the main board sit behind hard tabs beside them, the way a
+ * real console puts secondary systems on a selectable page rather than giving
+ * every one of them permanent panel real estate.
+ *
+ * The panels inside `systems` and `mission` are the existing dashboard
+ * components, still in their old styling. Restyling them is Plan 4's copy and
+ * consolidation pass. They are here now so the game is playable.
+ */
+export default function SystemsRack() {
+  const [tab, setTab] = useState('trend');
+  const levelId = useReactorStore((s) => s.level.id);
+  const features = unlockedFeatures(levelId);
+
+  if (tab === 'trend') {
+    return (
+      <section className="panel p-2 flex flex-col min-h-0" aria-label="Instrument rack">
+        <RackTabs tab={tab} setTab={setTab} />
+        <TrendBank embedded />
+      </section>
+    );
+  }
+
+  return (
+    <section className="panel p-2 flex flex-col min-h-0" aria-label="Instrument rack">
+      <RackTabs tab={tab} setTab={setTab} />
+      <Well className="flex-1 min-h-0 overflow-y-auto p-1.5 grid gap-2 content-start">
+        {tab === 'mission' && (
+          <>
+            <CampaignMap />
+            <ObjectiveBanner />
+            <DutiesPanel />
+            <CrewPanel />
+            {!features.has('sandbox') && <ScenarioPanel />}
+          </>
+        )}
+        {tab === 'systems' && (
+          <>
+            {features.has('neutrons') && <FuelPanel showBreeding={features.has('tritium')} />}
+            {features.has('neutrons') && <TechTree />}
+            {features.has('fulldash') && <EngineeringPanel />}
+            {features.has('fulldash') && <AsBuiltPanel />}
+            {features.has('finance') && <Finance />}
+            <SourcesFooter />
+          </>
+        )}
+      </Well>
+    </section>
+  );
+}
+
+function RackTabs({ tab, setTab }) {
+  return (
+    <div className="flex items-center gap-1 mb-1.5">
+      <Legend size="xs">Rack</Legend>
+      <div className="flex-1" />
+      {TABS.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => setTab(t.id)}
+          aria-pressed={tab === t.id}
+          className={`legend text-[9px] px-2 py-0.5 ${tab === t.id ? 'well' : 'panel-sub'}`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+`TrendBank` currently renders its own `<section className="panel">` wrapper and header. Add an `embedded` prop so it can sit inside the rack without double-wrapping: when `embedded` is true, return only the sweep-legend row and the `<Well>`, not the outer `<section>`. Update `TrendBank`'s signature to `export default function TrendBank({ embedded = false })` and branch on it.
+
+- [ ] **Step 2: Swap the rack in and restore the overlays in `FusionConsole.jsx`**
+
+Replace the `import TrendBank from './TrendBank.jsx';` line with:
+
+```jsx
+import SystemsRack from './SystemsRack.jsx';
+import NotificationStack from '../advisor/NotificationStack.jsx';
+import HeroOverlay from '../HeroOverlay.jsx';
+import TutorialOverlay from '../TutorialOverlay.jsx';
+```
+
+Replace `<TrendBank />` in the grid with `<SystemsRack />`.
+
+Then add the overlays inside the outer relative container, as siblings of the boot sequence, so onboarding and alerts work again:
+
+```jsx
+      <div className="absolute top-2 right-2 w-64 sm:w-72 z-20">
+        <NotificationStack />
+      </div>
+      <HeroOverlay />
+      <TutorialOverlay />
+```
+
+- [ ] **Step 3: Verify the game is actually playable**
+
+Run: `npm run build && npm run balance && npm run career`
+Expected: all exit 0.
+
+In the browser, with saves backed up per the global constraints, start a **new** fusion game and confirm:
+1. The onboarding tutorial appears and its steps advance. This is the regression this task exists to prevent.
+2. The `Mission` tab shows the campaign map and the current objective.
+3. The `Systems` tab shows the tech tree, and R&D points can actually be spent.
+4. Fuel purchasing works from the `Systems` tab.
+5. Notifications appear over the console and can be dismissed.
+6. The `Trend` tab still shows the strips with the `10 s/div` legend.
+7. Tab order reaches the rack tabs with a visible phosphor focus ring.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/components/console/SystemsRack.jsx src/components/console/FusionConsole.jsx src/components/console/TrendBank.jsx
+git commit -m "Re-host the systems panels and overlays on the console
+
+Task 11 moved fusion mode to the console and dropped everything that lived in
+the old floating column, including TutorialOverlay, which left onboarding dead
+on a new game. The rack puts trend, systems and mission behind hard tabs and
+restores the overlays.
+
+These panels keep their old navy styling for now. Restyling them is Plan 4's
+copy and consolidation pass; duplicating that work here would be waste. They
+will look out of place, which is the right trade against shipping a console
+nobody can play."
+```
+
+---
+
 ## Plan self-review
 
 **Spec coverage for stages 1 to 4.** Token layer, Task 1. Fonts and construction primitives, Task 2. Annunciator engine, Task 3. Latch and acknowledge, Task 4. Formatting, Task 5. React primitives with the jitter policy, Task 6. Annunciator grid, Task 7. Shift header, Task 8. Readout stack, Task 9. Control bank with travel bars and guarded toggles, Task 10. Console shell and responsive reflow, Task 11. Mimic, XSEC and ISO, Task 12. Trend strips, Task 13. Shift log and boot, Task 14.
