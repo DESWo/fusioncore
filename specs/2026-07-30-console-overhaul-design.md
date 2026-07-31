@@ -149,7 +149,7 @@ Individual wells scroll internally.
 | ne      1.05 e20 |    ,'  ___  `.         |  | P_fus  MW     |  |
 | tau_E   1.02 s   |   /  ,'   `. \         |  +---------------+  |
 | Q       1.26     |   |  |  x  |  |        |  | Q       --    |  |
-| beta_N  2.81     |   \  `.___,' /         |  +---------------+  |
+| beta/max  0.88   |   \  `.___,' /         |  +---------------+  |
 | P_fus   412 MW   |    `.       ,'         |  | P_net  MW     |  |
 | P_net   +38 MW   |      `--v--'           |  +---------------+  |
 | n.T.tau 3.1e21   |     divertor           |                     |
@@ -260,7 +260,7 @@ tile registry, each entry a pure function of `sim`:
 | `BETA LIMIT` | `physics.beta / physics.betaLimit` |
 | `DIVERTOR HEAT FLUX` | `physics.divertorTempC / physics.divertorLimitC` |
 | `TF COIL FIELD` | `controls.B / physics.magnetSafeB` |
-| `DISRUPTION RISK` | `physics.stability` |
+| `BEAM SHINE-THROUGH` | `physics.beamCoupling` |
 | `FIRST WALL DPA` | `structure.firstWall` |
 | `TRITIUM INVENTORY` | `fuel.tritium` |
 | `NET POWER NEGATIVE` | `physics.netElecMW < 0` |
@@ -294,6 +294,13 @@ duplicating the constants.
 - `LOCKED MODE` is dropped. There is no locked-mode physics in the engine, and
   the requirement is that tiles are wired to state rather than to scripted
   events. Adding the tile would mean faking the condition.
+- A `DISRUPTION RISK` tile reading `physics.stability` was designed and then
+  cut. `stability` is not an independent metric: it reads 100 when clear, 5
+  when breached, and moves only while another hazard's countdown is already
+  running. The tile would have lit in lockstep with whichever limit tile was
+  already in alarm. `BEAM SHINE-THROUGH` reading `physics.beamCoupling` takes
+  the slot instead: independent, physically real, and already surfaced in the
+  old dashboard as a limiting factor on Q.
 
 ### Latch and acknowledge
 
@@ -384,6 +391,13 @@ events with timestamps and units.
 Bad: `Oops, your plasma became unstable! Try increasing heating power.`
 
 Good: `T+02:14:08 BETA LIMIT EXCEEDED beta_N 3.41 (limit 3.20) MODE: disruption`
+
+That example sets the voice, not the field list. The engine carries `beta` and
+`betaLimit`, not a Troyon-normalized `beta_N`, and inventing a conversion factor
+to produce one would be the uncited magic number `CLAUDE.md` calls a defect. The
+real line reads the ratio the engine actually computes:
+
+`T+02:14:08 BETA LIMIT EXCEEDED beta/max 1.07 (limit 1.00) MODE: disruption`
 
 ### Teaching layer
 
