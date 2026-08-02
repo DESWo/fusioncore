@@ -1,9 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCareerStore } from '../careerStore.js';
 import { STAT_LABELS } from '../engine/balance.js';
-import { successThreshold, oddsLabel } from '../engine/checks.js';
-import { relationshipModifier } from '../engine/relationships.js';
-import { grantModifier } from '../engine/reputation.js';
 
 const KICKER = {
   callback: { text: 'Someone remembered', color: 'var(--c-violet)' },
@@ -19,37 +16,22 @@ const RESULT_TONE = {
   burnout: { label: 'You stopped', color: 'var(--c-bad)' },
 };
 
-/** Odds shown before committing, in words rather than percentages. */
-function Odds({ choice, event }) {
-  const player = useCareerStore((s) => s.player);
-  const relationships = useCareerStore((s) => s.relationships);
-  const reputation = useCareerStore((s) => s.reputation);
+/**
+ * Which stat a choice tests. That is a rule of the game, so it stays.
+ *
+ * What used to sit beside it did not: worded odds ("a coin flip", "favourable")
+ * and the relationship modifier ("someone vouched for you"). Both told you how
+ * a choice would probably land before you committed to it, which is the whole
+ * decision the event exists to ask for. You find out by choosing.
+ */
+function StatTested({ choice }) {
   if (!choice.stat_check) return null;
-
-  const mods =
-    (choice.stat_check.modifier ?? 0) +
-    relationshipModifier(relationships, {
-      npcIds: event.npcs ?? [],
-      roles: event.grant ? ['administrator', 'rival'] : [],
-    }) +
-    (event.grant ? grantModifier(reputation) : 0);
-
-  const { threshold, auto } = successThreshold({
-    stats: player.stats,
-    statKeys: choice.stat_check.stats,
-    modifier: mods,
-    stress: player.stress,
-  });
-  const names = choice.stat_check.stats.map((k) => STAT_LABELS[k]).join(' and ');
-
   return (
     <span
       className="block mt-1.5 text-[11px] italic"
       style={{ color: 'var(--c-faint)' }}
     >
-      {names} · {auto ? 'certain' : oddsLabel(threshold)}
-      {mods < -0.001 && <span style={{ color: 'var(--c-bad)' }}> · something is working against you</span>}
-      {mods > 0.001 && <span style={{ color: 'var(--c-good)' }}> · someone vouched for you</span>}
+      {choice.stat_check.stats.map((k) => STAT_LABELS[k]).join(' and ')}
     </span>
   );
 }
@@ -142,7 +124,7 @@ export default function EventCard() {
               {(event.choices ?? []).map((c, i) => (
                 <button key={c.label} onClick={() => choose(i)} className="c-choice">
                   <span className="text-[15px]" style={{ color: 'var(--c-ink)' }}>{c.label}</span>
-                  <Odds choice={c} event={event} />
+                  <StatTested choice={c} />
                 </button>
               ))}
             </div>

@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useReactorStore } from '../../store/reactorStore.js';
 import { fissionPlantOf } from '../../engine/fission.js';
@@ -196,6 +196,48 @@ function PoolTank() {
   );
 }
 
+/**
+ * Names the parts. Without these the plant is a set of dark cylinders and you
+ * cannot tell the pressure vessel from a steam generator, let alone work out
+ * that the rods you are driving are the thin stalks at the top.
+ *
+ * Anchored in world space so they track as you orbit, and deliberately NOT
+ * occlusion-tested: a label you can only read from one angle is worse than no
+ * label. They are hidden in the physics view, where the vessel is stripped away
+ * and the point is the neutrons rather than the hardware.
+ */
+function Tag({ position, children, tone = 'slate' }) {
+  const color = tone === 'accent' ? 'text-accent border-accent/50' : 'text-slate-300 border-slate-600';
+  return (
+    <Html position={position} center distanceFactor={9} zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
+      <div className={`label-mono text-[7px] whitespace-nowrap px-1 py-px rounded-sm border bg-slate-900/85 ${color}`}>
+        {children}
+      </div>
+    </Html>
+  );
+}
+
+function PartLabels({ research }) {
+  if (research) {
+    return (
+      <group>
+        <Tag position={[0, 2.9, 0]}>Control rod drives</Tag>
+        <Tag position={[0, -0.2, 1.95]} tone="accent">Fuel core</Tag>
+        <Tag position={[1.95, 1.4, 0]}>Open water pool · moderator + shield</Tag>
+      </group>
+    );
+  }
+  return (
+    <group>
+      <Tag position={[0, 3.15, 0]}>Control rod drives</Tag>
+      <Tag position={[0, -0.25, 1.55]} tone="accent">Fuel core</Tag>
+      <Tag position={[1.75, 1.5, 0]}>Pressure vessel</Tag>
+      <Tag position={[2.35, 2.3, 2.35]}>Steam generator ×4</Tag>
+      <Tag position={[1.5, -1.15, 1.5]}>Hot leg · core to steam</Tag>
+    </group>
+  );
+}
+
 function StatusOverlay() {
   const P = useReactorStore((s) => s.sim.physics.P);
   const critical = useReactorStore((s) => s.sim.physics.critical);
@@ -222,6 +264,18 @@ export default function FissionScene() {
   // Physics view: only the reaction chamber. The vessel, pool, and steam
   // plant would stand between the camera and the neutrons.
   const processView = useReactorStore((s) => s.viewMode === 'process');
+  const controlsRef = useRef();
+
+  // Scroll-to-zoom has no obvious way back, and it is easy to end up nose-first
+  // in the vessel with no idea how to recover. This is that way back.
+  const resetView = useCallback(() => {
+    const c = controlsRef.current;
+    if (!c) return;
+    c.object.position.set(5.4, 3.2, 5.4);
+    c.target.set(0, 0, 0);
+    c.update();
+  }, []);
+
   return (
     <div className="relative w-full h-full bg-base">
       <Canvas
@@ -229,15 +283,27 @@ export default function FissionScene() {
         dpr={[1, 2]}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
       >
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[6, 9, 4]} intensity={0.8} />
+        {/* The shells are metalness 0.75. A metal reflects its surroundings, so
+            with one directional light and nothing to reflect it renders as a
+            near-black silhouette. The hemisphere light gives every metal a sky
+            and a ground to pick up, and the two fills put an edge on the
+            curved surfaces so the vessel reads as a cylinder rather than a
+            blob. Lights only: no environment map, because an HDR would be a
+            network fetch this app does not otherwise need. */}
+        <hemisphereLight args={['#7FA8D0', '#0B1220', 1.1]} />
+        <ambientLight intensity={0.35} />
+        <directionalLight position={[6, 9, 4]} intensity={1.1} />
+        <directionalLight position={[-7, 3, -5]} intensity={0.5} color="#8FB6FF" />
+        <directionalLight position={[0, -4, 6]} intensity={0.28} color="#9BB8D8" />
         <Core />
         <FissionProcess />
         <RodBank />
         {!processView && (research ? <PoolTank /> : <Vessel />)}
         {!processView && !research && <SteamGenerators />}
+        {!processView && <PartLabels research={research} />}
         <Effects />
         <OrbitControls
+          ref={controlsRef}
           enablePan={false}
           minDistance={3.5}
           maxDistance={14}
@@ -248,8 +314,15 @@ export default function FissionScene() {
       </Canvas>
       <StatusOverlay />
       <AnalysisOverlay />
+      <button
+        type="button"
+        onClick={resetView}
+        className="absolute bottom-1.5 right-2 z-10 label-mono text-[9px] px-2 py-1 rounded bg-slate-800/80 border border-slate-600 text-slate-300 hover:text-ink hover:border-accent"
+      >
+        RESET VIEW
+      </button>
       <div className="absolute bottom-1.5 left-2 text-[9px] text-slate-500 pointer-events-none">
-        drag to orbit · rods move with your slider
+        drag to orbit · scroll to zoom · rods move with your slider
       </div>
     </div>
   );
