@@ -1,7 +1,6 @@
 import { useCareerStore } from '../careerStore.js';
 import { BLOCKS_PER_YEAR, pursuitById } from '../engine/pursuits.js';
 import { STAT_LABELS } from '../engine/balance.js';
-import { successThreshold, oddsLabel } from '../engine/checks.js';
 
 /**
  * The year you are about to spend. Three blocks, a dozen competing uses, and
@@ -72,12 +71,6 @@ export default function YearPlan() {
       <div className="grid gap-2.5">
         {options.map((p) => {
           const n = counts[p.id] ?? 0;
-          const { threshold, auto } = successThreshold({
-            stats: player.stats,
-            statKeys: p.stats,
-            modifier: n * 0.12,
-            stress: player.stress,
-          });
           const full = left === 0;
           return (
             <button
@@ -106,7 +99,7 @@ export default function YearPlan() {
               </p>
               <div className="flex justify-between items-baseline mt-1.5">
                 <span className="text-[11px] italic" style={{ color: 'var(--c-faint)' }}>
-                  {p.stats.map((k) => STAT_LABELS[k]).join(' and ')} · {auto ? 'certain' : oddsLabel(threshold)}
+                  {p.stats.map((k) => STAT_LABELS[k]).join(' and ')}
                 </span>
                 <span
                   className="text-[11px] italic shrink-0"
