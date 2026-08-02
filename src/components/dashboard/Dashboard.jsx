@@ -5,6 +5,7 @@ import { unlockedFeatures } from '../../engine/levels.js';
 import { tutorialStep } from '../../engine/tutorials.js';
 import { nextPosting } from '../../engine/career.js';
 import HazardBanner from './HazardBanner.jsx';
+import AnnunciatorPanel from './AnnunciatorPanel.jsx';
 import ScenarioPanel from './ScenarioPanel.jsx';
 import DutiesPanel from './DutiesPanel.jsx';
 import CrewPanel from './CrewPanel.jsx';
@@ -509,6 +510,9 @@ export default function Dashboard({ tabletTab }) {
 
   return (
     <div className="flex-1 overflow-y-auto p-2.5 grid gap-2.5 content-start min-h-0">
+      {/* The annunciator says which limits are in trouble and holds until you
+          acknowledge; the banner below counts down the one about to bite. */}
+      <AnnunciatorPanel />
       <HazardBanner />
       <CampaignMap />
       <ObjectiveBanner />

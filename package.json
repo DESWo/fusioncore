@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "balance": "node scripts/balance_check.mjs",
-    "career": "node scripts/career_check.mjs"
+    "balance": "node scripts/balance_check.mjs && node scripts/annunciator_check.mjs",
+    "career": "node scripts/career_check.mjs",
+    "annunciator": "node scripts/annunciator_check.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",

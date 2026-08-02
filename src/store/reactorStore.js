@@ -13,6 +13,7 @@ import { createEconState, econTick, buyTritium } from '../engine/economy.js';
 import { LEVELS, getLevel, unlockedFeatures } from '../engine/levels.js';
 import { TECH_TREE, getTech, techAvailable } from '../engine/tech.js';
 import { buildAdvisorContext, evaluateTriggers } from '../engine/advisor.js';
+import { createAnnunciatorSlice, freshAnnunciator } from './annunciatorSlice.js';
 import { buildFailureReport } from '../engine/failure.js';
 import { applyManufacturingTolerances, dailySeedKey, seededRng } from '../engine/tolerances.js';
 import { getPosting, nextPosting, firstPosting, buildPerformanceReview } from '../engine/career.js';
@@ -215,6 +216,7 @@ function freshGameState(mode = 'fusion', plantKey = 'pwr') {
     level: { id: 1, sustain: 0, completed: false },
     stats: { maxQ: 0, disruptions: 0, quenches: 0, repairs: 0, peakNetMW: 0 },
     notifications: [],
+    annunciator: freshAnnunciator(),
     advisorFeed: [{
       id: 'boot', type: 'info', simTime: 0,
       text: mode !== 'fission'
@@ -249,6 +251,7 @@ function freshGameState(mode = 'fusion', plantKey = 'pwr') {
 let nextNoteId = 1;
 
 export const useReactorStore = create((set, get) => ({
+  ...createAnnunciatorSlice(set, get),
   screen: 'title', // title | game
   hasSave: false,
   saves: { fusion: null, fission: null, career: null }, // per-slot metadata for the title screen
@@ -482,6 +485,9 @@ export const useReactorStore = create((set, get) => ({
         : null,
       crew: { ...CREW_DEFAULTS, ...(save.crew ?? {}) },
       settings: { ...defaultSettings(), ...save.settings },
+      // Not persisted: without this, a loaded run inherits the previous run's
+      // latched alarms.
+      annunciator: freshAnnunciator(),
       onboarding: { active: false, step: 0, key: 'fusion' },
       screen: 'game',
       speed: 0,
@@ -687,6 +693,7 @@ export const useReactorStore = create((set, get) => ({
       history: [],
       pendingCutscene: null,
       notifications: [],
+      annunciator: freshAnnunciator(),
       gameOver: null,
       onboarding: { active: false, step: 0, key: 'fusion' },
     });
@@ -1324,6 +1331,11 @@ export const useReactorStore = create((set, get) => ({
     for (const t of fired) {
       get().pushAdvisor({ type: t.type, text: t.text, cite: t.cite });
     }
+
+    // 7b. annunciator: tiles read plant state, latch on entry into caution or
+    // alarm, and hold until the operator acknowledges. Cheap: the slice bails
+    // out when no tile changed, so this does not churn state every 100 ms.
+    get().tickAnnunciator(s.mode, sim);
 
     // 8. alarm level for the audio layer (hazard countdowns are critical)
     const hazardsActive = Object.values(sim.hazards ?? {}).some((v) => v !== 0);
