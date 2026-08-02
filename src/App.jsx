@@ -4,6 +4,7 @@ import { initAudio, applyVolumes, updateSoundscape } from './audio/synth.js';
 import TopHUD from './components/TopHUD.jsx';
 import Dashboard from './components/dashboard/Dashboard.jsx';
 import AdvisorPanel from './components/advisor/AdvisorPanel.jsx';
+import AnnunciatorPanel from './components/dashboard/AnnunciatorPanel.jsx';
 import TitleScreen from './components/modals/TitleScreen.jsx';
 import { useCareerStore } from './career/careerStore.js';
 import HeroOverlay from './components/HeroOverlay.jsx';
@@ -184,6 +185,12 @@ export default function App() {
                 {t.label}
               </button>
             ))}
+          </div>
+          {/* Pinned above the scrolling content, and outside the tab switch:
+              an alarm board you have to scroll to find, or change tabs to
+              reach, is not an alarm board. */}
+          <div className="shrink-0">
+            <AnnunciatorPanel />
           </div>
           {tab === 'advisor' ? (
             <AdvisorPanel />

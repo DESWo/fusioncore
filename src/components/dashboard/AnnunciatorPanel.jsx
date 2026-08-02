@@ -31,17 +31,32 @@ const STATE_WORD = {
   off: 'off', normal: 'normal', caution: 'caution', alarm: 'alarm',
 };
 
-function Tile({ legend, state, latched }) {
+// Four across at 404px leaves roughly 90px a tile, so the panel legends are
+// shortened here rather than in the engine: the full text stays the tile's
+// accessible name, which is what a screen reader reads out.
+const SHORT = {
+  greenwald: 'GREENWALD',
+  beta: 'BETA',
+  divertor: 'DIVERTOR',
+  tfcoil: 'TF COIL',
+  shinethrough: 'SHINE-THRU',
+  firstwall: 'FIRST WALL',
+  tritium: 'TRITIUM',
+  netpower: 'NET POWER',
+};
+
+function Tile({ id, legend, state, latched }) {
   return (
     <div
-      className={`rounded px-1.5 py-1 flex items-center justify-between gap-1 min-w-0 ${
+      className={`rounded px-1 py-0.5 flex items-center justify-between gap-1 min-w-0 ${
         latched ? 'annunciator-latched border' : TILE_STYLE[state] ?? TILE_STYLE.off
       }`}
       role="status"
       aria-label={`${legend}: ${STATE_WORD[state] ?? 'off'}${latched ? ', unacknowledged' : ''}`}
+      title={legend}
     >
-      <span className="label-mono text-[8px] leading-tight truncate">{legend}</span>
-      <span className="font-mono text-[8px] shrink-0 tabular-nums">
+      <span className="label-mono text-[7px] leading-tight truncate">{SHORT[id] ?? legend}</span>
+      <span className="font-mono text-[7px] shrink-0 tabular-nums">
         {STATE_CODES[state] ?? '--'}
       </span>
     </div>
@@ -60,9 +75,9 @@ function AnnunciatorPanel() {
   const unacked = Object.keys(ann.latched).length;
 
   return (
-    <div className="bg-panel rounded-lg p-2">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[9px] uppercase tracking-widest text-slate-400">
+    <div className="bg-panel/70 border-b border-slate-700/60 px-2 py-1.5">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[8px] uppercase tracking-widest text-slate-400">
           Annunciator
         </span>
         <button
@@ -83,10 +98,11 @@ function AnnunciatorPanel() {
           ACK{unacked > 0 ? ` ${unacked}` : ''}
         </button>
       </div>
-      <div className="grid grid-cols-2 gap-1">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-0.5">
         {tiles.map((t) => (
           <MemoTile
             key={t.id}
+            id={t.id}
             legend={t.legend}
             state={ann.state[t.id] ?? 'off'}
             latched={Boolean(ann.latched[t.id])}
