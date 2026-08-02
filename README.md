@@ -37,6 +37,13 @@ mutates the machine's physics constants.
 
 - `src/engine/`. Pure, headless physics/economy/levels/tech. No React imports;
   `scripts/balance_check.mjs` runs the same code in Node to prove winnability.
+- `src/engine/annunciator.js`: the alarm board. Eight tiles wired to plant
+  state, never to scripted events. Four of them read `sim.hazards` for their
+  alarm state rather than re-deriving a threshold, so the panel can never
+  disagree with the physics about whether a limit was crossed; only the caution
+  band is the annunciator's own. A tile latches on entry and flashes until
+  acknowledged, then stays lit until the condition physically clears.
+  `scripts/annunciator_check.mjs` drives it headlessly (49 assertions).
 - `src/store/reactorStore.js`: Zustand store owning the fixed 10 Hz tick loop
   (100 ms ticks; speed changes retime the interval: 0.25x → 400 ms). Saves go to
   IndexedDB via `idb-keyval` on a 60 s autosave, on level completion, and manually.

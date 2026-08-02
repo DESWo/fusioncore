@@ -34,10 +34,17 @@ stores; see `CAREER_STORAGE_KEYS` in `src/store/reactorStore.js` for the full li
 
 ## Status
 
-Shipped at quality: suites green, visual pass done, QA complete. The only open
-lever is content volume, roughly 92 authored events against a 250 to 300 target.
-New events are written in my voice, so draft them for review rather than
-generating filler.
+Shipped at quality: visual pass done, QA complete. The only open lever is
+content volume, roughly 92 authored events against a 250 to 300 target. New
+events are written in my voice, so draft them for review rather than generating
+filler.
+
+**`npm run career` currently fails one check** and has since the July 29
+event-authoring commits: `content: every event is well-formed and choice labels
+fit 40 chars (§7.1)`, from 133 choice labels running 41 to 65 characters. Being
+fixed on the `career-label-lengths` branch. Until that lands, the gate for any
+change is "career reports that one failure and no other" — a second failing
+check means something broke. `npm run balance` is fully green and must stay so.
 
 ## Gotchas
 
@@ -55,5 +62,5 @@ src/engine/       the simulation itself
 src/store/        reactorStore.js, the run state and persistence
 src/career/       careerStore.js, career mode and its own storage
 src/data/         levels, events, citations
-scripts/          balance_check.mjs, career_check.mjs
+scripts/          balance_check.mjs, career_check.mjs, annunciator_check.mjs
 ```
