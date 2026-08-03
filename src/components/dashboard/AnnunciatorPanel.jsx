@@ -49,8 +49,14 @@ function Tile({ id, legend, state, latched }) {
   return (
     <div
       className={`rounded px-1 py-0.5 flex items-center justify-between gap-1 min-w-0 ${
-        latched ? 'annunciator-latched border' : TILE_STYLE[state] ?? TILE_STYLE.off
+        latched
+          ? `annunciator-latched border ${state === 'alarm' ? 'status-crit' : state === 'caution' ? 'status-warn' : ''}`
+          : TILE_STYLE[state] ?? TILE_STYLE.off
       }`}
+      // Drives which flash keyframe runs, so a latched caution flashes amber
+      // rather than critical red. The status-* class above keeps the border
+      // shape-coding while latched, so severity survives without colour.
+      data-state={state}
       role="status"
       aria-label={`${legend}: ${STATE_WORD[state] ?? 'off'}${latched ? ', unacknowledged' : ''}`}
       title={legend}

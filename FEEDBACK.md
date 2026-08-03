@@ -5,6 +5,33 @@ Delete an item when it lands.
 
 ## Not started
 
+**1a. Determinism made most authored failure prose unreachable. Needs a decision.**
+Found by review, not by playing, and it is the biggest consequence of removing
+the dice. Resolution is now a pure function of combined stat, the per-choice
+modifier (only ever -0.2 to +0.15 in the data) and stress, and below stress 60
+the stress term is exactly zero. So a character's answer for every checked
+choice is fixed at creation and only improves.
+
+Measured across the 327 choices carrying a `stat_check`:
+
+| build | outcome split |
+|---|---|
+| 6/6/6/6/6, stress 0 | 320 success, 5 excellent, 2 failure |
+| 8 flat, stress 0 | 322 success, 5 excellent, 0 failure |
+| 500 random legal builds, stress <= 60 | median 18 failures of 327 |
+| 6/6/6/6/6, stress 85 | 42 success, 285 failure |
+
+So roughly 95% of the authored `failure` branches never render in normal play,
+and at high stress it inverts and you see almost nothing else. That is a lot of
+hand-written prose made unreachable, on a project whose one open lever is
+content volume.
+
+Options: widen the modifier range so choices differentiate; make DECISIVE_BAR
+per-choice rather than global; or accept it and treat failure prose as
+something only weak or exhausted characters see. Worth adding a reachability
+assertion to `npm run career` either way, so a branch going dead fails the
+suite instead of going unnoticed.
+
 **1b. Balance question opened by removing the dice.**
 `resolveYearPlan` gives `(blocks - 1) * 0.12` for concentrating a year on one
 pursuit. Under dice that shifted the odds. Deterministically it is worth four
@@ -14,6 +41,14 @@ substitutes for aptitude entirely, which cuts against "each pick puts you down
 a different path". Left as-is rather than retuned, because it is a game-feel
 call. Options: drop the per-block bonus to ~0.08, or cap total modifiers so
 they cannot alone clear `DECISIVE_BAR`.
+
+Review also measured the effect: a flat 6/6/6/6/6 build (the exact even split
+of the 30-point creation pool, and the build `career_check` itself uses) grades
+**every one of the 20 pursuits identically**, every year, for the whole run.
+Stress 0 through 59 gives 20 excellent; 70 gives 20 adequate; 76+ gives 20
+poor. So 40 of the 60 authored grade blocks never render for that build, and
+the year summary prints the same three lines for four decades. A specialised
+build does mix, so this hits the default shape worst. Same lever.
 
 **2. Events do not follow each other.**
 "They just seem like you're throwing random shit at me and making me pick
@@ -65,7 +100,7 @@ settles so the two agree.
   RESET VIEW button because scroll-to-zoom had no way back.
 - Removed the odds hints ("a coin flip", "favourable", "someone vouched for
   you") from career event cards. Which stat is tested stays; that is a rule,
-  not a hint. **The year planner (`YearPlan.jsx`) still shows them.**
+  not a hint. The year planner was cleaned up in the same pass.
 - Added the annunciator to the fusion dashboard, pinned above the scroll.
 - **Removed probability from career resolution.** `resolveCheck` and
   `resolveTiered` no longer roll: they compare the stat-derived threshold

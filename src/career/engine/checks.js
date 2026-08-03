@@ -1,6 +1,9 @@
-// Stat checks (spec §2). One resolution system for every chance-based
-// decision in the game. Pure: the caller supplies the RNG, so the whole
-// engine stays deterministic under test.
+// Stat checks (spec §2). One resolution system for every checked decision in
+// the game, and it involves no chance: see the deterministic-resolution note
+// further down. `successThreshold` still computes the spec's probability
+// table, because that table is how stat, per-choice modifier and stress are
+// weighed against each other. It is now read as a score against a fixed bar
+// rather than as odds to roll against.
 import { BALANCE } from './balance.js';
 
 export const OUTCOME = {
@@ -31,8 +34,12 @@ export function stressModifier(stress) {
  * least a 5% chance of success or failure regardless of modifiers") the clamp
  * exists to stop MODIFIERS pushing a check to a certainty, not to overrule the
  * base table. So the base value from the table is authoritative, and the clamp
- * bounds the modified result to [0.05, max(0.95, base)]. A stat-11 player still
- * keeps a 4% chance of failure no matter how favourable the context.
+ * bounds the modified result to [0.05, max(0.95, base)].
+ *
+ * Those clamps were written to keep a check from ever becoming a certainty
+ * while dice were involved. With deterministic resolution they no longer do
+ * that: every score above DECISIVE_BAR is a certain pass. They still matter as
+ * bounds on how far modifiers can carry a character, which is why they stay.
  */
 export function successThreshold({ stats, statKeys, modifier = 0, stress = 0 }) {
   const stat = combinedStat(stats, statKeys);
@@ -63,10 +70,22 @@ export function successThreshold({ stats, statKeys, modifier = 0, stress = 0 }) 
  * already authored, and the dice were only ever choosing between them.
  * ------------------------------------------------------------------------- */
 
+/* `threshold` is accumulated from values none of which are exactly
+ * representable in binary (0.3, 0.06, the per-choice modifiers). A score that
+ * is mathematically exactly on the bar therefore computes a hair below it:
+ * 0.3 + 2.5*0.06 + 0.05 evaluates to 0.49999999999999994, not 0.5.
+ *
+ * Under dice this was a 1e-17 nudge to a probability and unobservable. With
+ * deterministic resolution it IS the outcome: the player is failed by a rule
+ * that says they passed. `modifier: 0.05` alone appears on 64 of the checked
+ * choices in the event data. So the comparison carries a tolerance. */
+const EPS = 1e-9;
+const clears = (score, bar) => score >= bar - EPS;
+
 /** Pass/fail. Returns { passed, outcome, threshold, stat, margin }. */
 export function resolveCheck({ stats, statKeys, modifier = 0, stress = 0 }) {
   const { threshold, auto, stat } = successThreshold({ stats, statKeys, modifier, stress });
-  const passed = auto || threshold >= BALANCE.DECISIVE_BAR;
+  const passed = auto || clears(threshold, BALANCE.DECISIVE_BAR);
   return {
     passed,
     outcome: passed ? OUTCOME.SUCCESS : OUTCOME.FAILURE,
@@ -86,8 +105,8 @@ export function resolveTiered({ stats, statKeys, modifier = 0, stress = 0 }) {
   const { threshold, auto, stat } = successThreshold({ stats, statKeys, modifier, stress });
   const excellentAt = BALANCE.DECISIVE_BAR + BALANCE.EXCELLENT_OFFSET;
   let outcome;
-  if (auto || threshold >= excellentAt) outcome = OUTCOME.EXCELLENT;
-  else if (threshold >= BALANCE.DECISIVE_BAR) outcome = OUTCOME.ADEQUATE;
+  if (auto || clears(threshold, excellentAt)) outcome = OUTCOME.EXCELLENT;
+  else if (clears(threshold, BALANCE.DECISIVE_BAR)) outcome = OUTCOME.ADEQUATE;
   else outcome = OUTCOME.FAILURE;
   return {
     outcome,
@@ -99,13 +118,3 @@ export function resolveTiered({ stats, statKeys, modifier = 0, stress = 0 }) {
   };
 }
 
-/** Human-readable odds for the UI ("about a 2 in 3 shot"). */
-export function oddsLabel(threshold) {
-  const pct = Math.round(threshold * 100);
-  if (pct >= 90) return 'near certain';
-  if (pct >= 75) return 'strong odds';
-  if (pct >= 60) return 'favourable';
-  if (pct >= 45) return 'a coin flip';
-  if (pct >= 30) return 'long odds';
-  return 'a real gamble';
-}

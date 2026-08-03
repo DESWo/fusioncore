@@ -25,8 +25,16 @@ function limitTile(id, legend, hazardKey, ratioOf, cautionAt) {
     legend,
     hazardKey,
     evaluate(sim) {
-      if (!sim.physics.plasmaOn) return 'off';
+      // The hazard is checked BEFORE the plasma gate, deliberately. physics.js
+      // does not gate every violation on plasmaOn: `magnets` (B > magnetSafeB)
+      // and `divertor` (divertorTempC > divertorLimitC) can be raised, run
+      // their full grace countdown and do damage with the plasma down. Gating
+      // the tile on plasmaOn first made the board go dark during exactly those
+      // violations, which is the one thing an annunciator must never do.
       if (hazardActive(sim, hazardKey)) return 'alarm';
+      // The caution band stays plasma-gated: the ratios it reads are only
+      // meaningful while there is a plasma to measure.
+      if (!sim.physics.plasmaOn) return 'off';
       return ratioOf(sim) >= cautionAt ? 'caution' : 'normal';
     },
   };
@@ -71,10 +79,15 @@ export const FUSION_TILES = [
     hazardKey: null,
     evaluate(sim) {
       if (!sim.physics.plasmaOn) return 'off';
-      const k = sim.physics.beamCoupling;
-      if (k < 0.5) return 'alarm';
-      if (k < 0.75) return 'caution';
-      return 'normal';
+      // Caps at caution, and the 0.5 alarm band that used to sit below this is
+      // gone. It was invented rather than taken from the engine, and it fired
+      // on the game's own documented initial conditions: n20 = 0.1 gives
+      // beamCoupling = 0.9 * (1 - exp(-0.1/0.4)) = 0.199, so every new
+      // campaign booted with this tile already in ALARM. Poor coupling is a
+      // thing to fix, not a limit you have breached. 0.75 is the engine's own
+      // threshold, the one the dashboard already uses to call shine-through a
+      // limiting factor on Q. Same reasoning as NET POWER NEGATIVE below.
+      return sim.physics.beamCoupling < 0.75 ? 'caution' : 'normal';
     },
   },
 
@@ -94,7 +107,7 @@ export const FUSION_TILES = [
   },
 ];
 
-/** Fission tiles land in Plan 2. Returning the fusion set keeps callers safe. */
+/** Fission has no tiles yet. Returning an empty set keeps callers safe. */
 export function tilesFor(mode) {
   return mode === 'fission' ? [] : FUSION_TILES;
 }

@@ -222,7 +222,6 @@ export const useCareerStore = create((set, get) => ({
       plan: s.plan,
       player: s.player,
       reputation: s.reputation,
-      rng: Math.random,
     });
 
     // fold every pursuit's effects into the world

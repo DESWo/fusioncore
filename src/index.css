@@ -184,7 +184,23 @@ body.cb-tritanopia {
 /* ---- Annunciator: an unacknowledged tile flashes white and holds ----
    Real control-room behaviour: the flash means "nobody has seen this yet",
    and it keeps going regardless of what else the player is doing. */
-@keyframes annunciator-flash {
+/* Two keyframes, not one. The off-half of the cycle has to return to the tile's
+   OWN severity colour: flashing a caution against critical red told you the
+   wrong thing about how bad it was, and under reduced motion, where both hold
+   solid white, a latched caution and a latched alarm were indistinguishable. */
+@keyframes annunciator-flash-caution {
+  0%, 49% {
+    background-color: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-base);
+  }
+  50%, 100% {
+    background-color: color-mix(in srgb, var(--color-warn) 20%, transparent);
+    border-color: var(--color-warn);
+    color: var(--color-warn);
+  }
+}
+@keyframes annunciator-flash-alarm {
   0%, 49% {
     background-color: var(--color-ink);
     border-color: var(--color-ink);
@@ -196,9 +212,8 @@ body.cb-tritanopia {
     color: var(--color-crit);
   }
 }
-.annunciator-latched {
-  animation: annunciator-flash 0.7s steps(1, end) infinite;
-}
+.annunciator-latched { animation: annunciator-flash-alarm 0.7s steps(1, end) infinite; }
+.annunciator-latched[data-state='caution'] { animation-name: annunciator-flash-caution; }
 
 /* Under reduced motion the tile holds SOLID white rather than losing the
    alarm. The blanket clamp below would otherwise freeze it mid-cycle, and

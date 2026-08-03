@@ -10,6 +10,14 @@ import { evaluateTiles } from '../engine/annunciator.js';
 
 const LATCHING = new Set(['caution', 'alarm']);
 
+// Severity rank. Latching keys off an INCREASE in severity, not merely off
+// entry from a quiet state: caution -> alarm is an escalation and has to flash
+// again. Ranking by name only would treat that transition as "already
+// latching, nothing to do", so an acknowledged caution could quietly recolour
+// to red with no flash and a disabled ACK button.
+const RANK = { off: 0, normal: 0, caution: 1, alarm: 2 };
+const rank = (s) => RANK[s] ?? 0;
+
 export function freshAnnunciator() {
   return {
     state: {},     // tileId -> current evaluated state
@@ -30,9 +38,15 @@ export function nextAnnunciator(prev, nextState) {
   for (const [id, state] of Object.entries(nextState)) {
     const was = prev.state[id];
     if (LATCHING.has(state)) {
-      // Latch on entry into a latching state, and only on entry: a tile that
-      // is already acknowledged must not re-latch every tick.
-      if (!LATCHING.has(was) && !acked[id]) latched[id] = true;
+      // Latch when severity RISES. That covers entry from normal, and also
+      // caution -> alarm, which is an escalation the operator has not seen
+      // even if they acknowledged the caution. Holding at the same severity
+      // does not re-latch, so an acknowledged tile stays silent.
+      if (rank(state) > rank(was)) {
+        latched[id] = true;
+        // An ack covered the old, lower severity. It does not cover this.
+        delete acked[id];
+      }
     } else {
       // Condition physically cleared. Drop both the flash and the ack, so a
       // re-occurrence latches again rather than staying silently silenced.

@@ -11,6 +11,7 @@ npm run dev       # http://localhost:5199
 npm run build     # dist/
 npm run balance   # headless proof that all 8 levels are winnable
 npm run career    # headless career-mode check
+npm run annunciator # alarm-board logic only (also runs inside balance)
 ```
 
 **`npm run balance` is the verification loop.** It is the check to run after

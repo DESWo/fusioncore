@@ -317,7 +317,12 @@ export default function FissionScene() {
       <button
         type="button"
         onClick={resetView}
-        className="absolute bottom-1.5 right-2 z-10 label-mono text-[9px] px-2 py-1 rounded bg-slate-800/80 border border-slate-600 text-slate-300 hover:text-ink hover:border-accent"
+        // lg:right-[424px] clears the floating instrument column, the same
+        // offset every sibling overlay in this container uses. Without it the
+        // button sat underneath the column at >=1024px and could not be
+        // clicked at all, on desktop, which is where it is most needed.
+        // bottom-16 keeps it clear of AnalysisOverlay's legend at bottom-6.
+        className="absolute bottom-16 right-2 lg:right-[424px] z-10 label-mono text-[9px] px-2 py-1 rounded bg-slate-800/80 border border-slate-600 text-slate-300 hover:text-ink hover:border-accent"
       >
         RESET VIEW
       </button>

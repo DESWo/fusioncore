@@ -142,10 +142,35 @@ check('shine-through normal at 83% coupling',
   stateOf('shinethrough', simWith({ physics: { beamCoupling: 0.83, plasmaOn: true } })), 'normal');
 check('shine-through caution at 70% coupling',
   stateOf('shinethrough', simWith({ physics: { beamCoupling: 0.70, plasmaOn: true } })), 'caution');
-check('shine-through alarm at 40% coupling',
-  stateOf('shinethrough', simWith({ physics: { beamCoupling: 0.40, plasmaOn: true } })), 'alarm');
+// Caps at caution. Poor coupling is something to fix, not a limit you have
+// breached, and an alarm band here fired on the game's own opening state.
+check('shine-through caps at caution even at 40% coupling',
+  stateOf('shinethrough', simWith({ physics: { beamCoupling: 0.40, plasmaOn: true } })), 'caution');
 check('shine-through off with the plasma down',
   stateOf('shinethrough', simWith({ physics: { beamCoupling: 0.40, plasmaOn: false } })), 'off');
+
+// A fresh campaign must not open with anything latched. createSimState starts
+// at n20 = 0.1, which is beamCoupling 0.199 and netElecMW well negative; an
+// invented alarm band meant every new run booted mid-alarm.
+{
+  const fresh = createSimState();
+  const opening = evaluateTiles('fusion', fresh);
+  const loud = Object.entries(opening).filter(([, v]) => v === 'alarm');
+  check('a fresh campaign opens with no tile in alarm', loud.length, 0);
+}
+
+// Two of the four engine hazards are NOT gated on plasmaOn: magnets fires on
+// B > magnetSafeB and divertor on divertorTempC > divertorLimitC, either of
+// which can run a full countdown with the plasma down. The tile must follow
+// the engine, or the board goes dark during a violation that is doing damage.
+check('TF coil alarms with the plasma down when the engine raised the hazard',
+  stateOf('tfcoil', simWith({
+    controls: { B: 12 }, physics: { magnetSafeB: 10, plasmaOn: false }, hazards: { magnets: -1 },
+  })), 'alarm');
+check('divertor alarms with the plasma down when the engine raised the hazard',
+  stateOf('divertor', simWith({
+    physics: { divertorTempC: 1400, divertorLimitC: 1000, plasmaOn: false }, hazards: { divertor: 25 },
+  })), 'alarm');
 
 check('tritium caution at 4 g',
   stateOf('tritium', simWith({ fuel: { tritium: 4 } })), 'caution');
@@ -193,6 +218,31 @@ check('a re-occurring condition latches again', a.latched.greenwald, true);
 
 a = nextAnnunciator(a, { greenwald: 'alarm', beta: 'caution' });
 check('caution latches too', a.latched.beta, true);
+
+// Escalation after an acknowledgement. The operator acked a caution; the
+// condition then got worse. That is news they have not seen, so it must flash
+// again. Latching only on entry from a quiet state missed this entirely and
+// let a tile recolour amber to red in silence with ACK sitting disabled.
+{
+  let e = freshAnnunciator();
+  e = nextAnnunciator(e, { greenwald: 'caution' });
+  check('escalation: caution latches', e.latched.greenwald, true);
+
+  e = { ...e, latched: {}, acked: { greenwald: true } };   // operator pressed ACK
+  e = nextAnnunciator(e, { greenwald: 'caution' });
+  check('escalation: an acked caution stays quiet while it holds', e.latched.greenwald, undefined);
+
+  e = nextAnnunciator(e, { greenwald: 'alarm' });
+  check('escalation: caution to alarm re-latches after an ack', e.latched.greenwald, true);
+  check('escalation: the stale ack is dropped', e.acked.greenwald, undefined);
+
+  // The reverse must NOT re-latch: easing off is not news.
+  let d = freshAnnunciator();
+  d = nextAnnunciator(d, { beta: 'alarm' });
+  d = { ...d, latched: {}, acked: { beta: true } };
+  d = nextAnnunciator(d, { beta: 'caution' });
+  check('de-escalation: alarm easing to caution does not re-latch', d.latched.beta, undefined);
+}
 
 console.log(failures === 0 ? '\nALL ANNUNCIATOR CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

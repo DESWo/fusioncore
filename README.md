@@ -13,7 +13,7 @@ to real plasma-physics literature.
 npm install
 npm run dev        # http://localhost:5199
 npm run build      # production bundle in dist/
-npm run balance    # headless proof that all 8 levels are winnable
+npm run balance    # levels are winnable, plus the annunciator and contrast checks
 ```
 
 ## The game
@@ -41,9 +41,9 @@ mutates the machine's physics constants.
   state, never to scripted events. Four of them read `sim.hazards` for their
   alarm state rather than re-deriving a threshold, so the panel can never
   disagree with the physics about whether a limit was crossed; only the caution
-  band is the annunciator's own. A tile latches on entry and flashes until
+  band is the annunciator's own. A tile latches on any rise in severity and flashes until
   acknowledged, then stays lit until the condition physically clears.
-  `scripts/annunciator_check.mjs` drives it headlessly (49 assertions).
+  `scripts/annunciator_check.mjs` drives it headlessly (57 assertions).
 - `src/store/reactorStore.js`: Zustand store owning the fixed 10 Hz tick loop
   (100 ms ticks; speed changes retime the interval: 0.25x → 400 ms). Saves go to
   IndexedDB via `idb-keyval` on a 60 s autosave, on level completion, and manually.

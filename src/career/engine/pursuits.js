@@ -7,7 +7,8 @@
 // all pulling on the same finite year. That is the actual shape of a research
 // career, and it is a tradeoff rather than a click.
 //
-// Pure module. Resolution takes an injected RNG so runs are reproducible.
+// Pure module. Resolution is deterministic: the same plan run by the same
+// character always grades the same way.
 import { STAGE, PATH } from './stages.js';
 import { STRESS } from './stress.js';
 import { resolveTiered, OUTCOME } from './checks.js';
@@ -317,7 +318,7 @@ export function pursuitById(id) {
  *
  * Returns { results: [{ id, label, grade, text, effects }], totals }
  */
-export function resolveYearPlan({ plan, player, reputation, rng = Math.random }) {
+export function resolveYearPlan({ plan, player, reputation }) {
   const counts = plan.reduce((acc, id) => ({ ...acc, [id]: (acc[id] ?? 0) + 1 }), {});
   const results = [];
 
