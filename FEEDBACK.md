@@ -3,18 +3,17 @@
 Raised 2026-08-01 while playing. Ordered roughly by how much they block play.
 Delete an item when it lands.
 
-## In progress
-
-**1. Career mode has probability in it, and should not.**
-"There is no probability involved, it's just you pick something you have this
-path, each pick puts you down a different path." Career currently resolves
-choices with a stat-vs-threshold dice roll (`src/career/engine/checks.js`,
-`successThreshold`). 332 `stat_check` references across `src/career/data/`.
-The ask is deterministic branching, BitLife-style: a choice leads somewhere
-specific, stats gate which choices are available rather than rolling against
-them. This is an engine change, not a copy change.
-
 ## Not started
+
+**1b. Balance question opened by removing the dice.**
+`resolveYearPlan` gives `(blocks - 1) * 0.12` for concentrating a year on one
+pursuit. Under dice that shifted the odds. Deterministically it is worth four
+stat points, which is enough on its own to lift a stats-1, stress-70 character
+from a failing year to an adequate one. So grinding a single pursuit now
+substitutes for aptitude entirely, which cuts against "each pick puts you down
+a different path". Left as-is rather than retuned, because it is a game-feel
+call. Options: drop the per-block bonus to ~0.08, or cap total modifiers so
+they cannot alone clear `DECISIVE_BAR`.
 
 **2. Events do not follow each other.**
 "They just seem like you're throwing random shit at me and making me pick
@@ -68,3 +67,10 @@ settles so the two agree.
   you") from career event cards. Which stat is tested stays; that is a rule,
   not a hint. **The year planner (`YearPlan.jsx`) still shows them.**
 - Added the annunciator to the fusion dashboard, pinned above the scroll.
+- **Removed probability from career resolution.** `resolveCheck` and
+  `resolveTiered` no longer roll: they compare the stat-derived threshold
+  against `BALANCE.DECISIVE_BAR` and commit. Same character, same choice, same
+  circumstances now always lands in the same place. No event data changed,
+  because all 913 outcome branches were already authored and the dice were only
+  ever picking between them. Note this covers outcome resolution only; which
+  events are *offered* still uses randomness (see item 2).

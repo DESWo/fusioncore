@@ -84,11 +84,27 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
   const excellentAt = threshold - BALANCE.EXCELLENT_OFFSET;
   ok(near(threshold, 0.72) && near(excellentAt, 0.57),
     'checks: combined stat 7 gives 72% success / 57% excellent (§2.4 example)');
-  const exc = resolveTiered({ ...args, rng: () => 0.50 });
-  const adq = resolveTiered({ ...args, rng: () => 0.65 });
-  const fail = resolveTiered({ ...args, rng: () => 0.80 });
-  ok(exc.outcome === OUTCOME.EXCELLENT && adq.outcome === OUTCOME.ADEQUATE && fail.outcome === OUTCOME.FAILURE,
-    'checks: tiered rolls land in the right band');
+  // Resolution is deterministic: the stat decides the band, not a roll.
+  // Combined stat 7 clears DECISIVE_BAR + EXCELLENT_OFFSET (0.65), so it is
+  // exceptional every single time.
+  const strong = resolveTiered(args);
+  ok(strong.outcome === OUTCOME.EXCELLENT,
+    'checks: combined stat 7 is exceptional, deterministically');
+
+  // Just over the bar is adequate, not exceptional.
+  const mid = resolveTiered({ stats: { A: 4, B: 4 }, statKeys: ['A', 'B'] });
+  ok(mid.outcome === OUTCOME.ADEQUATE,
+    'checks: combined stat 4 clears the bar but not the excellent margin');
+
+  // Under the bar always fails.
+  const weak = resolveTiered({ stats: { A: 1, B: 1 }, statKeys: ['A', 'B'] });
+  ok(weak.outcome === OUTCOME.FAILURE,
+    'checks: combined stat 1 falls short of the bar and fails');
+
+  // The property that matters: no luck. Same input, same answer, every time.
+  const repeated = Array.from({ length: 50 }, () => resolveCheck(args).outcome);
+  ok(new Set(repeated).size === 1,
+    'checks: resolution is deterministic across repeated calls (no dice)');
 }
 
 // ---- §1.3 diminishing returns (the worked example) ----
@@ -477,14 +493,34 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
   ok(doubleWriting.effects.stress_delta > singleWriting.effects.stress_delta,
     'pursuits: doubling up also multiplies the stress, so specialising is a real bet');
 
-  // a poor roll must still be survivable, and a great one must not be free
+  // A year spent on something you are badly equipped for must still be
+  // survivable. There is no roll to force any more: stats 1 across the board
+  // with high stress simply cannot clear the bar, which is the point.
   const worst = resolveYearPlan({
     plan: ['grants', 'grants', 'grants'],
     player: { ...player, stats: { SM: 1, IN: 1, CH: 1, GR: 1, CO: 1 }, stress: 70 },
-    reputation: {}, rng: () => 0.99,
+    reputation: {},
   });
-  ok(worst.length === 1 && worst[0].grade === 'poor' && worst[0].effects.stress_delta > 0,
-    'pursuits: a bad year at max concentration is punishing but resolves cleanly');
+  ok(worst.length === 1 && worst[0].effects.stress_delta > 0,
+    `pursuits: a year you are unequipped for still costs stress (grade ${worst[0].grade})`);
+
+  // BALANCE QUESTION, see FEEDBACK.md: under dice, the +0.12-per-extra-block
+  // concentration bonus only shifted the odds. Deterministically it is worth
+  // four stat points, enough on its own to lift a stats-1 character over the
+  // bar, so grinding one pursuit substitutes for aptitude entirely. Recorded
+  // rather than silently retuned, because that is a game-feel decision.
+  ok(worst[0].grade !== 'excellent',
+    'pursuits: concentration alone does not make an unequipped year exceptional');
+
+  // And the same plan run by a capable, rested character lands better, every
+  // time. Determinism is only worth having if the inputs still matter.
+  const best = resolveYearPlan({
+    plan: ['grants', 'grants', 'grants'],
+    player: { ...player, stats: { SM: 9, IN: 9, CH: 9, GR: 9, CO: 9 }, stress: 0 },
+    reputation: {},
+  });
+  ok(best[0].grade !== 'poor',
+    `pursuits: the same plan run by a capable character grades better (${worst[0].grade} -> ${best[0].grade})`);
 
   // rest genuinely relieves stress at every grade
   const restGrades = ['excellent', 'adequate', 'poor'].map((g) => {

@@ -332,7 +332,6 @@ export function resolveYearPlan({ plan, player, reputation, rng = Math.random })
       statKeys: pursuit.stats,
       modifier,
       stress: player.stress,
-      rng,
     });
     const grade = outcome === OUTCOME.EXCELLENT ? 'excellent'
       : outcome === OUTCOME.ADEQUATE ? 'adequate'

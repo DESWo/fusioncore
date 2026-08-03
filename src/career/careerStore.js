@@ -340,7 +340,6 @@ export const useCareerStore = create((set, get) => ({
         statKeys: choice.stat_check.stats,
         modifier: mods + healthModifier(s.player.health ?? 90),
         stress: s.player.stress,
-        rng: Math.random,
       };
       const tiered = choice.stat_check.tiered && choice.outcomes.excellent;
       const res = tiered ? resolveTiered(args) : resolveCheck(args);

@@ -25,6 +25,12 @@ export const BALANCE = {
   CHECK_MIN: 0.05,
   CHECK_MAX: 0.95,
   EXCELLENT_OFFSET: 0.15,
+  // Where a check tips. Resolution is deterministic: clear this and the choice
+  // works, fall short and it does not, every time. With CHECK_BASE 0.3 and
+  // CHECK_PER_STAT 0.06 that puts the bar at a combined stat of about 3.3
+  // before modifiers, so early characters pass what they are built for and
+  // fail what they are not.
+  DECISIVE_BAR: 0.5,
   FAVORABLE_MOD: 0.10,
   UNFAVORABLE_MOD: -0.10,
 
