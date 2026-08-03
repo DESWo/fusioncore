@@ -44,42 +44,58 @@ export function successThreshold({ stats, statKeys, modifier = 0, stress = 0 }) 
   return { threshold, auto: false, stat };
 }
 
-/**
- * Resolve a pass/fail check. `rng` returns a float in [0,1).
- * Returns { passed, outcome, roll, threshold, stat }.
- */
-export function resolveCheck({ stats, statKeys, modifier = 0, stress = 0, rng = Math.random }) {
+/* ---------------------------------------------------------------------------
+ * Deterministic resolution.
+ *
+ * This used to roll dice: `roll < threshold` decided whether a choice worked.
+ * It does not any more. A choice is a branch, not a bet. The same character
+ * making the same choice in the same circumstances always lands in the same
+ * place, so a run is something you can learn and steer rather than something
+ * that happens to you.
+ *
+ * The tuning is untouched. `successThreshold` still folds in stat, the
+ * per-choice modifier and the stress penalty exactly as before; the only
+ * change is what we do with the number. Instead of asking "did the roll beat
+ * it", we ask "would this have been more likely than not" and commit to that
+ * answer. DECISIVE_BAR is that tipping point.
+ *
+ * This is why no event data needed rewriting: all 913 outcome branches were
+ * already authored, and the dice were only ever choosing between them.
+ * ------------------------------------------------------------------------- */
+
+/** Pass/fail. Returns { passed, outcome, threshold, stat, margin }. */
+export function resolveCheck({ stats, statKeys, modifier = 0, stress = 0 }) {
   const { threshold, auto, stat } = successThreshold({ stats, statKeys, modifier, stress });
-  const roll = rng();
-  const passed = auto || roll < threshold;
+  const passed = auto || threshold >= BALANCE.DECISIVE_BAR;
   return {
     passed,
     outcome: passed ? OUTCOME.SUCCESS : OUTCOME.FAILURE,
-    roll,
     threshold,
     stat,
+    // How far clear of the tipping point you were. Lets the retrospective say
+    // "comfortably" or "barely" without reintroducing luck.
+    margin: threshold - BALANCE.DECISIVE_BAR,
   };
 }
 
 /**
- * Resolve a tiered check (§2.4): excellent sits 0.15 below the success
- * threshold, so a strong roll against a strong stat reads as exceptional.
+ * Tiered. Clearing the bar by EXCELLENT_OFFSET or more is exceptional rather
+ * than merely adequate, so a genuinely strong character reads as strong.
  */
-export function resolveTiered({ stats, statKeys, modifier = 0, stress = 0, rng = Math.random }) {
+export function resolveTiered({ stats, statKeys, modifier = 0, stress = 0 }) {
   const { threshold, auto, stat } = successThreshold({ stats, statKeys, modifier, stress });
-  const roll = rng();
-  const excellentAt = threshold - BALANCE.EXCELLENT_OFFSET;
+  const excellentAt = BALANCE.DECISIVE_BAR + BALANCE.EXCELLENT_OFFSET;
   let outcome;
-  if (auto || roll < excellentAt) outcome = OUTCOME.EXCELLENT;
-  else if (roll < threshold) outcome = OUTCOME.ADEQUATE;
+  if (auto || threshold >= excellentAt) outcome = OUTCOME.EXCELLENT;
+  else if (threshold >= BALANCE.DECISIVE_BAR) outcome = OUTCOME.ADEQUATE;
   else outcome = OUTCOME.FAILURE;
   return {
     outcome,
     passed: outcome !== OUTCOME.FAILURE,
-    roll,
     threshold,
     excellentAt,
     stat,
+    margin: threshold - BALANCE.DECISIVE_BAR,
   };
 }
 
