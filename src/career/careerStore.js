@@ -64,10 +64,12 @@ function freshCounters() {
   };
 }
 
-function freshPlayer() {
+export function freshPlayer() {
   return {
     ...freshLife(),
     name: '',
+    gender: null,
+    pronouns: null,
     background: null,
     motivation: null,
     age: BALANCE.START_AGE,

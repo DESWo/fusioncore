@@ -353,6 +353,72 @@ function PlantDataPanel({ plant }) {
   );
 }
 
+/**
+ * The setpoint (target insertion) and the physical rod position are two
+ * different numbers: the rods drive toward the target at a finite speed, so
+ * they lag behind whatever you just dragged to. This draws both on one
+ * track (accent handle = target, ink triangle = actual) and spells out the
+ * direction in words, since "100% insertion" reads backwards to anyone who
+ * has not been told it means shut down.
+ */
+function RodSetpointControl({ highlight }) {
+  const target = useReactorStore((s) => s.sim.controls.rods);
+  const rodPos = useReactorStore((s) => s.sim.physics.rodPos);
+  const setControl = useReactorStore((s) => s.setControl);
+  const min = 0, max = 100;
+  const actual = rodPos ?? target;
+  const actualPct = Math.min(100, Math.max(0, ((actual - min) / (max - min)) * 100));
+  // Matches the global range-thumb width (src/index.css, 18px) so the marker
+  // lines up with where the setpoint handle itself sits at that value.
+  const THUMB_PX = 18;
+  const markerLeft = `calc(${THUMB_PX / 2}px + (100% - ${THUMB_PX}px) * ${(actualPct / 100).toFixed(4)})`;
+  const traveling = Math.abs(actual - target) > 0.3;
+  const triangle = {
+    width: 0, height: 0,
+    borderLeft: '4px solid transparent',
+    borderRight: '4px solid transparent',
+    borderTop: '5px solid var(--color-ink)',
+  };
+
+  return (
+    <div className={`px-3 py-2 rounded-lg bg-panel ${highlight ? 'ui-highlight' : ''}`}>
+      <div className="flex items-baseline justify-between gap-2">
+        <label htmlFor="ctl-rods" className="text-[10px] uppercase tracking-wider text-slate-400 flex items-center gap-1">
+          Control Rods <Cite id="point_kinetics" />
+        </label>
+        <span className="font-mono text-xs font-bold text-accent">
+          target {target.toFixed(1)}% IN
+        </span>
+      </div>
+      <div className="relative mt-3">
+        <div
+          className="absolute -top-2 pointer-events-none"
+          style={{ left: markerLeft, transform: 'translateX(-50%)', ...triangle }}
+          title={`Actual rod position: ${actual.toFixed(1)}% in`}
+        />
+        <input
+          id="ctl-rods"
+          type="range"
+          className="w-full"
+          min={min} max={max} step={0.5} value={target}
+          aria-label={`Control rods target insertion, ${target.toFixed(1)} percent. Zero is fully withdrawn, full power. One hundred is fully inserted, shut down.`}
+          onChange={(e) => setControl('rods', parseFloat(e.target.value))}
+        />
+      </div>
+      <div className="flex justify-between text-[8px] text-slate-500 font-mono">
+        <span>0% OUT &middot; FULL POWER</span>
+        <span>100% IN &middot; SHUT DOWN</span>
+      </div>
+      <p className="text-[9px] text-slate-500 px-1 mt-1">
+        Rods travel at drive speed.{' '}
+        <span style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 3, ...triangle }} />
+        Marker shows actual position: <span className="font-mono text-slate-300">{actual.toFixed(1)}% in</span>
+        {traveling ? ', still traveling' : ', settled'}
+      </p>
+    </div>
+  );
+}
+
 function FissionStructurePanel({ plant }) {
   const st = useReactorStore((s) => s.sim.structure);
   const p = useReactorStore((s) => s.sim.physics);
@@ -539,14 +605,7 @@ export default function FissionDashboard({ tabletTab }) {
         <DutiesPanel />
         {(plant.heatupPlant || plant.gridConnected) && <PlantOpsPanel plant={plant} />}
         <div className="grid gap-2">
-          <ControlSlider
-            controlKey="rods" label="Control Rods (target insertion)" unit="%" min={0} max={100} step={0.5}
-            format={(v) => v.toFixed(1)} cite="point_kinetics"
-            highlight={tutStep?.highlight === 'rods'}
-          />
-          <p className="text-[9px] text-slate-500 px-1 -mt-1.5">
-            Rods travel at drive speed. Actual position: <span className="font-mono text-slate-300">{p.rodPos?.toFixed(1)}%</span>
-          </p>
+          <RodSetpointControl highlight={tutStep?.highlight === 'rods'} />
           <ControlSlider
             controlKey="pumps" label="Coolant Pumps (flow)" unit="%" min={10} max={100} step={1}
             format={(v) => v.toFixed(0)} cite="decay_heat"

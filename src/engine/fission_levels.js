@@ -25,7 +25,7 @@ export const FISSION_LEVELS = [
     id: 2,
     name: 'Full Power',
     objective: 'Reach 3,000 MW thermal',
-    hint: 'Rods out further. The fuel’s own heat will push back.',
+    hint: 'Lower the target further, in small steps, letting power settle after each one. Big jumps trip the overpower protection.',
     why: 'Doppler feedback makes the core self-regulating: hotter fuel absorbs more neutrons.',
     brief: 'Withdraw in steps: 50%, 38%, then ~34%. Big steps trip the overpower protection. If your as-built fuel batch runs weak, trim a point or two further.',
     terms: [

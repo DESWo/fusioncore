@@ -61,6 +61,13 @@ mutates the machine's physics constants.
   through six NRL Plasma Formulary points (1–50 keV).
 - **Confinement**: IPB98(y,2)-inspired τ_E = H · c₁ · B^0.15 · P^−0.69 · n^0.41
   with machine size folded into c₁.
+- **Ignition criterion**: the Lawson triple product n·T·τ_E must clear
+  3×10²¹ keV·s·m⁻³, a single-power fit to Lawson's 1957 power-balance
+  argument. The PHYSICS view breaks the product into its three factors live,
+  flags whichever of the player's sliders is contributing least, and ties the
+  100-million-°C operating point back to the D-T reactivity curve ⟨σv⟩(T) so
+  the temperature requirement reads as a consequence of the reaction cross
+  section, not an arbitrary target.
 - **Limits**: Greenwald density limit and a Troyon-like beta limit drive
   disruption probability; exceeding the divertor thermal limit erodes it at the
   spec's 1%/s; first-wall dpa depletes in 120 minutes at 500 MW per the spec.

@@ -1,6 +1,7 @@
 import { useReactorStore } from '../../store/reactorStore.js';
 import { fmtSci } from '../../utils/format.js';
 import { tutorialStep } from '../../engine/tutorials.js';
+import LawsonLegend from './LawsonLegend.jsx';
 
 const MODES = [
   ['normal', 'NORMAL'],
@@ -115,6 +116,7 @@ function StressLegend() {
 export default function AnalysisOverlay() {
   const viewMode = useReactorStore((s) => s.viewMode);
   const setViewMode = useReactorStore((s) => s.setViewMode);
+  const mode = useReactorStore((s) => s.mode);
   const tutHighlight = useReactorStore((s) => tutorialStep(s.onboarding)?.highlight === 'physics');
   return (
     <>
@@ -138,6 +140,9 @@ export default function AnalysisOverlay() {
       </div>
       {viewMode === 'stress' && <StressLegend />}
       {viewMode === 'process' && <ProcessLegend />}
+      {/* Lawson criterion / triple product: fusion-only concept, no fission
+          analogue, so it joins the physics view for that mode alone. */}
+      {viewMode === 'process' && mode === 'fusion' && <LawsonLegend />}
     </>
   );
 }

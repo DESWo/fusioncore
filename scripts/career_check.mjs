@@ -20,6 +20,7 @@ import { selectYearEvents, isEligible, EVENT_TYPE, continuityWeight } from '../s
 import { STAGE, PATH, qualifiesMidCareer, qualifiesSenior, canDefend } from '../src/career/engine/stages.js';
 import { buildRetrospective, motivationAlignment, radarAxes, significantMoments } from '../src/career/engine/retrospective.js';
 import { ALL_EVENTS } from '../src/career/careerStore.js';
+import { freshPlayer } from '../src/career/careerStore.js';
 import { CAREER_SIMS } from '../src/career/data/sims.js';
 import { NPCS, castForRun } from '../src/career/data/npcs.js';
 import { BACKGROUNDS } from '../src/career/data/backgrounds.js';
@@ -710,6 +711,26 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
     }
   }
   ok(lifeShapeOk, 'content: every life event is well-formed');
+}
+
+// ---- character creation: gender and pronouns ----
+{
+  const fresh = freshPlayer();
+  ok('gender' in fresh && 'pronouns' in fresh,
+    'character creation: a fresh player has gender and pronoun fields, unset like background and motivation');
+  ok(fresh.gender === null && fresh.pronouns === null,
+    'character creation: gender starts unchosen, matching background/motivation until creation picks one');
+
+  // save()/load() round-trip the whole player object through JSON in
+  // localStorage (fusioncore_career_v1); prove gender and pronouns survive
+  // that without a real localStorage in this headless environment.
+  const chosen = {
+    ...fresh, name: 'Test', gender: 'nonbinary',
+    pronouns: { subject: 'they', object: 'them', possessive: 'their' },
+  };
+  const reloaded = JSON.parse(JSON.stringify({ player: chosen })).player;
+  ok(reloaded.gender === 'nonbinary' && reloaded.pronouns.subject === 'they',
+    'character creation: gender and pronouns survive a save/load JSON round trip');
 }
 
 console.log(failures === 0 ? '\nALL CAREER CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);

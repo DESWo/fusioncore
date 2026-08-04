@@ -5,7 +5,18 @@ import { pointsRemaining } from '../engine/stats.js';
 import { BACKGROUNDS } from '../data/backgrounds.js';
 import { MOTIVATIONS } from '../engine/retrospective.js';
 
-const TITLES = ['Who you are', 'Where you started', 'Why fusion'];
+const TITLES = ['Who you are', "How you're known", 'Where you started', 'Why fusion'];
+
+// Gender is identity, not a stat: no bonuses, nothing downstream reads it to
+// gate content. Pronouns are stored alongside it because the label matters
+// less than what the story would call you, even though nothing currently
+// renders a third-person pronoun for the player (career prose is all "you").
+const GENDERS = [
+  { id: 'woman', label: 'Woman', pronouns: { subject: 'she', object: 'her', possessive: 'her' } },
+  { id: 'man', label: 'Man', pronouns: { subject: 'he', object: 'him', possessive: 'his' } },
+  { id: 'nonbinary', label: 'Non-binary', pronouns: { subject: 'they', object: 'them', possessive: 'their' } },
+  { id: 'prefer_not_to_say', label: 'Prefer not to say', pronouns: { subject: 'they', object: 'them', possessive: 'their' } },
+];
 
 export default function CharacterCreation() {
   const [step, setStep] = useState(0);
@@ -16,12 +27,12 @@ export default function CharacterCreation() {
   const exit = useCareerStore((s) => s.exit);
 
   const remaining = pointsRemaining(player.stats);
-  const canFinish = player.name.trim() && player.background && player.motivation && remaining === 0;
+  const canFinish = player.name.trim() && player.gender && player.background && player.motivation && remaining === 0;
 
   return (
     <div className="h-full flex flex-col">
       <div className="shrink-0 px-5 pt-6 pb-3">
-        <div className="c-label">Chapter one · {step + 1} of 3</div>
+        <div className="c-label">Chapter one · {step + 1} of 4</div>
         <h1 className="c-display text-[30px] mt-1.5" style={{ color: 'var(--c-ink)' }}>
           {TITLES[step]}
         </h1>
@@ -104,6 +115,35 @@ export default function CharacterCreation() {
 
         {step === 1 && (
           <div className="grid gap-2.5">
+            <p className="c-prose mb-1" style={{ fontSize: 13, color: 'var(--c-muted)' }}>
+              This shapes how your story refers to you. Nothing about the run
+              ahead changes because of it.
+            </p>
+            {GENDERS.map((g) => {
+              const active = player.gender === g.id;
+              return (
+                <button
+                  key={g.id}
+                  onClick={() => setDraft({ gender: g.id, pronouns: g.pronouns })}
+                  aria-pressed={active}
+                  className="c-choice"
+                  style={active ? {
+                    background: 'var(--c-accent-soft)',
+                    borderLeftColor: 'var(--c-accent)',
+                    borderColor: 'rgba(224,138,60,0.4)',
+                  } : undefined}
+                >
+                  <span className="c-display text-[17px]" style={{ color: 'var(--c-ink)' }}>
+                    {g.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="grid gap-2.5">
             {BACKGROUNDS.map((b) => {
               const active = player.background === b.id;
               return (
@@ -135,7 +175,7 @@ export default function CharacterCreation() {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div className="grid gap-2.5">
             {Object.values(MOTIVATIONS).map((m) => {
               const active = player.motivation === m.id;
@@ -178,7 +218,7 @@ export default function CharacterCreation() {
         >
           {step === 0 ? 'Back' : 'Back'}
         </button>
-        {step < 2 ? (
+        {step < 3 ? (
           <button
             onClick={() => setStep(step + 1)}
             // Gate every step, not just the first: skipping the background step
@@ -186,7 +226,9 @@ export default function CharacterCreation() {
             disabled={
               step === 0
                 ? !player.name.trim() || remaining !== 0
-                : !player.background
+                : step === 1
+                  ? !player.gender
+                  : !player.background
             }
             className="c-btn flex-1 py-3.5 text-[14px]"
           >
