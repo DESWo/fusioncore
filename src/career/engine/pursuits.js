@@ -34,6 +34,7 @@ export const PURSUITS = [
     stages: [STAGE.GRAD_SCHOOL, ...ALL_WORKING],
     stats: ['IN', 'GR'],
     stress: 6,
+    difficulty: -0.08,
     grades: {
       excellent: { text: 'a campaign that worked', stat_deltas: { IN: 0.5, SM: 0.3 }, reputation_deltas: { SCI: 4 }, publications: 1, progress: 1 },
       adequate: { text: 'steady data, nothing spectacular', stat_deltas: { IN: 0.3 }, reputation_deltas: { SCI: 2 }, progress: 1 },
@@ -47,6 +48,7 @@ export const PURSUITS = [
     stages: [STAGE.GRAD_SCHOOL, ...ALL_WORKING],
     stats: ['SM', 'GR'],
     stress: 5,
+    difficulty: -0.04,
     grades: {
       excellent: { text: 'two papers out, one in a good journal', stat_deltas: { SM: 0.5 }, reputation_deltas: { SCI: 6 }, publications: 2, progress: 1 },
       adequate: { text: 'one paper submitted', stat_deltas: { SM: 0.3 }, reputation_deltas: { SCI: 3 }, publications: 1, progress: 1 },
@@ -60,6 +62,7 @@ export const PURSUITS = [
     stages: [STAGE.GRAD_SCHOOL, ...ALL_WORKING],
     stats: ['CH', 'CO'],
     stress: 5,
+    difficulty: -0.02,
     grades: {
       excellent: { text: 'a talk that landed, and two collaborations out of it', stat_deltas: { CH: 0.5, CO: 0.5 }, reputation_deltas: { NET: 7, PUB: 4 } },
       adequate: { text: 'the usual circuit, a few good conversations', stat_deltas: { CH: 0.3 }, reputation_deltas: { NET: 4, PUB: 2 } },
@@ -73,6 +76,7 @@ export const PURSUITS = [
     stages: [STAGE.GRAD_SCHOOL, ...ALL_WORKING],
     stats: ['CH', 'SM'],
     stress: 4,
+    difficulty: 0.0,
     grades: {
       excellent: { text: 'a course students still mention years later', stat_deltas: { CH: 0.5, SM: 0.3 }, reputation_deltas: { NET: 3 }, mentoring: 1 },
       adequate: { text: 'competent lectures, fair marking', stat_deltas: { CH: 0.3 }, reputation_deltas: { NET: 1 }, mentoring: 1 },
@@ -86,6 +90,7 @@ export const PURSUITS = [
     stages: ALL_WORKING,
     stats: ['CH', 'IN'],
     stress: -2,
+    difficulty: 0.0,
     available: (p) => p.mentees_count > 0 || p.career_stage !== STAGE.EARLY_CAREER,
     grades: {
       excellent: { text: 'one of yours got a result that was genuinely theirs', stat_deltas: { CH: 0.5 }, reputation_deltas: { NET: 6, SCI: 2 }, mentoring: 1, mentee_success: 1 },
@@ -100,6 +105,7 @@ export const PURSUITS = [
     stages: ALL_WORKING,
     stats: ['CH'],
     stress: 2,
+    difficulty: 0.04,
     grades: {
       excellent: { text: 'a piece that actually travelled', stat_deltas: { CH: 0.5 }, reputation_deltas: { PUB: 9 }, outreach: 1 },
       adequate: { text: 'a few talks, a local paper', stat_deltas: { CH: 0.3 }, reputation_deltas: { PUB: 4 }, outreach: 1 },
@@ -113,6 +119,7 @@ export const PURSUITS = [
     stages: ALL_WORKING,
     stats: ['CH', 'SM'],
     stress: 9,
+    difficulty: -0.14,
     grades: {
       excellent: { text: 'funded, and more than you asked for', stat_deltas: { CH: 0.5, CO: 0.5 }, reputation_deltas: { NET: 4, SCI: 2 }, funded: 2 },
       adequate: { text: 'one award, one rejection', stat_deltas: { CH: 0.3 }, reputation_deltas: { NET: 2 }, funded: 1 },
@@ -126,6 +133,7 @@ export const PURSUITS = [
     stages: EVERY_STAGE,
     stats: ['SM'],
     stress: 1,
+    difficulty: 0.06,
     grades: {
       excellent: { text: 'a technique from another field, now yours', stat_deltas: { SM: 0.5, IN: 0.5 }, reputation_deltas: {}, progress: 1 },
       adequate: { text: 'you filled some real gaps', stat_deltas: { SM: 0.4 }, reputation_deltas: {}, progress: 1 },
@@ -139,6 +147,7 @@ export const PURSUITS = [
     stages: EVERY_STAGE,
     stats: ['GR'],
     stress: -16,
+    difficulty: 0.12,
     grades: {
       excellent: { text: 'you came back genuinely restored', stat_deltas: { GR: 0.3 }, reputation_deltas: {}, stress_delta: -8 },
       adequate: { text: 'a real break', stat_deltas: {}, reputation_deltas: {} },
@@ -152,6 +161,7 @@ export const PURSUITS = [
     stages: [STAGE.MID_CAREER, STAGE.SENIOR],
     stats: ['CO', 'CH'],
     stress: 7,
+    difficulty: -0.05,
     grades: {
       excellent: { text: 'you are now in the room where budgets are set', stat_deltas: { CO: 0.8 }, reputation_deltas: { NET: 6 }, standing: 2 },
       adequate: { text: 'you served your time on the panel', stat_deltas: { CO: 0.3 }, reputation_deltas: { NET: 3 }, standing: 1 },
@@ -165,6 +175,7 @@ export const PURSUITS = [
     stages: [STAGE.COLLEGE],
     stats: ['SM', 'GR'],
     stress: 5,
+    difficulty: 0.02,
     grades: {
       excellent: { text: 'top of the cohort', stat_deltas: { SM: 0.5, GR: 0.3 }, reputation_deltas: {}, progress: 2 },
       adequate: { text: 'solid marks', stat_deltas: { SM: 0.3 }, reputation_deltas: {}, progress: 1 },
@@ -178,6 +189,7 @@ export const PURSUITS = [
     stages: [STAGE.COLLEGE],
     stats: ['IN', 'GR'],
     stress: 4,
+    difficulty: 0.04,
     grades: {
       excellent: { text: 'they started trusting you with real work', stat_deltas: { IN: 0.5, GR: 0.3 }, reputation_deltas: { NET: 3 }, progress: 1 },
       adequate: { text: 'you learned which end of a vacuum pump is which', stat_deltas: { IN: 0.3 }, reputation_deltas: { NET: 1 }, progress: 1 },
@@ -191,6 +203,7 @@ export const PURSUITS = [
     stages: [STAGE.COLLEGE, STAGE.GRAD_SCHOOL],
     stats: ['CH'],
     stress: -9,
+    difficulty: 0.08,
     grades: {
       excellent: { text: 'people you will still know at fifty', stat_deltas: { CH: 0.5, CO: 0.5 }, reputation_deltas: {}, stress_delta: -4 },
       adequate: { text: 'a decent year outside the library', stat_deltas: { CH: 0.3 }, reputation_deltas: {} },
@@ -204,6 +217,7 @@ export const PURSUITS = [
     stages: [STAGE.COLLEGE, STAGE.GRAD_SCHOOL],
     stats: ['GR'],
     stress: 6,
+    difficulty: 0.0,
     grades: {
       excellent: { text: 'solvent, and you learned to handle people', stat_deltas: { GR: 0.5, CH: 0.3 }, reputation_deltas: {} },
       adequate: { text: 'the money came in', stat_deltas: { GR: 0.3 }, reputation_deltas: {} },
@@ -218,6 +232,7 @@ export const PURSUITS = [
     paths: [PATH.STARTUP],
     stats: ['IN', 'GR'],
     stress: 8,
+    difficulty: -0.1,
     grades: {
       excellent: { text: 'a subsystem works that did not exist in January', stat_deltas: { IN: 0.8, GR: 0.5 }, reputation_deltas: { SCI: 4, NET: 3 }, commercialization: 1 },
       adequate: { text: 'real progress, behind schedule', stat_deltas: { IN: 0.3, GR: 0.3 }, reputation_deltas: { SCI: 2 }, commercialization: 1 },
@@ -232,6 +247,7 @@ export const PURSUITS = [
     stages: EVERY_STAGE,
     stats: ['CH'],
     stress: -3,
+    difficulty: 0.06,
     available: (p) => !p.partner && p.age >= 19,
     grades: {
       excellent: { text: 'you met someone, and it stuck', stat_deltas: { CH: 0.3 }, reputation_deltas: {}, meet_partner: true, stress_delta: -6 },
@@ -246,6 +262,7 @@ export const PURSUITS = [
     stages: EVERY_STAGE,
     stats: ['CH', 'GR'],
     stress: -10,
+    difficulty: 0.08,
     available: (p) => !!p.partner || (p.children ?? 0) > 0,
     grades: {
       excellent: { text: 'a year they will remember you being there for', stat_deltas: { CH: 0.3, GR: 0.3 }, reputation_deltas: {}, partner_delta: 14, stress_delta: -6 },
@@ -260,6 +277,7 @@ export const PURSUITS = [
     stages: EVERY_STAGE,
     stats: ['GR'],
     stress: -8,
+    difficulty: 0.1,
     grades: {
       excellent: { text: 'fitter at the end of the year than the start', stat_deltas: { GR: 0.4 }, reputation_deltas: {}, health_delta: 13 },
       adequate: { text: 'you kept most of the habits', stat_deltas: { GR: 0.2 }, reputation_deltas: {}, health_delta: 8 },
@@ -273,6 +291,7 @@ export const PURSUITS = [
     stages: ALL_WORKING,
     stats: ['CO', 'SM'],
     stress: 7,
+    difficulty: -0.06,
     available: (p, rep) => (rep?.SCI ?? 0) >= 20 || (rep?.NET ?? 0) >= 25,
     grades: {
       excellent: { text: 'a retainer that pays better than the day job', stat_deltas: { CO: 0.4 }, reputation_deltas: { NET: 3 }, side_income: 45000 },
@@ -287,6 +306,7 @@ export const PURSUITS = [
     stages: ALL_WORKING,
     stats: ['CO', 'CH'],
     stress: 4,
+    difficulty: -0.02,
     grades: {
       excellent: { text: 'two people want you, and they know about each other', stat_deltas: { CO: 0.5 }, reputation_deltas: { NET: 5 }, standing: 2 },
       adequate: { text: 'your name is in a few more minds', stat_deltas: { CO: 0.3 }, reputation_deltas: { NET: 2 }, standing: 1 },
@@ -326,8 +346,18 @@ export function resolveYearPlan({ plan, player, reputation }) {
     const pursuit = pursuitById(id);
     if (!pursuit) continue;
 
-    // concentration bonus: a second block on the same pursuit is a real push
-    const modifier = (blocks - 1) * 0.12 + healthModifier(player.health ?? 90);
+    // Concentration is a real push, but it must not replace aptitude. At 0.12
+    // a block it was worth four stat points, enough on its own to carry a
+    // stats-1 character over the bar: under dice that only shifted odds, but
+    // deterministically it meant grinding one pursuit beat being good at it.
+    //
+    // `difficulty` is what stops a flat stat block grading all twenty pursuits
+    // identically. Chasing money is genuinely harder than reading, and now the
+    // engine knows it, so an even build gets a spread instead of the same
+    // three lines every year for forty years.
+    const modifier = (blocks - 1) * 0.08
+      + (pursuit.difficulty ?? 0)
+      + healthModifier(player.health ?? 90);
     const { outcome } = resolveTiered({
       stats: player.stats,
       statKeys: pursuit.stats,

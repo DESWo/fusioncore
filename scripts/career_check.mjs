@@ -522,6 +522,24 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
   ok(best[0].grade !== 'poor',
     `pursuits: the same plan run by a capable character grades better (${worst[0].grade} -> ${best[0].grade})`);
 
+  // Deterministic resolution made this a real risk: with nothing distinguishing
+  // the pursuits, an even stat block graded all twenty the same way every year
+  // for a whole run, and 40 of the 60 authored grade texts never rendered.
+  // Per-pursuit `difficulty` is what prevents that, so assert the spread.
+  {
+    const flat = {
+      health: 90, career_stage: 'MID_CAREER', mentees_count: 2, stress: 0,
+      stats: { SM: 6, IN: 6, CH: 6, GR: 6, CO: 6 },
+    };
+    const grades = new Set();
+    for (const p of PURSUITS) {
+      const r = resolveYearPlan({ plan: [p.id], player: flat, reputation: {} });
+      if (r.length) grades.add(r[0].grade);
+    }
+    ok(grades.size > 1,
+      `pursuits: an even stat block does NOT grade every pursuit the same (${[...grades].join('/')})`);
+  }
+
   // rest genuinely relieves stress at every grade
   const restGrades = ['excellent', 'adequate', 'poor'].map((g) => {
     const rng = () => (g === 'excellent' ? 0.01 : g === 'adequate' ? 0.5 : 0.999);

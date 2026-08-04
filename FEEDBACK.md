@@ -32,24 +32,6 @@ something only weak or exhausted characters see. Worth adding a reachability
 assertion to `npm run career` either way, so a branch going dead fails the
 suite instead of going unnoticed.
 
-**1b. Balance question opened by removing the dice.**
-`resolveYearPlan` gives `(blocks - 1) * 0.12` for concentrating a year on one
-pursuit. Under dice that shifted the odds. Deterministically it is worth four
-stat points, which is enough on its own to lift a stats-1, stress-70 character
-from a failing year to an adequate one. So grinding a single pursuit now
-substitutes for aptitude entirely, which cuts against "each pick puts you down
-a different path". Left as-is rather than retuned, because it is a game-feel
-call. Options: drop the per-block bonus to ~0.08, or cap total modifiers so
-they cannot alone clear `DECISIVE_BAR`.
-
-Review also measured the effect: a flat 6/6/6/6/6 build (the exact even split
-of the 30-point creation pool, and the build `career_check` itself uses) grades
-**every one of the 20 pursuits identically**, every year, for the whole run.
-Stress 0 through 59 gives 20 excellent; 70 gives 20 adequate; 76+ gives 20
-poor. So 40 of the 60 authored grade blocks never render for that build, and
-the year summary prints the same three lines for four decades. A specialised
-build does mix, so this hits the default shape worst. Same lever.
-
 **2. Events do not follow each other.**
 "They just seem like you're throwing random shit at me and making me pick
 stuff." There IS a callback system (`callbackQueue`, NPC `callback_events`,
@@ -102,6 +84,13 @@ settles so the two agree.
   you") from career event cards. Which stat is tested stays; that is a rule,
   not a hint. The year planner was cleaned up in the same pass.
 - Added the annunciator to the fusion dashboard, pinned above the scroll.
+- **Fixed the uniformity and concentration problems the dice had been hiding.**
+  Each of the 20 pursuits now carries a `difficulty` (chasing money is harder
+  than reading), so an even stat block no longer grades all twenty the same way
+  for a whole run: it now spreads 12 excellent / 8 adequate at rest, and slides
+  to 12 poor under stress. The concentration bonus dropped from 0.12 to 0.08 a
+  block, so grinding one pursuit can no longer substitute for aptitude. Both
+  asserted in `npm run career`.
 - **Removed probability from career resolution.** `resolveCheck` and
   `resolveTiered` no longer roll: they compare the stat-derived threshold
   against `BALANCE.DECISIVE_BAR` and commit. Same character, same choice, same
