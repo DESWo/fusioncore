@@ -24,6 +24,7 @@ import { CAREER_SIMS } from '../src/career/data/sims.js';
 import { NPCS, castForRun } from '../src/career/data/npcs.js';
 import { BACKGROUNDS } from '../src/career/data/backgrounds.js';
 import { PURSUITS, availablePursuits, resolveYearPlan, BLOCKS_PER_YEAR } from '../src/career/engine/pursuits.js';
+import { resolveChoice } from '../src/career/engine/choices.js';
 import { salaryFor, annualExpenses, settleYear, netWorth, fmtMoney } from '../src/career/engine/money.js';
 import { healthDrift, healthModifier, partnerDrift, makePartner } from '../src/career/engine/life.js';
 import { LIFE_EVENTS } from '../src/career/data/events_life.js';
@@ -105,6 +106,38 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
   const repeated = Array.from({ length: 50 }, () => resolveCheck(args).outcome);
   ok(new Set(repeated).size === 1,
     'checks: resolution is deterministic across repeated calls (no dice)');
+}
+
+// ---- the preview shown on a choice must be the outcome that happens ----
+{
+  const player = {
+    stats: { SM: 2, IN: 2, CH: 2, GR: 2, CO: 2 }, stress: 0, health: 90,
+  };
+  const strong = {
+    stats: { SM: 9, IN: 9, CH: 9, GR: 9, CO: 9 }, stress: 0, health: 90,
+  };
+  const event = { id: 'probe', npcs: [] };
+  const choice = { stat_check: { stats: ['GR'] }, outcomes: { success: {}, failure: {} } };
+  const args = { choice, event, relationships: [], reputation: {} };
+
+  const weakRes = resolveChoice({ ...args, player });
+  const strongRes = resolveChoice({ ...args, player: strong });
+
+  ok(weakRes.gated === true && weakRes.outcomeKey === 'failure',
+    'choices: a character short of the bar is gated, and gated means failure');
+  ok(strongRes.gated === false && strongRes.outcomeKey === 'success',
+    'choices: a capable character is not gated');
+
+  // The invariant the shared module exists for: `gated` is not an estimate.
+  // It is the same computation the store commits with, so the mark on the
+  // button and the outcome that follows can never disagree.
+  ok(weakRes.gated === (weakRes.outcomeKey === 'failure'),
+    'choices: gated is exactly "this resolves to failure", not a guess about it');
+
+  // Unchecked choices are never gated: there is nothing to fall short of.
+  const plain = resolveChoice({ ...args, player, choice: { outcomes: { success: {} } } });
+  ok(plain.gated === false && plain.checkInfo === null,
+    'choices: a choice with no stat check is never gated');
 }
 
 // ---- §1.3 diminishing returns (the worked example) ----

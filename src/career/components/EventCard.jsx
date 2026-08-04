@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCareerStore } from '../careerStore.js';
 import { STAT_LABELS } from '../engine/balance.js';
+import { resolveChoice } from '../engine/choices.js';
 
 const KICKER = {
   callback: { text: 'Someone remembered', color: 'var(--c-violet)' },
@@ -24,15 +25,49 @@ const RESULT_TONE = {
  * a choice would probably land before you committed to it, which is the whole
  * decision the event exists to ask for. You find out by choosing.
  */
-function StatTested({ choice }) {
+function StatTested({ choice, gated }) {
   if (!choice.stat_check) return null;
+  const names = choice.stat_check.stats.map((k) => STAT_LABELS[k]).join(' and ');
   return (
     <span
       className="block mt-1.5 text-[11px] italic"
-      style={{ color: 'var(--c-faint)' }}
+      style={{ color: gated ? 'var(--c-bad)' : 'var(--c-faint)' }}
     >
-      {choice.stat_check.stats.map((k) => STAT_LABELS[k]).join(' and ')}
+      {names}
+      {gated && ' · not enough, and you know it'}
     </span>
+  );
+}
+
+/**
+ * One choice.
+ *
+ * A gated choice is one this character cannot carry off: their stats, health
+ * and stress do not reach what it asks. It is marked, and it stays selectable.
+ *
+ * Marking it is not a hint and not a probability. With deterministic
+ * resolution the answer already exists before you click, so withholding it
+ * only means picking blind into a foregone failure, which is worse than the
+ * dice roll it replaced. Leaving it selectable matters just as much: the
+ * failure branch is authored prose, and this is exactly the character it was
+ * written for. Reaching past what you are is a real thing to choose.
+ */
+function Choice({ choice, event, onPick }) {
+  const player = useCareerStore((s) => s.player);
+  const relationships = useCareerStore((s) => s.relationships);
+  const reputation = useCareerStore((s) => s.reputation);
+
+  const { gated } = resolveChoice({ choice, event, player, relationships, reputation });
+
+  return (
+    <button
+      onClick={onPick}
+      className="c-choice"
+      style={gated ? { borderLeftColor: 'var(--c-bad)', opacity: 0.82 } : undefined}
+    >
+      <span className="text-[15px]" style={{ color: 'var(--c-ink)' }}>{choice.label}</span>
+      <StatTested choice={choice} gated={gated} />
+    </button>
   );
 }
 
@@ -122,10 +157,7 @@ export default function EventCard() {
           {!resolved && !isSim && (
             <div className="grid gap-2.5 mt-6">
               {(event.choices ?? []).map((c, i) => (
-                <button key={c.label} onClick={() => choose(i)} className="c-choice">
-                  <span className="text-[15px]" style={{ color: 'var(--c-ink)' }}>{c.label}</span>
-                  <StatTested choice={c} />
-                </button>
+                <Choice key={c.label} choice={c} event={event} onPick={() => choose(i)} />
               ))}
             </div>
           )}

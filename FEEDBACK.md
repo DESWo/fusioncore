@@ -5,33 +5,6 @@ Delete an item when it lands.
 
 ## Not started
 
-**1a. Determinism made most authored failure prose unreachable. Needs a decision.**
-Found by review, not by playing, and it is the biggest consequence of removing
-the dice. Resolution is now a pure function of combined stat, the per-choice
-modifier (only ever -0.2 to +0.15 in the data) and stress, and below stress 60
-the stress term is exactly zero. So a character's answer for every checked
-choice is fixed at creation and only improves.
-
-Measured across the 327 choices carrying a `stat_check`:
-
-| build | outcome split |
-|---|---|
-| 6/6/6/6/6, stress 0 | 320 success, 5 excellent, 2 failure |
-| 8 flat, stress 0 | 322 success, 5 excellent, 0 failure |
-| 500 random legal builds, stress <= 60 | median 18 failures of 327 |
-| 6/6/6/6/6, stress 85 | 42 success, 285 failure |
-
-So roughly 95% of the authored `failure` branches never render in normal play,
-and at high stress it inverts and you see almost nothing else. That is a lot of
-hand-written prose made unreachable, on a project whose one open lever is
-content volume.
-
-Options: widen the modifier range so choices differentiate; make DECISIVE_BAR
-per-choice rather than global; or accept it and treat failure prose as
-something only weak or exhausted characters see. Worth adding a reachability
-assertion to `npm run career` either way, so a branch going dead fails the
-suite instead of going unnoticed.
-
 **2. Events do not follow each other.**
 "They just seem like you're throwing random shit at me and making me pick
 stuff." There IS a callback system (`callbackQueue`, NPC `callback_events`,
@@ -84,6 +57,14 @@ settles so the two agree.
   you") from career event cards. Which stat is tested stays; that is a rule,
   not a hint. The year planner was cleaned up in the same pass.
 - Added the annunciator to the fusion dashboard, pinned above the scroll.
+- **Choices now show whether you can carry them off.** A choice this character
+  cannot clear is marked ("Grit · not enough, and you know it") and stays
+  selectable, because its failure branch is authored prose written for exactly
+  this character. This is the answer to 1a: those ~327 failure branches were
+  never unreachable, they were unreachable *by accident*. Now reaching past
+  what you are is a thing you choose on purpose. The mark comes from
+  `resolveChoice` in the new `src/career/engine/choices.js`, which the store
+  also commits with, so the preview and the outcome cannot drift apart.
 - **Fixed the uniformity and concentration problems the dice had been hiding.**
   Each of the 20 pursuits now carries a `difficulty` (chasing money is harder
   than reading), so an even stat block no longer grades all twenty the same way

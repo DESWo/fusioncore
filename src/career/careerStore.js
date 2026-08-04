@@ -4,11 +4,11 @@
 import { create } from 'zustand';
 import { BALANCE, STATS } from './engine/balance.js';
 import { applyStatDeltas, baseStats, applyBackground } from './engine/stats.js';
-import { resolveCheck, resolveTiered, OUTCOME } from './engine/checks.js';
+import { resolveChoice } from './engine/choices.js';
 import { applyStress, yearlyBaseline, hitBurnout, inBurnoutRisk, burnoutRecovery } from './engine/stress.js';
-import { applyReputation, grantModifier } from './engine/reputation.js';
+import { applyReputation } from './engine/reputation.js';
 import {
-  createRelationship, adjustRelationship, relationshipModifier, findRelationship,
+  createRelationship, adjustRelationship, findRelationship,
 } from './engine/relationships.js';
 import {
   STAGE, PATH, resolveStage, canGraduateCollege, mustGraduateCollege,
@@ -18,7 +18,7 @@ import { selectYearEvents, EVENT_TYPE } from './engine/events.js';
 import { availablePursuits, resolveYearPlan, BLOCKS_PER_YEAR } from './engine/pursuits.js';
 import { settleYear, netWorth } from './engine/money.js';
 import {
-  freshLife, healthDrift, clampHealth, healthModifier,
+  freshLife, healthDrift, clampHealth,
   partnerDrift, clampPartnerScore, makePartner, childStressEffect, relationshipEnding,
 } from './engine/life.js';
 import { buildRetrospective } from './engine/retrospective.js';
@@ -325,31 +325,18 @@ export const useCareerStore = create((set, get) => ({
     let outcomeKey = 'success';
     let checkInfo = null;
 
+    // Same resolver the choice list previews with, so what the player was
+    // shown before committing and what actually happens cannot disagree.
     if (choice.stat_check) {
-      const mods =
-        (choice.stat_check.modifier ?? 0) +
-        relationshipModifier(s.relationships, {
-          npcIds: entry.event.npcs ?? [],
-          roles: entry.event.grant ? ['administrator', 'rival'] : [],
-        }) +
-        (entry.event.grant ? grantModifier(s.reputation) : 0);
-
-      const args = {
-        stats: s.player.stats,
-        statKeys: choice.stat_check.stats,
-        modifier: mods + healthModifier(s.player.health ?? 90),
-        stress: s.player.stress,
-      };
-      const tiered = choice.stat_check.tiered && choice.outcomes.excellent;
-      const res = tiered ? resolveTiered(args) : resolveCheck(args);
-      checkInfo = res;
-      if (tiered) {
-        outcomeKey = res.outcome === OUTCOME.EXCELLENT ? 'excellent'
-          : res.outcome === OUTCOME.ADEQUATE ? 'success'
-          : 'failure';
-      } else {
-        outcomeKey = res.passed ? 'success' : 'failure';
-      }
+      const resolved = resolveChoice({
+        choice,
+        event: entry.event,
+        player: s.player,
+        relationships: s.relationships,
+        reputation: s.reputation,
+      });
+      outcomeKey = resolved.outcomeKey;
+      checkInfo = resolved.checkInfo;
     }
 
     const outcome = choice.outcomes[outcomeKey] ?? choice.outcomes.success;
