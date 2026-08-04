@@ -66,15 +66,47 @@ export function isEligible(event, ctx) {
 }
 
 /** Weighted pick without replacement. Mutates nothing. */
-export function weightedPick(pool, rng) {
-  const total = pool.reduce((sum, e) => sum + (e.weight ?? 1), 0);
+export function weightedPick(pool, rng, weightOf = (e) => e.weight ?? 1) {
+  const total = pool.reduce((sum, e) => sum + weightOf(e), 0);
   if (total <= 0) return null;
   let r = rng() * total;
   for (const e of pool) {
-    r -= e.weight ?? 1;
+    r -= weightOf(e);
     if (r <= 0) return e;
   }
   return pool[pool.length - 1];
+}
+
+/**
+ * How much this event belongs to a thread already running.
+ *
+ * Without this the decision pool is weighted purely on a static `weight`, so
+ * the cast churns: a stranger's crisis is exactly as likely as the next beat
+ * with the advisor you have known for six years. That is what makes a run feel
+ * like unrelated things being handed to you rather than a life.
+ *
+ * Two signals, both from state that already exists:
+ *   - people you have actually dealt with pull harder than people you have not
+ *   - a relationship that has moved off neutral has more left to say than one
+ *     sitting where it started
+ *
+ * Events with no NPC (a funding climate, a move) are unaffected at 1.0, so
+ * this biases toward continuity without starving the rest of the pool.
+ */
+export function continuityWeight(event, ctx) {
+  const npcs = eventNpcs(event);
+  if (npcs.size === 0) return 1;
+  const rels = ctx.relationships ?? [];
+  let strongest = 1;
+  for (const id of npcs) {
+    const rel = rels.find((r) => r.id === id);
+    if (!rel || rel.active === false) continue;
+    const dealings = Math.min((rel.history ?? []).length, 5);
+    const known = 1 + dealings * BALANCE.THREAD_PER_DEALING;
+    const charge = 1 + Math.abs((rel.score ?? 50) - 50) / 100;
+    strongest = Math.max(strongest, known * charge);
+  }
+  return strongest;
 }
 
 /** Which NPCs an event touches, so we never run two about the same person. */
@@ -88,11 +120,15 @@ function eventNpcs(event) {
   return ids;
 }
 
-function pickBatch({ pool, count, rng, usedNpcs }) {
+function pickBatch({ pool, count, rng, usedNpcs, ctx }) {
   const chosen = [];
   const remaining = [...pool];
+  // Threads pull harder than strangers. See continuityWeight.
+  const weightOf = ctx
+    ? (e) => (e.weight ?? 1) * continuityWeight(e, ctx)
+    : (e) => e.weight ?? 1;
   while (chosen.length < count && remaining.length > 0) {
-    const pick = weightedPick(remaining, rng);
+    const pick = weightedPick(remaining, rng, weightOf);
     if (!pick) break;
     const idx = remaining.indexOf(pick);
     remaining.splice(idx, 1);
@@ -146,7 +182,7 @@ export function selectYearEvents(ctx, rng = Math.random) {
     const pool = allEvents.filter(
       (e) => e.type === EVENT_TYPE.DECISION && isEligible(e, ctx),
     );
-    pickBatch({ pool, count: decisionRoom, rng, usedNpcs }).forEach((event) =>
+    pickBatch({ pool, count: decisionRoom, rng, usedNpcs, ctx }).forEach((event) =>
       out.push({ event, source: 'decision' }));
   }
 
@@ -162,7 +198,7 @@ export function selectYearEvents(ctx, rng = Math.random) {
       .map((e) => (stressed && e.negative
         ? { ...e, weight: (e.weight ?? 1) * BALANCE.NEGATIVE_WEIGHT_MULTIPLIER }
         : e));
-    pickBatch({ pool, count: randomRoom, rng, usedNpcs }).forEach((event) =>
+    pickBatch({ pool, count: randomRoom, rng, usedNpcs, ctx }).forEach((event) =>
       out.push({ event, source: 'random' }));
   }
 

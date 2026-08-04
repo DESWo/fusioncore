@@ -16,7 +16,7 @@ import { applyReputation, reputationGates, grantModifier } from '../src/career/e
 import {
   tierOf, TIER, adjustRelationship, createRelationship,
 } from '../src/career/engine/relationships.js';
-import { selectYearEvents, isEligible, EVENT_TYPE } from '../src/career/engine/events.js';
+import { selectYearEvents, isEligible, EVENT_TYPE, continuityWeight } from '../src/career/engine/events.js';
 import { STAGE, PATH, qualifiesMidCareer, qualifiesSenior, canDefend } from '../src/career/engine/stages.js';
 import { buildRetrospective, motivationAlignment, radarAxes, significantMoments } from '../src/career/engine/retrospective.js';
 import { ALL_EVENTS } from '../src/career/careerStore.js';
@@ -106,6 +106,36 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
   const repeated = Array.from({ length: 50 }, () => resolveCheck(args).outcome);
   ok(new Set(repeated).size === 1,
     'checks: resolution is deterministic across repeated calls (no dice)');
+}
+
+// ---- events belong to threads, not to a shuffle ----
+{
+  const ev = { id: 'probe', npcs: ['npc_a'], choices: [] };
+  const stranger = { relationships: [] };
+  const acquaintance = {
+    relationships: [{ id: 'npc_a', active: true, score: 50, history: [{}, {}, {}] }],
+  };
+  const charged = {
+    relationships: [{ id: 'npc_a', active: true, score: 90, history: [{}, {}, {}, {}, {}] }],
+  };
+  const noOne = { id: 'weather', npcs: [], choices: [] };
+
+  const w0 = continuityWeight(ev, stranger);
+  const w1 = continuityWeight(ev, acquaintance);
+  const w2 = continuityWeight(ev, charged);
+
+  ok(w0 === 1, 'events: an event about someone you have never dealt with carries no thread bonus');
+  ok(w1 > w0, 'events: someone you have dealt with pulls harder than a stranger');
+  ok(w2 > w1, 'events: a relationship that has moved off neutral pulls harder still');
+  ok(continuityWeight(noOne, charged) === 1,
+    'events: an event with no NPC is unweighted, so the pool does not starve');
+  // The cap matters: without it one long relationship would swallow the pool.
+  const runaway = {
+    relationships: [{ id: 'npc_a', active: true, score: 50, history: Array(50).fill({}) }],
+  };
+  ok(continuityWeight(ev, runaway) === continuityWeight(ev, {
+    relationships: [{ id: 'npc_a', active: true, score: 50, history: Array(5).fill({}) }],
+  }), 'events: the thread bonus caps, so one relationship cannot swallow the pool');
 }
 
 // ---- the preview shown on a choice must be the outcome that happens ----

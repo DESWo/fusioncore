@@ -5,12 +5,15 @@ Delete an item when it lands.
 
 ## Not started
 
-**2. Events do not follow each other.**
-"They just seem like you're throwing random shit at me and making me pick
-stuff." There IS a callback system (`callbackQueue`, NPC `callback_events`,
-the "Someone remembered" kicker in `EventCard.jsx`) but it is not landing often
-enough to read as continuity. Needs investigation: is it firing at all, and is
-it weighted enough against the random pool?
+**2b. 606 of 611 flags are written and never read.** The deeper half of the
+continuity problem, and it is authoring work rather than engine work. Events
+set 611 distinct flags across 852 set-operations; exactly 5 are ever read back,
+and only 4 of 262 events are gated on one. The machinery is all there:
+`meetsPrerequisites` already supports `prerequisites.flags` and `not_flags`.
+Nothing uses it. Until events ask about what you did, the game cannot refer
+back to it. Threading (done) makes the *cast* recur; flags are what would make
+the *consequences* recur.
+
 
 **3. Character creation does not ask for gender.**
 
@@ -57,6 +60,13 @@ settles so the two agree.
   you") from career event cards. Which stat is tested stays; that is a rule,
   not a hint. The year planner was cleaned up in the same pass.
 - Added the annunciator to the fusion dashboard, pinned above the scroll.
+- **Events now belong to threads instead of a shuffle.** The decision pool was
+  weighted purely on a static `weight`, so a stranger's crisis was exactly as
+  likely as the next beat with the advisor you had known for six years. It now
+  also weighs how much you have dealt with the people an event involves, and
+  how far that relationship has moved off neutral. Measured over 40 simulated
+  12-year runs: recurring-cast rate 51.8% -> 62.7%, with a tighter cast. The
+  bonus caps at five dealings so one relationship cannot swallow the pool.
 - **Choices now show whether you can carry them off.** A choice this character
   cannot clear is marked ("Grit · not enough, and you know it") and stays
   selectable, because its failure branch is authored prose written for exactly

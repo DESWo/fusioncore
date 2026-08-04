@@ -31,6 +31,13 @@ export const BALANCE = {
   // before modifiers, so early characters pass what they are built for and
   // fail what they are not.
   DECISIVE_BAR: 0.5,
+
+  // Event threading. Each prior dealing with an NPC multiplies how likely
+  // their next beat is against a stranger's. At 0.4 and a five-dealing cap, a
+  // long-running relationship pulls roughly 3x a stranger before the
+  // off-neutral bonus, which is enough for the cast to recur without the pool
+  // collapsing onto two people.
+  THREAD_PER_DEALING: 0.4,
   FAVORABLE_MOD: 0.10,
   UNFAVORABLE_MOD: -0.10,
 
