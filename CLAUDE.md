@@ -20,18 +20,54 @@ unwinnable passes every visual inspection and fails here.
 
 ## Back up saves before any browser testing
 
-Playing the app in a browser session writes real save state. Before driving it
-with browser tools, snapshot these localStorage keys and restore them afterwards:
+Playing the app writes real save state. Use `scripts/save-snapshot.js`: paste it
+into the browser console, run `await fcSnapshot()`, **save the printed JSON to a
+file**, and `await fcRestore(json)` when done.
 
-```
-fusioncore_save_v2_fusion
-fusioncore_save_v2_fission
-fusioncore_save_v2_career
-```
+Do not invent your own backup. This instruction used to say only "snapshot the
+keys", and on 2026-08-03 an agent followed it by copying them into a page
+variable, reloaded the page, and destroyed a real career save. A reload clears
+variables. Write to a file.
 
-Career mode also uses `fusioncore_career_v1` and `fusioncore_career_runs_v1`, and
-the reactor store keeps the main run in IndexedDB. "Delete ALL saves" clears both
-stores; see `CAREER_STORAGE_KEYS` in `src/store/reactorStore.js` for the full list.
+Two stores, and a snapshot must cover both. Anything that reads only
+localStorage silently misses the reactor runs:
+
+| store | keys |
+|---|---|
+| localStorage | `fusioncore_career_v1`, `fusioncore_career_runs_v1` |
+| IndexedDB `keyval-store` | `fusioncore_save_v2_fusion`, `fusioncore_save_v2_fission` |
+
+"Delete ALL saves" clears both. See `CAREER_STORAGE_KEYS` in
+`src/store/reactorStore.js`.
+
+## Working on this
+
+Learned the hard way on this project, mostly by getting it wrong first.
+
+**Show the smallest visible thing before building on it.** A painted-steel
+console was specced, planned across fifteen tasks and half built before anyone
+looked at it, and the first reaction was that it no longer felt like a game. It
+was scrapped. A styleguide page would have surfaced that in fifteen minutes.
+For anything visual, put pixels on screen first and build second.
+
+**Measure instead of asserting, including against your own instinct.** The
+things that held up here were the ones with a number behind them: black is the
+only legend colour clearing AA on alarm red; the old sky-400 accent sat at the
+identical luminance to the warning amber; 606 of 611 event flags are written and
+never read. The things that failed were the ones that only sounded right.
+`scripts/tokens_check.mjs` and `scripts/annunciator_check.mjs` exist so those
+claims stay true; add to them rather than re-deriving by eye.
+
+**Say whose decision a thing is.** "Should the SYSTEMS tab be cut or made
+mandatory" is a game-design call and belongs to the owner. "Does this text clear
+4.5:1" does not. Conflating the two is how a style brief gets executed as a spec
+without anyone asking whether it serves the game.
+
+**Authored prose is not a renewable resource.** Career mode has ~900 outcome
+branches written by hand. Two engine changes made large fractions of it
+unreachable without touching a word of it. Before changing resolution or
+selection, measure what still renders. `FEEDBACK.md` tracks what is currently
+orphaned.
 
 ## Status
 
