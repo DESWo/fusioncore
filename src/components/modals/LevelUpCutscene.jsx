@@ -39,7 +39,7 @@ export default function LevelUpCutscene() {
         <motion.div
           aria-hidden="true"
           className="mx-auto mb-6 w-40 h-40 rounded-full relative"
-          style={{ background: 'radial-gradient(circle, #38BDF8 0%, transparent 62%)' }}
+          style={{ background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 62%)' }}
           animate={reducedMotion ? {} : { scale: [1, 1.15, 1], opacity: [0.7, 1, 0.7] }}
           transition={{ repeat: Infinity, duration: 2.4 }}
         >

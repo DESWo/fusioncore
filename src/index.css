@@ -7,11 +7,28 @@
    sans (Inter) doing both UI and giant display caps, a technical mono for
    labels and numbers, and the machine itself as the hero of every screen. */
 @theme {
-  --color-base: #16233A;      /* deep navy: the stage */
-  --color-panel: #1C2B44;     /* Helion body navy: panel surfaces */
-  --color-raise: #24344F;     /* raised elements on panels */
-  --color-ink: #EEF2F5;       /* warm off-white typography */
-  --color-accent: #38BDF8;    /* data / interactive accent */
+  /* Ground and accent, chosen against measurement rather than taste.
+     What was here before was #16233A navy with a #38BDF8 (Tailwind sky-400)
+     accent: the default palette of every dark technical dashboard on the web,
+     and the reason this read as generated rather than built.
+
+     Two things came out of actually measuring it:
+       - sky-400 sits at the SAME relative luminance as the warning amber
+         (separation 1.00), so the accent and a caution state were
+         indistinguishable to anyone relying on brightness. It was the worst
+         option tested, not merely a generic one.
+       - the periwinkle below separates at 1.30 from the nearest semantic
+         colour while still reading as an accent against body text (1.36),
+         which the near-white candidates did not.
+
+     The ground drops to a near-black so surfaces read as lit panels rather
+     than as navy cards, and no semantic colour uses violet, so the accent
+     never competes with safe/warn/crit for meaning. */
+  --color-base: #0E1116;      /* near-black: the stage */
+  --color-panel: #191E27;     /* panel surfaces */
+  --color-raise: #242B37;     /* raised elements on panels */
+  --color-ink: #E6E9EF;       /* off-white typography, 14.2:1 on panel */
+  --color-accent: #B9C7FF;    /* data / interactive, 10.4:1 on panel */
   --color-safe: #22C55E;      /* safe operating */
   --color-warn: #F59E0B;      /* warning threshold */
   --color-crit: #EF4444;      /* critical fault */
@@ -71,12 +88,13 @@ body {
   background: color-mix(in srgb, var(--color-panel) 82%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(238, 242, 245, 0.08);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
 }
 .hero-number {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
-  text-shadow: 0 0 32px rgba(56, 189, 248, 0.28);
+  /* followed the old sky-400 accent as a literal rgba; now tracks the token */
+  text-shadow: 0 0 32px color-mix(in srgb, var(--color-accent) 28%, transparent);
 }
 /* ---- Instrument framing and power-on reveals ----
    Hand-built rather than pulling in a sci-fi UI kit: the bracket is the motif
@@ -146,7 +164,11 @@ body {
 
 /* Legibility scrim behind hero type, over the machine */
 .stage-scrim {
-  background: linear-gradient(to top, rgba(12, 20, 34, 0.88) 0%, rgba(12, 20, 34, 0.35) 45%, transparent 75%);
+  /* was the old navy baked in as rgba(12,20,34); now follows the ground */
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--color-base) 88%, transparent) 0%,
+    color-mix(in srgb, var(--color-base) 35%, transparent) 45%,
+    transparent 75%);
 }
 
 body.font-dyslexic,
@@ -244,6 +266,14 @@ button {
   transition: background-color 0.2s ease-out, color 0.2s ease-out,
     border-color 0.2s ease-out, opacity 0.2s ease-out, filter 0.2s ease-out;
 }
+/* A control is labelled in the same face as the data it moves. The app already
+   carries Geist Mono for every number; spending it on the controls too is what
+   makes this read as instrumentation rather than as a web form. Career mode is
+   a book about a person, not a panel, and overrides this in career-theme.css. */
+button {
+  font-family: var(--font-mono);
+  letter-spacing: 0.03em;
+}
 
 /* 44px minimum touch targets on touch-primary devices (WCAG 2.5.8) */
 @media (pointer: coarse) {
@@ -298,7 +328,7 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: var(--color-accent);
   border: 2px solid var(--color-ink);
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 60%, transparent);
 }
 input[type="range"]:disabled::-webkit-slider-thumb {
   background: #475569;
@@ -325,7 +355,8 @@ input[type="range"]::-moz-range-thumb {
 .ui-locked { pointer-events: none; opacity: 0.35; filter: saturate(0.4); }
 .ui-highlight {
   position: relative;
-  box-shadow: 0 0 0 2px var(--color-accent), 0 0 24px rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 0 2px var(--color-accent),
+              0 0 24px color-mix(in srgb, var(--color-accent) 35%, transparent);
   border-radius: 8px;
   z-index: 30;
 }

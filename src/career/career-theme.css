@@ -235,3 +235,11 @@
   .career-theme .c-stat-fill,
   .career-theme .c-stat-cap { transition: none; }
 }
+
+/* The global rule puts every control in mono, because on the reactor side a
+   button is an instrument label. Career mode is a book about a person's
+   working life, so its controls stay in the prose face. */
+.career-theme button {
+  font-family: var(--font-prose);
+  letter-spacing: normal;
+}
