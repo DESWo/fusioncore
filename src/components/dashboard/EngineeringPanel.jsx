@@ -16,16 +16,16 @@ export default function EngineeringPanel() {
   const a = mode === 'fission' ? fissionAnalysis(sim) : fusionAnalysis(sim, stats);
 
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-1.5">
         Engineering Analysis: margins to design limits
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-2">
         {a.header.map(([k, v]) => (
           <div key={k}>
-            <div className="text-[8px] uppercase tracking-wider text-slate-500">{k}</div>
-            <div className="font-mono text-[11px] text-slate-200">{v}</div>
+            <div className="text-[8px] uppercase tracking-wider text-ink/55">{k}</div>
+            <div className="font-mono text-[11px] text-ink">{v}</div>
           </div>
         ))}
       </div>
@@ -34,19 +34,19 @@ export default function EngineeringPanel() {
         {a.rows.map((r) => (
           <div key={r.id}>
             <div className="flex justify-between items-baseline text-[10px]">
-              <span className="text-slate-400 flex items-center gap-1">
+              <span className="text-ink/70 flex items-center gap-1">
                 {r.label}
                 {r.techName && (
-                  <span className="text-[8px] text-slate-500 italic">({r.techName})</span>
+                  <span className="text-[8px] text-ink/55 italic">({r.techName})</span>
                 )}
                 {r.cite && <Cite id={r.cite} />}
               </span>
               <span className="font-mono" style={{ color: STATUS_COLOR[r.status] }}>
                 {r.value}{r.unit && ` ${r.unit}`}
-                <span className="text-slate-500"> / {r.lowerIsBad ? 'min ' : ''}{r.limit}</span>
+                <span className="text-ink/55"> / {r.lowerIsBad ? 'min ' : ''}{r.limit}</span>
               </span>
             </div>
-            <div className="h-1 bg-slate-700 rounded-full overflow-hidden mt-0.5">
+            <div className="h-1 bg-raise rounded-full overflow-hidden mt-0.5">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -61,7 +61,7 @@ export default function EngineeringPanel() {
         ))}
       </div>
 
-      <p className="text-[9px] text-slate-500 mt-2 leading-snug">
+      <p className="text-[9px] text-ink/55 mt-2 leading-snug">
         0-D screening estimates for education. The field-grade versions of these
         numbers come from qualified codes (RELAP/TRACE, ANSYS, MCNP) under NQA-1.
       </p>

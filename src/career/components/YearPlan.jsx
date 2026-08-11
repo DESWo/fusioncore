@@ -41,7 +41,7 @@ export default function YearPlan() {
               key={i}
               onClick={() => id && removeFromPlan(i)}
               disabled={!id}
-              className="flex-1 rounded-xl px-2 py-3 text-center"
+              className="flex-1 px-2 py-3 text-center"
               style={{
                 border: id ? '1px solid rgba(224,138,60,0.5)' : '1px dashed var(--c-line)',
                 background: id ? 'var(--c-accent-soft)' : 'transparent',

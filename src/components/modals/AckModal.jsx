@@ -14,7 +14,7 @@ export default function AckModal() {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="status-crit bg-panel rounded-xl max-w-md w-full p-5"
+        className="status-crit bg-panel max-w-md w-full p-5"
         role="alertdialog"
         aria-modal="true"
         aria-label={note.title}
@@ -23,14 +23,14 @@ export default function AckModal() {
           ⚠ PRIORITY 1: {note.title}
           <SpeakerIcon text={`Priority one alert. ${note.title}. ${note.text}`} />
         </div>
-        <p className="text-xs text-slate-200 mt-3 leading-relaxed">
+        <p className="text-xs text-ink mt-3 leading-relaxed">
           {note.text} {note.cite && <Cite id={note.cite} />}
         </p>
-        <p className="text-[10px] text-slate-400 mt-2">Simulation frozen pending operator acknowledgement.</p>
+        <p className="text-[10px] text-ink/70 mt-2">Simulation frozen pending operator acknowledgement.</p>
         <button
           onClick={() => ack(note.id)}
           autoFocus
-          className="mt-4 w-full py-2 rounded-lg bg-crit text-white font-bold text-sm hover:brightness-110"
+          className="mt-4 w-full py-2 bg-crit text-white font-bold text-sm hover:brightness-110"
         >
           ACKNOWLEDGE: RESUME OPERATIONS
         </button>

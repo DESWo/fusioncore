@@ -59,7 +59,7 @@ export default function LevelUpCutscene() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="text-sm text-slate-300 mt-4 leading-relaxed"
+          className="text-sm text-ink/85 mt-4 leading-relaxed"
         >
           {level.cutscene}
         </motion.p>
@@ -76,7 +76,7 @@ export default function LevelUpCutscene() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.9 }}
-            className="mt-2 text-[11px] text-slate-400"
+            className="mt-2 text-[11px] text-ink/70"
           >
             Unlocked: {level.unlockText}
           </motion.div>
@@ -88,7 +88,7 @@ export default function LevelUpCutscene() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.0 }}
-            className="mt-6 rounded-lg border border-accent/40 bg-panel p-4 text-left"
+            className="mt-6 border border-accent/40 bg-panel p-4 text-left"
           >
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">
@@ -96,20 +96,20 @@ export default function LevelUpCutscene() {
               </span>
               <span className="font-mono text-3xl font-black leading-none text-ink">
                 {card.grade}
-                <span className="ml-1.5 text-xs font-bold text-slate-400">{card.score}/100</span>
+                <span className="ml-1.5 text-xs font-bold text-ink/70">{card.score}/100</span>
               </span>
             </div>
 
-            <p className="mt-2 text-[12px] leading-relaxed text-slate-300">{card.verdict}</p>
+            <p className="mt-2 text-[12px] leading-relaxed text-ink/85">{card.verdict}</p>
 
             <div className="mt-3 grid gap-2">
               {card.parts.map((p) => (
                 <div key={p.id}>
                   <div className="flex items-baseline justify-between gap-2 text-[11px]">
-                    <span className="text-slate-300">{p.label}</span>
-                    <span className="font-mono text-slate-400">{p.detail}</span>
+                    <span className="text-ink/85">{p.label}</span>
+                    <span className="font-mono text-ink/70">{p.detail}</span>
                   </div>
-                  <div className="mt-1 h-1.5 rounded-full bg-slate-700/70">
+                  <div className="mt-1 h-1.5 rounded-full bg-raise/70">
                     <div
                       className="h-full rounded-full bg-accent"
                       style={{ width: `${Math.round(p.fraction * 100)}%` }}
@@ -119,12 +119,12 @@ export default function LevelUpCutscene() {
               ))}
             </div>
 
-            <div className="mt-3 border-t border-slate-700 pt-2 font-mono text-[10px] text-slate-500">
+            <div className="mt-3 border-t border-raise pt-2 font-mono text-[10px] text-ink/55">
               {Math.round(card.summary.hours)} h online · ${card.summary.funds.toFixed(2)}B left
               {dailySeed && <> · daily plant {dailySeed}</>}
             </div>
             {dailySeed && (
-              <p className="mt-1.5 text-[10px] leading-snug text-slate-500">
+              <p className="mt-1.5 text-[10px] leading-snug text-ink/55">
                 Everyone who ran the {dailySeed} plant started from these same tolerances.
                 Cost of power is the comparable number.
               </p>
@@ -140,7 +140,7 @@ export default function LevelUpCutscene() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.1 }}
-              className="mt-6 rounded-lg border border-accent/40 bg-panel p-4 text-left"
+              className="mt-6 border border-accent/40 bg-panel p-4 text-left"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] uppercase tracking-[0.25em] text-accent font-bold">
@@ -149,22 +149,22 @@ export default function LevelUpCutscene() {
                 <SpeakerIcon text={`Next mission: ${next.name}. ${next.objective}. ${next.why} ${next.hint ?? ''}`} />
               </div>
               <p className="text-sm font-semibold mt-1.5">{next.objective}</p>
-              <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">{next.why}</p>
+              <p className="text-[11px] text-ink/70 mt-1.5 leading-relaxed">{next.why}</p>
               {/* The idea, not the answer. The exact setpoints live behind the
                   in-game "stuck?" toggle so the mission stays a problem. */}
               {next.hint && (
                 <p className="text-[11px] text-accent mt-1.5 leading-relaxed">▸ {next.hint}</p>
               )}
               {next.terms?.length > 0 && (
-                <div className="mt-3 pt-2 border-t border-slate-700">
-                  <div className="text-[9px] uppercase tracking-widest text-slate-500 mb-1.5">
+                <div className="mt-3 pt-2 border-t border-raise">
+                  <div className="text-[9px] uppercase tracking-widest text-ink/55 mb-1.5">
                     New terms you'll see on the dashboard
                   </div>
                   <div className="grid gap-1.5">
                     {next.terms.map((t) => (
                       <div key={t.term} className="text-[11px] leading-snug">
                         <span className="font-bold text-ink">{t.term}</span>
-                        <span className="text-slate-400">: {t.def}</span>
+                        <span className="text-ink/70">: {t.def}</span>
                       </div>
                     ))}
                   </div>
@@ -177,7 +177,7 @@ export default function LevelUpCutscene() {
         <button
           onClick={complete}
           autoFocus
-          className="mt-6 px-8 py-2.5 rounded-lg bg-accent text-base font-bold tracking-widest hover:brightness-110"
+          className="mt-6 px-8 py-2.5 bg-accent text-base font-bold tracking-widest hover:brightness-110"
         >
           {isFinal ? (career ? 'READ PERFORMANCE REVIEW' : 'ENTER SANDBOX') : 'BEGIN MISSION'}
         </button>

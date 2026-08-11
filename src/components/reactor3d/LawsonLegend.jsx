@@ -55,22 +55,22 @@ export default function LawsonLegend() {
 
   return (
     <div className="absolute top-2 left-2 z-10 w-56 grid gap-1.5">
-      <div className="bg-slate-900/90 border border-slate-700 rounded-md px-2 py-1.5 text-[8px] text-slate-300 grid gap-1">
+      <div className="bg-base/90 border border-raise px-2 py-1.5 text-[8px] text-ink/85 grid gap-1">
         <div className="text-[8px] uppercase tracking-widest text-accent font-bold flex items-center gap-1">
           Ignition needs all three <Cite id="lawson" />
         </div>
-        <div className="text-slate-400 leading-snug">
+        <div className="text-ink/70 leading-snug">
           Density, temperature and confinement time must hold together. Being great at one does not rescue the other two.
         </div>
         {terms.map((t) => (
           <div key={t.key} className="grid gap-0.5">
             <div className="flex justify-between gap-2">
-              <span className={t.key === weakest.key ? 'text-warn font-bold' : 'text-slate-300'}>
+              <span className={t.key === weakest.key ? 'text-warn font-bold' : 'text-ink/85'}>
                 {t.label}{t.key === weakest.key ? ' ◀ least pushed' : ''}
               </span>
-              <span className="font-mono text-slate-100 shrink-0">{t.value}</span>
+              <span className="font-mono text-ink shrink-0">{t.value}</span>
             </div>
-            <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-1 bg-raise rounded-full overflow-hidden">
               <div
                 className="h-full"
                 style={{
@@ -81,16 +81,16 @@ export default function LawsonLegend() {
             </div>
           </div>
         ))}
-        <div className="border-t border-slate-700 pt-1 flex justify-between items-baseline">
+        <div className="border-t border-raise pt-1 flex justify-between items-baseline">
           <span>n·T·τE</span>
           <span className={`font-mono ${p.ignition ? 'text-safe font-bold' : 'text-ink'}`}>{fmtSci(triple)}</span>
         </div>
-        <div className="text-slate-500">
+        <div className="text-ink/55">
           {p.ignition
             ? '★ past the ignition threshold'
             : `${pctIgnition.toFixed(0)}% of ignition (needs ${fmtSci(IGNITION_TRIPLE, 0)} keV·s·m⁻³)`}
         </div>
-        <div className="text-slate-500 border-t border-slate-700 pt-1">
+        <div className="text-ink/55 border-t border-raise pt-1">
           Why so hot: reactivity ⟨σv⟩ <Cite id="nrl" /> at {p.T.toFixed(1)} keV runs {fmtSci(svRatio, 1)}×
           what it is at 1 keV. Below a few keV, D-T fuel barely reacts at all.
         </div>

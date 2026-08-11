@@ -13,17 +13,17 @@ const ReactorScene = lazy(() => import('../reactor3d/ReactorScene.jsx'));
 // caption, a quiet mono menu. The reactor sells the game; the UI stays out
 // of the way.
 
-function MenuCard({ onClick, title, chip, chipTone = 'text-accent', sub, tone = 'border-slate-600/70' }) {
+function MenuCard({ onClick, title, chip, chipTone = 'text-accent', sub, tone = 'border-raise-hi/70' }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full py-3 px-4 rounded-xl text-left border glass hover:bg-raise/70 ${tone}`}
+      className={`w-full py-3 px-4 text-left border glass hover:bg-raise/70 ${tone}`}
     >
       <div className="label-mono text-[11px] text-ink">
         {title}
         {chip && <span className={`ml-2 text-[8px] ${chipTone}`}>[ {chip} ]</span>}
       </div>
-      {sub && <div className="text-[10px] text-slate-400 mt-1 leading-snug normal-case tracking-normal">{sub}</div>}
+      {sub && <div className="text-[10px] text-ink/70 mt-1 leading-snug normal-case tracking-normal">{sub}</div>}
     </button>
   );
 }
@@ -53,7 +53,7 @@ export default function TitleScreen() {
       <div className="stage-scrim absolute inset-x-0 bottom-0 h-[75%]" />
 
       {/* top mono bar */}
-      <div className="absolute top-0 inset-x-0 flex items-center justify-between px-6 sm:px-10 py-5 label-mono text-[10px] text-slate-400">
+      <div className="absolute top-0 inset-x-0 flex items-center justify-between px-6 sm:px-10 py-5 label-mono text-[10px] text-ink/70">
         <span className="text-ink text-[11px]">FUSION<span className="text-accent">CORE</span></span>
         <span className="hidden sm:block">[ An engineering simulation / every number cited ]</span>
       </div>
@@ -70,7 +70,7 @@ export default function TitleScreen() {
             <br />
             Power our world.
           </h1>
-          <p className="label-mono text-[10px] text-slate-400 mt-4 max-w-xl">
+          <p className="label-mono text-[10px] text-ink/70 mt-4 max-w-xl">
             Fusion + fission reactor simulation / real tradeoffs, real limits,
             real incident reports
           </p>
@@ -78,7 +78,7 @@ export default function TitleScreen() {
           <div className="mt-8 grid gap-2 w-full max-w-sm">
             {choosing === 'mode' ? (
               <>
-                <div className="label-mono text-[9px] text-slate-500">[ Choose your machine ]</div>
+                <div className="label-mono text-[9px] text-ink/55">[ Choose your machine ]</div>
                 <MenuCard
                   onClick={() => setChoosing('fusion')}
                   title="Fusion tokamak" chip="Start here"
@@ -87,40 +87,40 @@ export default function TitleScreen() {
                 />
                 <MenuCard
                   onClick={() => useCareerStore.getState().startCreation()}
-                  title="Engineering career" chip="Age 18 to retirement" chipTone="text-violet-300"
+                  title="Engineering career" chip="Age 18 to retirement" chipTone="text-accent"
                   sub="A whole working life: choices, people who remember them, and five moments where you take the controls yourself."
-                  tone="border-violet-400/50"
+                  tone="border-accent/50"
                 />
                 <MenuCard
                   onClick={() => setChoosing('fission')}
                   title="Fission PWR"
                   sub="Run a 3.4 GW pressurized-water reactor. Rods, xenon, decay heat. No training wheels."
                 />
-                <button onClick={() => setChoosing(false)} className="label-mono text-[9px] text-slate-500 hover:text-ink text-left px-1">
+                <button onClick={() => setChoosing(false)} className="label-mono text-[9px] text-ink/55 hover:text-ink text-left px-1">
                   back
                 </button>
               </>
             ) : choosing ? (
               <>
-                <div className="label-mono text-[9px] text-slate-500">[ Choose the difficulty ]</div>
+                <div className="label-mono text-[9px] text-ink/55">[ Choose the difficulty ]</div>
                 {choosing !== 'career' && (
                   <button
                     type="button"
                     onClick={() => setDaily((v) => !v)}
                     aria-pressed={daily}
-                    className={`w-full rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                    className={`w-full border px-3 py-2.5 text-left transition-colors ${
                       daily
                         ? 'border-accent/60 bg-accent/10'
-                        : 'border-slate-600/70 hover:border-slate-500'
+                        : 'border-raise-hi/70 hover:border-raise-hi'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[13px] font-bold text-ink">Daily plant</span>
-                      <span className="label-mono text-[9px] text-slate-500">
+                      <span className="label-mono text-[9px] text-ink/55">
                         {daily ? dailySeedKey() : 'off'}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] leading-snug text-slate-400">
+                    <p className="mt-1 text-[11px] leading-snug text-ink/70">
                       Everyone starting today gets the same as-built machine, tolerances and
                       all. Compare your final cost of power against anyone else who ran it.
                     </p>
@@ -137,17 +137,17 @@ export default function TitleScreen() {
                     title={d.label}
                     chip={d.key === 'operator' ? 'Recommended' : undefined}
                     sub={d.tagline}
-                    tone={d.key === 'operator' ? 'border-accent/60' : 'border-slate-600/70'}
+                    tone={d.key === 'operator' ? 'border-accent/60' : 'border-raise-hi/70'}
                   />
                 ))}
-                <button onClick={() => setChoosing('mode')} className="label-mono text-[9px] text-slate-500 hover:text-ink text-left px-1">
+                <button onClick={() => setChoosing('mode')} className="label-mono text-[9px] text-ink/55 hover:text-ink text-left px-1">
                   back
                 </button>
               </>
             ) : (
               <button
                 onClick={() => setChoosing('mode')}
-                className="w-full py-3.5 rounded-xl bg-accent text-base label-mono text-[12px] font-medium hover:brightness-110"
+                className="w-full py-3.5 bg-accent text-base label-mono text-[12px] font-medium hover:brightness-110"
               >
                 {hasSave ? 'New campaign' : 'Start / first light'}
               </button>
@@ -156,8 +156,8 @@ export default function TitleScreen() {
             {!choosing && hasCareerSave && (
               <MenuCard
                 onClick={() => useCareerStore.getState().load()}
-                title="Continue career" chipTone="text-violet-300"
-                tone="border-violet-400/50"
+                title="Continue career" chipTone="text-accent"
+                tone="border-accent/50"
                 sub="Pick up the life in progress."
               />
             )}
@@ -178,13 +178,13 @@ export default function TitleScreen() {
               />
             )}
             <div className="flex items-center gap-4 px-1 mt-1">
-              <button onClick={() => setSettingsOpen(true)} className="label-mono text-[9px] text-slate-400 hover:text-ink">
+              <button onClick={() => setSettingsOpen(true)} className="label-mono text-[9px] text-ink/70 hover:text-ink">
                 Settings
               </button>
               {hasSave && !choosing && (
                 <button
                   onClick={() => { if (window.confirm('Delete ALL saves: both campaigns and the career? This cannot be undone.')) wipeSave(); }}
-                  className="label-mono text-[9px] text-slate-600 hover:text-crit"
+                  className="label-mono text-[9px] text-ink/40 hover:text-crit"
                 >
                   Delete saved games
                 </button>
@@ -193,7 +193,7 @@ export default function TitleScreen() {
           </div>
         </div>
 
-        <p className="label-mono text-[8px] text-slate-600 mt-8 max-w-lg leading-relaxed">
+        <p className="label-mono text-[8px] text-ink/40 mt-8 max-w-lg leading-relaxed">
           Physics simplified for real-time play, calibrated against ITER Physics
           Basis, NRL Plasma Formulary, and ARIES systems studies.
         </p>

@@ -7,7 +7,7 @@ import { powerParts } from '../utils/format.js';
 // the three numbers that matter in display type, the advisor as a ticker.
 // Pointer events stay off so the stage underneath keeps orbit control.
 
-const TYPE_COLOR = { info: 'text-slate-300', warning: 'text-warn', critical: 'text-crit' };
+const TYPE_COLOR = { info: 'text-ink/85', warning: 'text-warn', critical: 'text-crit' };
 
 function Metric({ label, value, digits = 0, unit, signed = false, tone = 'text-ink', revealIndex = 0 }) {
   const reducedMotion = useReactorStore((s) => s.settings.reducedMotion);
@@ -28,9 +28,9 @@ function Metric({ label, value, digits = 0, unit, signed = false, tone = 'text-i
           animated={!reducedMotion}
           willChange
         />
-        {unit && <span className="text-lg xl:text-xl text-slate-400 ml-1.5 font-normal">{unit}</span>}
+        {unit && <span className="text-lg xl:text-xl text-ink/70 ml-1.5 font-normal">{unit}</span>}
       </div>
-      <div className="label-mono text-[10px] text-slate-400 mt-1.5">{label}</div>
+      <div className="label-mono text-[10px] text-ink/70 mt-1.5">{label}</div>
     </div>
   );
 }
@@ -50,7 +50,7 @@ function useMetrics() {
       { label: 'Fusion power', ...fusionPower },
       {
         label: 'To the grid', ...grid, signed: true,
-        tone: p.netElecMW > 0 ? 'text-safe' : 'text-slate-400',
+        tone: p.netElecMW > 0 ? 'text-safe' : 'text-ink/70',
       },
     ];
   }
@@ -79,7 +79,7 @@ function useMetrics() {
     { label: 'Reactivity', value: rho, digits: 0, unit: 'pcm', signed: true, tone: rhoTone },
     {
       label: 'To the grid', ...grid, signed: true,
-      tone: p.netElecMW > 0 ? 'text-safe' : 'text-slate-400',
+      tone: p.netElecMW > 0 ? 'text-safe' : 'text-ink/70',
     },
   ];
 }
@@ -120,7 +120,7 @@ export default function HeroOverlay() {
           </h2>
           {!completed && progress > 0 && progress < 1 && (
             <div className="mt-3 max-w-2xl">
-              <div className="h-0.5 bg-slate-700/80 overflow-hidden rounded-full">
+              <div className="h-0.5 bg-raise/80 overflow-hidden rounded-full">
                 <div className="h-full bg-accent" style={{ width: `${progress * 100}%`, transition: 'width 0.15s' }} />
               </div>
               <div className="label-mono text-[10px] text-accent mt-1">
@@ -140,7 +140,7 @@ export default function HeroOverlay() {
         {/* advisor ticker */}
         {last && (
           <div
-            className={`reveal label-mono text-[11px] max-w-2xl truncate ${TYPE_COLOR[last.type] ?? 'text-slate-300'}`}
+            className={`reveal label-mono text-[11px] max-w-2xl truncate ${TYPE_COLOR[last.type] ?? 'text-ink/85'}`}
             style={{ '--reveal-i': 5 }}
           >
             {'>'} {last.text}

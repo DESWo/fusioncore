@@ -30,7 +30,7 @@ const CareerModal = lazy(() => import('./components/modals/CareerModal.jsx'));
 function SceneFallback() {
   return (
     <div className="h-full w-full flex items-center justify-center bg-base">
-      <span className="label-mono text-[10px] text-slate-500">[ spinning up the machine ]</span>
+      <span className="label-mono text-[10px] text-ink/55">[ spinning up the machine ]</span>
     </div>
   );
 }
@@ -172,14 +172,14 @@ export default function App() {
         {/* The sheet is square-cornered below lg and rounded above it, so the
             brackets sit flush on mobile and step inside the radius on desktop.
             Both stay >= 0 because the panel clips its overflow. */}
-        <div className="absolute inset-x-0 bottom-0 top-[38%] lg:left-auto lg:top-3 lg:right-3 lg:bottom-3 lg:w-[404px] z-10 flex flex-col min-h-0 lg:rounded-2xl glass overflow-hidden framed [--frame-inset:0px] lg:[--frame-inset:7px]">
-          <div className="flex border-b border-slate-700/60 shrink-0">
+        <div className="absolute inset-x-0 bottom-0 top-[38%] lg:left-auto lg:top-3 lg:right-3 lg:bottom-3 lg:w-[404px] z-10 flex flex-col min-h-0 lg:glass overflow-hidden framed [--frame-inset:0px] lg:[--frame-inset:7px]">
+          <div className="flex border-b border-raise/60 shrink-0">
             {TABS.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`flex-1 py-2.5 label-mono text-[10px] ${
-                  tab === t.id ? 'text-ink bg-raise/60 border-b-2 border-accent' : 'text-slate-400 hover:text-slate-200'
+                  tab === t.id ? 'text-ink bg-raise/60 border-b-2 border-accent' : 'text-ink/70 hover:text-ink'
                 }`}
               >
                 {t.label}

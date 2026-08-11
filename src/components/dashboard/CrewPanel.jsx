@@ -25,26 +25,26 @@ export default function CrewPanel() {
     : `working toward target (now ${net.toFixed(0)} MW net)`;
 
   return (
-    <div className="bg-panel rounded-lg p-3 border border-violet-400/25">
+    <div className="bg-panel p-3 border border-accent/25">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] uppercase tracking-wider text-violet-300">Operations Crew</span>
+        <span className="text-[10px] uppercase tracking-wider text-accent">Operations Crew</span>
         <button
           onClick={() => setCrew({ enabled: !crew.enabled })}
           className={`text-[9px] font-bold px-2.5 py-1 rounded-full border ${
             crew.enabled
-              ? 'border-violet-300/70 bg-violet-400/15 text-violet-200'
-              : 'border-slate-600 text-slate-300 hover:bg-raise'
+              ? 'border-accent/70 bg-accent/15 text-accent'
+              : 'border-raise-hi text-ink/85 hover:bg-raise'
           }`}
         >
           {crew.enabled ? 'CREW HAS THE MACHINE' : 'DELEGATE'}
         </button>
       </div>
-      <p className="text-[9px] text-slate-500 italic mb-2">
+      <p className="text-[9px] text-ink/55 italic mb-2">
         your job is the envelope; theirs is the sliders · status: {status}
       </p>
 
       <div className="flex items-baseline justify-between text-[10px]">
-        <label htmlFor="crew-target" className="text-slate-400">Delivery target</label>
+        <label htmlFor="crew-target" className="text-ink/70">Delivery target</label>
         <span className="font-mono text-accent">{crew.targetNetMW} MW net</span>
       </div>
       <input
@@ -56,8 +56,8 @@ export default function CrewPanel() {
       />
 
       <div className="flex items-baseline justify-between text-[10px] mt-2">
-        <label htmlFor="crew-gw" className="text-slate-400">Density ceiling</label>
-        <span className={`font-mono ${crew.gwMax > 0.9 ? 'text-warn' : 'text-slate-200'}`}>
+        <label htmlFor="crew-gw" className="text-ink/70">Density ceiling</label>
+        <span className={`font-mono ${crew.gwMax > 0.9 ? 'text-warn' : 'text-ink'}`}>
           {(crew.gwMax * 100).toFixed(0)}% of disruption limit
         </span>
       </div>
@@ -70,8 +70,8 @@ export default function CrewPanel() {
       />
 
       <div className="flex items-baseline justify-between text-[10px] mt-2">
-        <label htmlFor="crew-div" className="text-slate-400">Divertor ceiling</label>
-        <span className={`font-mono ${crew.divMax > 0.85 ? 'text-warn' : 'text-slate-200'}`}>
+        <label htmlFor="crew-div" className="text-ink/70">Divertor ceiling</label>
+        <span className={`font-mono ${crew.divMax > 0.85 ? 'text-warn' : 'text-ink'}`}>
           {(crew.divMax * 100).toFixed(0)}% of thermal limit
         </span>
       </div>
@@ -83,7 +83,7 @@ export default function CrewPanel() {
         aria-label={`Crew divertor ceiling ${(crew.divMax * 100).toFixed(0)} percent of the thermal limit`}
       />
 
-      <p className="text-[9px] text-slate-500 mt-2 leading-snug">
+      <p className="text-[9px] text-ink/55 mt-2 leading-snug">
         The crew is competent, not brilliant: they will fly right up to whatever
         ceiling you write. A generous envelope is a bet with their hands and
         your name on it.

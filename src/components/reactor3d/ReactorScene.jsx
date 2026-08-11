@@ -39,7 +39,7 @@ function TFCoils() {
         // magnetic field slider the one control with no visible effect
         // anywhere in the scene. Energise them instead: the same `load` the
         // stress view already computes, as a cool blue glow.
-        m.color.set('#64748B');
+        m.color.set('#4A5568');
         m.emissive.setRGB(0.05, 0.16, 0.42).multiplyScalar(Math.min(load, 1) * 1.6);
       }
     });
@@ -50,7 +50,7 @@ function TFCoils() {
         <group key={i} rotation-z={phi}>
           <mesh position={[R0, 0, 0]} rotation-x={Math.PI / 2}>
             <torusGeometry args={[1.12, 0.09, 12, 40]} />
-            <meshStandardMaterial color="#64748B" metalness={0.85} roughness={0.35} />
+            <meshStandardMaterial color="#4A5568" metalness={0.85} roughness={0.35} />
           </mesh>
         </group>
       ))}
@@ -228,7 +228,7 @@ function NBIInjectors() {
     <group key={i} rotation-z={phi}>
       <mesh position={[R0 + 1.7, 0.75, 0]} rotation-z={-0.42}>
         <boxGeometry args={[1.5, 0.34, 0.34]} />
-        <meshStandardMaterial color="#475569" metalness={0.7} roughness={0.45} />
+        <meshStandardMaterial color="#313A49" metalness={0.7} roughness={0.45} />
       </mesh>
     </group>
   ));
@@ -291,11 +291,11 @@ function StatusOverlay() {
   const stability = useReactorStore((s) => s.sim.physics.stability);
   return (
     <div className="absolute top-2 left-2 z-10 text-[10px] font-mono pointer-events-none">
-      <div className={plasmaOn ? 'text-safe' : 'text-slate-500'}>
+      <div className={plasmaOn ? 'text-safe' : 'text-ink/55'}>
         ● PLASMA {plasmaOn ? 'CONFINED' : 'OFFLINE'}
       </div>
       {ignition && <div className="text-accent font-bold">★ IGNITION: SELF-HEATING</div>}
-      <div className="text-slate-400">T = {T.toFixed(1)} keV · stability {stability}%</div>
+      <div className="text-ink/70">T = {T.toFixed(1)} keV · stability {stability}%</div>
     </div>
   );
 }
@@ -343,7 +343,7 @@ export default function ReactorScene({ bare = false }) {
       {!bare && <StatusOverlay />}
       {!bare && <AnalysisOverlay />}
       {!bare && (
-        <div className="absolute bottom-1.5 left-2 label-mono text-[8px] text-slate-500 pointer-events-none">
+        <div className="absolute bottom-1.5 left-2 label-mono text-[8px] text-ink/55 pointer-events-none">
           drag to orbit / scroll to zoom
         </div>
       )}

@@ -41,8 +41,8 @@ function LawsonPlot() {
     .join(' ');
 
   return (
-    <div className="bg-panel rounded-lg p-2 m-2 shrink-0">
-      <div className="text-[9px] uppercase tracking-widest text-slate-400 flex items-center gap-1 mb-1">
+    <div className="bg-panel p-2 m-2 shrink-0">
+      <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1 mb-1">
         Lawson Triple Product <Cite id="lawson" />
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" aria-label="Lawson criterion operating point plot">
@@ -53,18 +53,18 @@ function LawsonPlot() {
         />
         <polyline points={IGNITION_PTS.join(' ')} fill="none" stroke="var(--color-accent)" strokeWidth="1.2" strokeDasharray="4 3" />
         {/* axes */}
-        <line x1={PAD} y1={H - PAD + 8} x2={W - 6} y2={H - PAD + 8} stroke="#475569" strokeWidth="1" />
-        <line x1={PAD} y1={8} x2={PAD} y2={H - PAD + 8} stroke="#475569" strokeWidth="1" />
+        <line x1={PAD} y1={H - PAD + 8} x2={W - 6} y2={H - PAD + 8} stroke="#313A49" strokeWidth="1" />
+        <line x1={PAD} y1={8} x2={PAD} y2={H - PAD + 8} stroke="#313A49" strokeWidth="1" />
         {[1, 10, 100].map((t) => (
-          <text key={t} x={x(t)} y={H - PAD + 18} textAnchor="middle" fontSize="7" fill="#64748B">{t}</text>
+          <text key={t} x={x(t)} y={H - PAD + 18} textAnchor="middle" fontSize="7" fill="#4A5568">{t}</text>
         ))}
         {[1e18, 1e20, 1e22].map((v) => (
-          <text key={v} x={PAD - 3} y={y(v) + 2} textAnchor="end" fontSize="6.5" fill="#64748B">
+          <text key={v} x={PAD - 3} y={y(v) + 2} textAnchor="end" fontSize="6.5" fill="#4A5568">
             1e{Math.round(Math.log10(v))}
           </text>
         ))}
-        <text x={(W + PAD) / 2} y={H - 2} textAnchor="middle" fontSize="7" fill="#94A3B8">T (keV)</text>
-        <text x={8} y={H / 2} textAnchor="middle" fontSize="7" fill="#94A3B8" transform={`rotate(-90 8 ${H / 2})`}>
+        <text x={(W + PAD) / 2} y={H - 2} textAnchor="middle" fontSize="7" fill="#A9B0BE">T (keV)</text>
+        <text x={8} y={H / 2} textAnchor="middle" fontSize="7" fill="#A9B0BE" transform={`rotate(-90 8 ${H / 2})`}>
           n·τE (s·m⁻³)
         </text>
         <text x={W - 10} y={16} textAnchor="end" fontSize="7" fill="var(--color-accent)">IGNITION →</text>

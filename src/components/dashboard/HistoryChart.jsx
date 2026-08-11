@@ -22,15 +22,15 @@ function HistoryChart({ metric, label, color = 'var(--color-accent)', formatMax 
   }
 
   return (
-    <div className="bg-panel rounded-lg p-2 min-w-0">
+    <div className="bg-panel p-2 min-w-0">
       <div className="flex justify-between items-baseline">
-        <span className="text-[9px] uppercase tracking-wider text-slate-400">{label}</span>
-        <span className="text-[9px] font-mono text-slate-500">
+        <span className="text-[9px] uppercase tracking-wider text-ink/70">{label}</span>
+        <span className="text-[9px] font-mono text-ink/55">
           peak {formatMax ? formatMax(maxV) : maxV.toFixed(1)}
         </span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-12" preserveAspectRatio="none" aria-hidden="true">
-        <line x1="0" y1={H - 4} x2={W} y2={H - 4} stroke="#334155" strokeWidth="1" />
+        <line x1="0" y1={H - 4} x2={W} y2={H - 4} stroke="#242B37" strokeWidth="1" />
         {path && <path d={path} fill="none" stroke={color} strokeWidth="1.6" />}
       </svg>
     </div>

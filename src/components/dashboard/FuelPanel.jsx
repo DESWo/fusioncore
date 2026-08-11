@@ -14,17 +14,17 @@ export default function FuelPanel({ showBreeding }) {
   const tClass = tritium < 2 ? 'text-crit' : tritium < 8 ? 'text-warn' : 'text-safe';
 
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-2 flex items-center gap-1">
         Fuel Inventory <Cite id="tritium_price" />
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs font-mono">
         <div>
-          <div className="text-slate-400 text-[9px]">TRITIUM</div>
+          <div className="text-ink/70 text-[9px]">TRITIUM</div>
           <div className={`font-bold ${tClass}`}>{tritium.toFixed(2)} g</div>
         </div>
         <div>
-          <div className="text-slate-400 text-[9px]">DEUTERIUM</div>
+          <div className="text-ink/70 text-[9px]">DEUTERIUM</div>
           <div className="font-bold text-ink">{deuterium.toFixed(2)} g</div>
         </div>
       </div>
@@ -33,27 +33,27 @@ export default function FuelPanel({ showBreeding }) {
           <button
             key={g}
             onClick={() => buy(g)}
-            className="flex-1 text-[10px] py-1 rounded bg-slate-700 hover:bg-slate-600 font-mono"
+            className="flex-1 text-[10px] py-1 rounded bg-raise hover:bg-raise-hi font-mono"
           >
             Buy {g}g ({fmtMoney(g * TRITIUM_PRICE_G)})
           </button>
         ))}
       </div>
-      <label className="flex items-center gap-2 mt-2 text-[10px] text-slate-300 cursor-pointer">
+      <label className="flex items-center gap-2 mt-2 text-[10px] text-ink/85 cursor-pointer">
         <input
           type="checkbox"
           checked={autoBuy}
           onChange={(e) => setControl('autoBuyTritium', e.target.checked)}
-          className="accent-sky-400"
+          className="accent-accent"
         />
         Auto-purchase when inventory &lt; 2 g
       </label>
       {showBreeding && (
-        <div className="mt-2 pt-2 border-t border-slate-700 text-[10px] flex items-center justify-between">
-          <span className="text-slate-400 flex items-center gap-1">
+        <div className="mt-2 pt-2 border-t border-raise text-[10px] flex items-center justify-between">
+          <span className="text-ink/70 flex items-center gap-1">
             BREEDING RATIO (TBR) <Cite id="tbr" />
           </span>
-          <span className={`font-mono font-bold ${tbr > 1 ? 'text-safe' : 'text-slate-500'}`}>
+          <span className={`font-mono font-bold ${tbr > 1 ? 'text-safe' : 'text-ink/55'}`}>
             {tbr.toFixed(2)} {tbr > 1 ? ', self-sufficient' : ', no blanket'}
           </span>
         </div>

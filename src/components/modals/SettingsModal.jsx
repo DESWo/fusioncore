@@ -5,7 +5,7 @@ import Icon from '../common/Icon.jsx';
 function Row({ label, children }) {
   return (
     <div className="flex items-center justify-between gap-3 py-1.5">
-      <span className="text-xs text-slate-300">{label}</span>
+      <span className="text-xs text-ink/85">{label}</span>
       <div className="flex items-center gap-2">{children}</div>
     </div>
   );
@@ -40,20 +40,20 @@ export default function SettingsModal() {
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={close}>
       <div
-        className="bg-panel rounded-xl max-w-md w-full p-5 max-h-[90vh] overflow-y-auto"
+        className="bg-panel max-w-md w-full p-5 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
         role="dialog" aria-modal="true" aria-label="Settings"
       >
         <div className="flex items-center justify-between">
           <h2 className="font-bold tracking-widest text-accent text-sm">SETTINGS</h2>
-          <button onClick={close} aria-label="Close settings" className="text-slate-400 hover:text-ink px-2 inline-flex items-center">
+          <button onClick={close} aria-label="Close settings" className="text-ink/70 hover:text-ink px-2 inline-flex items-center">
             <Icon name="x" className="w-4 h-4" />
           </button>
         </div>
 
-        <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mt-4 mb-1 border-b border-slate-700 pb-1">Audio</h3>
+        <h3 className="text-[10px] uppercase tracking-widest text-ink/55 mt-4 mb-1 border-b border-raise pb-1">Audio</h3>
         <Row label="Audio enabled">
-          <input type="checkbox" checked={settings.audioEnabled} onChange={(e) => update({ audioEnabled: e.target.checked })} className="accent-sky-400" />
+          <input type="checkbox" checked={settings.audioEnabled} onChange={(e) => update({ audioEnabled: e.target.checked })} className="accent-accent" />
         </Row>
         <VolumeSlider label="Master" value={settings.volumes.master} onChange={setVolume('master')} />
         <VolumeSlider label="Ambient loop" value={settings.volumes.ambient} onChange={setVolume('ambient')} />
@@ -61,11 +61,11 @@ export default function SettingsModal() {
         <VolumeSlider label="Critical alerts" value={settings.volumes.alerts} onChange={setVolume('alerts')} />
         <VolumeSlider label="Music" value={settings.volumes.music} onChange={setVolume('music')} />
 
-        <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mt-4 mb-1 border-b border-slate-700 pb-1">Accessibility</h3>
+        <h3 className="text-[10px] uppercase tracking-widest text-ink/55 mt-4 mb-1 border-b border-raise pb-1">Accessibility</h3>
         {tts ? (
           <>
             <Row label="Text-to-speech buttons">
-              <input type="checkbox" checked={settings.ttsEnabled} onChange={(e) => update({ ttsEnabled: e.target.checked })} className="accent-sky-400" />
+              <input type="checkbox" checked={settings.ttsEnabled} onChange={(e) => update({ ttsEnabled: e.target.checked })} className="accent-accent" />
             </Row>
             {settings.ttsEnabled && (
               <>
@@ -73,7 +73,7 @@ export default function SettingsModal() {
                   <select
                     value={settings.ttsVoice ?? ''}
                     onChange={(e) => update({ ttsVoice: e.target.value || null })}
-                    className="bg-slate-900 border border-slate-600 rounded text-xs p-1 max-w-44"
+                    className="bg-base border border-raise-hi rounded text-xs p-1 max-w-44"
                   >
                     <option value="">System default</option>
                     {voices.map((v) => (
@@ -96,7 +96,7 @@ export default function SettingsModal() {
             )}
           </>
         ) : (
-          <p className="text-[10px] text-slate-500 italic py-1" title="Text-to-Speech engine unresolved by current browser architecture.">
+          <p className="text-[10px] text-ink/55 italic py-1" title="Text-to-Speech engine unresolved by current browser architecture.">
             Text-to-Speech engine unresolved by current browser architecture.
           </p>
         )}
@@ -104,7 +104,7 @@ export default function SettingsModal() {
           <select
             value={settings.colorblind}
             onChange={(e) => update({ colorblind: e.target.value })}
-            className="bg-slate-900 border border-slate-600 rounded text-xs p-1"
+            className="bg-base border border-raise-hi rounded text-xs p-1"
           >
             <option value="none">Off</option>
             <option value="protanopia">Protanopia</option>
@@ -113,16 +113,16 @@ export default function SettingsModal() {
           </select>
         </Row>
         <Row label="Reduced motion">
-          <input type="checkbox" checked={settings.reducedMotion} onChange={(e) => update({ reducedMotion: e.target.checked })} className="accent-sky-400" />
+          <input type="checkbox" checked={settings.reducedMotion} onChange={(e) => update({ reducedMotion: e.target.checked })} className="accent-accent" />
         </Row>
         <Row label="Spin the machine">
-          <input type="checkbox" checked={settings.autoRotate !== false} onChange={(e) => update({ autoRotate: e.target.checked })} className="accent-sky-400" />
+          <input type="checkbox" checked={settings.autoRotate !== false} onChange={(e) => update({ autoRotate: e.target.checked })} className="accent-accent" />
         </Row>
         <Row label="OpenDyslexic font">
-          <input type="checkbox" checked={settings.dyslexicFont} onChange={(e) => update({ dyslexicFont: e.target.checked })} className="accent-sky-400" />
+          <input type="checkbox" checked={settings.dyslexicFont} onChange={(e) => update({ dyslexicFont: e.target.checked })} className="accent-accent" />
         </Row>
 
-        <h3 className="text-[10px] uppercase tracking-widest text-slate-500 mt-4 mb-1 border-b border-slate-700 pb-1">Interface</h3>
+        <h3 className="text-[10px] uppercase tracking-widest text-ink/55 mt-4 mb-1 border-b border-raise pb-1">Interface</h3>
         <Row label="UI scale">
           <input type="range" min={0.75} max={1.5} step={0.05} value={settings.uiScale} onChange={(e) => update({ uiScale: parseFloat(e.target.value) })} className="w-32" />
           <span className="font-mono text-[10px] w-10 text-right">{Math.round(settings.uiScale * 100)}%</span>
@@ -130,10 +130,10 @@ export default function SettingsModal() {
 
         {screen === 'game' && (
           <div className="mt-5 grid grid-cols-2 gap-2">
-            <button onClick={() => { saveGame(); close(); }} className="py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs font-semibold">
+            <button onClick={() => { saveGame(); close(); }} className="py-2 rounded bg-raise hover:bg-raise-hi text-xs font-semibold">
               Save Game
             </button>
-            <button onClick={() => { close(); quitToTitle(); }} className="py-2 rounded bg-slate-700 hover:bg-slate-600 text-xs font-semibold">
+            <button onClick={() => { close(); quitToTitle(); }} className="py-2 rounded bg-raise hover:bg-raise-hi text-xs font-semibold">
               Save &amp; Quit to Title
             </button>
           </div>

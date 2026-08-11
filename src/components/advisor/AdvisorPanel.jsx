@@ -6,7 +6,7 @@ import Cite from '../common/Cite.jsx';
 import SpeakerIcon from '../common/SpeakerIcon.jsx';
 
 const TYPE_COLOR = {
-  info: 'text-slate-300',
+  info: 'text-ink/85',
   warning: 'text-warn',
   critical: 'text-crit',
 };
@@ -28,11 +28,11 @@ export default function AdvisorPanel() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-base">
-      <div className="px-3 py-2 border-b border-slate-700 shrink-0 flex items-center gap-2">
+      <div className="px-3 py-2 border-b border-raise shrink-0 flex items-center gap-2">
         <button
           onClick={() => setTab('advisor')}
           className={`text-[10px] uppercase tracking-widest font-bold ${
-            tab === 'advisor' ? 'text-accent' : 'text-slate-500 hover:text-slate-300'
+            tab === 'advisor' ? 'text-accent' : 'text-ink/55 hover:text-ink/85'
           }`}
         >
           ▮ Chief Engineer
@@ -40,7 +40,7 @@ export default function AdvisorPanel() {
         <button
           onClick={() => setTab('notebook')}
           className={`text-[10px] uppercase tracking-widest font-bold ${
-            tab === 'notebook' ? 'text-accent' : 'text-slate-500 hover:text-slate-300'
+            tab === 'notebook' ? 'text-accent' : 'text-ink/55 hover:text-ink/85'
           }`}
         >
           ✎ Notebook
@@ -55,8 +55,8 @@ export default function AdvisorPanel() {
         <div className="flex-1 overflow-y-auto px-3 py-2 min-h-0" role="log" aria-label="Advisor terminal feed">
           {feed.map((entry) => (
             <div key={entry.id} className="terminal-line mb-2">
-              <span className="text-slate-600">[{fmtClock(entry.simTime)}] </span>
-              <span className={TYPE_COLOR[entry.type] ?? 'text-slate-300'}>
+              <span className="text-ink/40">[{fmtClock(entry.simTime)}] </span>
+              <span className={TYPE_COLOR[entry.type] ?? 'text-ink/85'}>
                 {entry.type === 'critical' ? '⚠ ' : entry.type === 'warning' ? '△ ' : '» '}
                 {entry.text}
               </span>{' '}

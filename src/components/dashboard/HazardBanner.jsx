@@ -23,7 +23,7 @@ export default function HazardBanner() {
         const info = HAZARD_INFO[key];
         if (!info) return null;
         return (
-          <div key={key} className="status-crit rounded-md bg-crit/15 px-3 py-2 flex items-center justify-between gap-2">
+          <div key={key} className="status-crit bg-crit/15 px-3 py-2 flex items-center justify-between gap-2">
             <span className="text-[11px] font-bold text-crit flex items-center gap-1.5">
               <Icon name="warn" className="w-3.5 h-3.5" />
               {info.label}

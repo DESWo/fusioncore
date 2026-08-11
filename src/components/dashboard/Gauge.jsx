@@ -14,9 +14,9 @@ function Gauge({ label, value, max, unit, display, zones = [0.7, 0.9], cite, inv
   const zoneIcon = { safe: '●', warn: '▲', crit: '✕' }[zone];
 
   return (
-    <div className="bg-panel rounded-lg p-2 flex flex-col items-center min-w-0">
+    <div className="bg-panel p-2 flex flex-col items-center min-w-0">
       <svg viewBox="0 0 100 58" className="w-full max-w-[110px]">
-        <path d="M 8 52 A 42 42 0 0 1 92 52" fill="none" stroke="#334155" strokeWidth="7" strokeLinecap="round" />
+        <path d="M 8 52 A 42 42 0 0 1 92 52" fill="none" stroke="#242B37" strokeWidth="7" strokeLinecap="round" />
         <path
           d="M 8 52 A 42 42 0 0 1 92 52"
           fill="none"
@@ -35,7 +35,7 @@ function Gauge({ label, value, max, unit, display, zones = [0.7, 0.9], cite, inv
         <span aria-hidden="true" className="text-[9px] align-middle mr-0.5">{zoneIcon}</span>
         {display}
       </div>
-      <div className="text-[9px] uppercase tracking-wider text-slate-400 mt-0.5 flex items-center gap-1 text-center">
+      <div className="text-[9px] uppercase tracking-wider text-ink/70 mt-0.5 flex items-center gap-1 text-center">
         {label} {unit ? `(${unit})` : ''} {cite && <Cite id={cite} />}
       </div>
     </div>

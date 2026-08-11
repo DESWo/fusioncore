@@ -21,29 +21,29 @@ export default function CalcDrawer({ calc }) {
         How is this calculated?
       </button>
       {open && (
-        <div className="mt-1.5 rounded-md border border-slate-700 bg-slate-900/70 p-2.5 grid gap-2">
+        <div className="mt-1.5 border border-raise bg-base/70 p-2.5 grid gap-2">
           <div>
-            <div className="text-[8px] uppercase tracking-widest text-slate-500">What it means</div>
-            <p className="text-[10px] text-slate-200 leading-snug">{calc.meaning}</p>
+            <div className="text-[8px] uppercase tracking-widest text-ink/55">What it means</div>
+            <p className="text-[10px] text-ink leading-snug">{calc.meaning}</p>
           </div>
           <div>
-            <div className="text-[8px] uppercase tracking-widest text-slate-500">What changes it</div>
-            <p className="text-[10px] text-slate-300 leading-snug">{calc.drivers}</p>
+            <div className="text-[8px] uppercase tracking-widest text-ink/55">What changes it</div>
+            <p className="text-[10px] text-ink/85 leading-snug">{calc.drivers}</p>
           </div>
           {calc.equation && (
             <div>
-              <div className="text-[8px] uppercase tracking-widest text-slate-500">Equation</div>
+              <div className="text-[8px] uppercase tracking-widest text-ink/55">Equation</div>
               <div className="font-mono text-[11px] text-accent mt-0.5">{calc.equation}</div>
             </div>
           )}
           {calc.steps?.length > 0 && (
             <div>
-              <div className="text-[8px] uppercase tracking-widest text-slate-500">Current calculation</div>
+              <div className="text-[8px] uppercase tracking-widest text-ink/55">Current calculation</div>
               <div className="grid gap-0.5 mt-0.5">
                 {calc.steps.map(([k, v]) => (
                   <div key={k} className="flex justify-between text-[10px]">
-                    <span className="text-slate-400">{k}</span>
-                    <span className="font-mono text-slate-200">{v}</span>
+                    <span className="text-ink/70">{k}</span>
+                    <span className="font-mono text-ink">{v}</span>
                   </div>
                 ))}
               </div>
@@ -51,7 +51,7 @@ export default function CalcDrawer({ calc }) {
           )}
           {calc.limitedBy?.length > 0 && (
             <div>
-              <div className="text-[8px] uppercase tracking-widest text-slate-500">Currently limited by</div>
+              <div className="text-[8px] uppercase tracking-widest text-ink/55">Currently limited by</div>
               <div className="grid gap-0.5 mt-0.5">
                 {calc.limitedBy.map((l) => (
                   <div key={l} className="text-[10px] text-warn leading-snug flex gap-1.5">
@@ -62,7 +62,7 @@ export default function CalcDrawer({ calc }) {
             </div>
           )}
           {calc.assumptions && (
-            <p className="text-[9px] text-slate-500 leading-snug border-t border-slate-700 pt-1.5">
+            <p className="text-[9px] text-ink/55 leading-snug border-t border-raise pt-1.5">
               Assumptions and limits: {calc.assumptions} {calc.cite && <Cite id={calc.cite} />}
             </p>
           )}

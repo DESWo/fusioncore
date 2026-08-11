@@ -8,7 +8,7 @@ export default function Finance() {
   const netMW = useReactorStore((s) => s.sim.physics.netElecMW);
   const homes = useReactorStore((s) => s.sim.physics.homesPowered);
 
-  const lcoeClass = econ.lcoe === null ? 'text-slate-500'
+  const lcoeClass = econ.lcoe === null ? 'text-ink/55'
     : econ.lcoe <= 100 ? 'text-safe' : econ.lcoe <= 300 ? 'text-warn' : 'text-crit';
 
   const rows = [
@@ -22,26 +22,26 @@ export default function Finance() {
   ];
 
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Financial Ledger</div>
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-2">Financial Ledger</div>
       <div className="grid gap-1">
         {rows.map(([k, v, cite]) => (
           <div key={k} className="flex justify-between text-[11px]">
-            <span className="text-slate-400 flex items-center gap-1">{k} {cite && <Cite id={cite} />}</span>
+            <span className="text-ink/70 flex items-center gap-1">{k} {cite && <Cite id={cite} />}</span>
             <span className="font-mono">{v}</span>
           </div>
         ))}
-        <div className="flex justify-between text-[11px] pt-1 mt-1 border-t border-slate-700">
-          <span className="text-slate-400 flex items-center gap-1">
+        <div className="flex justify-between text-[11px] pt-1 mt-1 border-t border-raise">
+          <span className="text-ink/70 flex items-center gap-1">
             Average electricity cost
-            <span className="text-[8px] text-slate-500 italic">(LCOE)</span>
+            <span className="text-[8px] text-ink/55 italic">(LCOE)</span>
             <Cite id="lcoe_lazard" />
           </span>
           <span className={`font-mono font-bold ${lcoeClass}`}>
             {econ.lcoe === null ? 'no exports yet' : `$${econ.lcoe.toFixed(0)}/MWh`}
           </span>
         </div>
-        <p className="text-[9px] text-slate-500 leading-snug mt-1">Target: ≤ $100/MWh. Cheaper than gas.</p>
+        <p className="text-[9px] text-ink/55 leading-snug mt-1">Target: ≤ $100/MWh. Cheaper than gas.</p>
         <CalcDrawer calc={{
           meaning: econ.lcoe === null
             ? 'Every dollar ever spent, divided by every unit of electricity ever sold. Nothing sold yet, so no average exists.'

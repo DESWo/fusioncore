@@ -34,8 +34,8 @@ export function CampaignMap() {
   const completed = useReactorStore((s) => s.level.completed);
   const levels = levelsFor(mode, plantKey);
   return (
-    <div className="bg-panel rounded-lg px-3 py-2">
-      <div className="text-[9px] uppercase tracking-widest text-slate-400">
+    <div className="bg-panel px-3 py-2">
+      <div className="text-[9px] uppercase tracking-widest text-ink/70">
         {mode !== 'fission'
           ? 'Campaign goal: take fusion from first plasma to cheaper-than-gas commercial power'
           : plantKey === 'research'
@@ -59,21 +59,21 @@ export function CampaignMap() {
                       ? 'bg-safe/20 border-safe text-safe'
                       : current
                         ? 'bg-accent text-base border-accent'
-                        : 'bg-slate-800 border-slate-600 text-slate-500'
+                        : 'bg-panel border-raise-hi text-ink/55'
                   }`}
                 >
                   {done ? <Icon name="check" className="w-3 h-3" /> : current ? l.id : <Icon name="lock" className="w-2.5 h-2.5" />}
                 </div>
                 <span
                   className={`text-[8px] mt-0.5 text-center leading-tight ${
-                    current ? 'text-accent font-semibold' : done ? 'text-slate-400' : 'text-slate-600'
+                    current ? 'text-accent font-semibold' : done ? 'text-ink/70' : 'text-ink/40'
                   }`}
                 >
                   {l.name}
                 </span>
               </div>
               {i < levels.length - 1 && (
-                <div className={`h-px w-2 shrink-0 mt-[-10px] ${done ? 'bg-safe/60' : 'bg-slate-700'}`} />
+                <div className={`h-px w-2 shrink-0 mt-[-10px] ${done ? 'bg-safe/60' : 'bg-raise'}`} />
               )}
             </div>
           );
@@ -101,18 +101,18 @@ export function ObjectiveBanner() {
     if (career) {
       const next = nextPosting(career.postingId);
       return (
-        <div className="bg-panel rounded-lg p-3 border border-violet-400/40">
-          <div className="text-[10px] uppercase tracking-widest text-violet-300">
+        <div className="bg-panel p-3 border border-accent/40">
+          <div className="text-[10px] uppercase tracking-widest text-accent">
             Posting complete: performance review filed
           </div>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs text-ink/85 mt-1">
             {next
               ? `A promotion offer is on your desk: ${next.title}. The plant keeps running until you sign.`
               : 'Top of the ladder for now. Operations continue; new postings are in development.'}
           </p>
           <button
             onClick={() => setCareerOpen(true)}
-            className="mt-2 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded bg-violet-400/20 text-violet-200 hover:bg-violet-400/30"
+            className="mt-2 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded bg-accent/20 text-accent hover:bg-accent/30"
           >
             {next ? 'READ REVIEW & OFFER' : 'OPEN CAREER FILE'}
           </button>
@@ -120,9 +120,9 @@ export function ObjectiveBanner() {
       );
     }
     return (
-      <div className="bg-panel rounded-lg p-3 border border-safe/40">
+      <div className="bg-panel p-3 border border-safe/40">
         <div className="text-[10px] uppercase tracking-widest text-safe">Campaign complete: Sandbox mode</div>
-        <p className="text-xs text-slate-300 mt-1">
+        <p className="text-xs text-ink/85 mt-1">
           {mode === 'fission'
             ? 'Free operation. Load scenarios, run transients, watch the margins.'
             : 'The commercial fusion era is yours. All systems unlocked. Push the machine as far as physics allows.'}
@@ -132,7 +132,7 @@ export function ObjectiveBanner() {
   }
 
   return (
-    <div className="bg-panel rounded-lg p-3 border border-accent/30">
+    <div className="bg-panel p-3 border border-accent/30">
       <div className="flex items-center justify-between">
         <span className="text-[10px] uppercase tracking-widest text-accent">
           Mission {level.id}: {level.name}
@@ -142,7 +142,7 @@ export function ObjectiveBanner() {
       <p className="text-xs font-semibold mt-1">{level.objective}</p>
       {/* The idea, always. The exact setpoints only if you ask: handing over
           "field 11.5 T, density 1.0" turns the mission into data entry. */}
-      {level.hint && <p className="text-[10px] text-slate-400 mt-0.5">{level.hint}</p>}
+      {level.hint && <p className="text-[10px] text-ink/70 mt-0.5">{level.hint}</p>}
       {level.brief && (
         showBrief ? (
           <p className="text-[10px] text-accent mt-1 leading-relaxed">▸ {level.brief}</p>
@@ -150,13 +150,13 @@ export function ObjectiveBanner() {
           <button
             type="button"
             onClick={() => setShowBrief(true)}
-            className="mt-1 label-mono text-[9px] text-slate-500 hover:text-accent"
+            className="mt-1 label-mono text-[9px] text-ink/55 hover:text-accent"
           >
             [ stuck? show the settings ]
           </button>
         )
       )}
-      <div className="h-1.5 bg-slate-700 rounded-full mt-2 overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
+      <div className="h-1.5 bg-raise rounded-full mt-2 overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
         <motion.div
           className="h-full bg-accent"
           animate={{ width: `${progress * 100}%` }}
@@ -208,16 +208,16 @@ function BigMetrics({ features }) {
     ...recircItems.slice(0, 2).map(([t]) => t),
   ];
 
-  const qColor = Q >= 1 ? 'text-safe' : Q >= 0.5 ? 'text-warn' : 'text-slate-300';
+  const qColor = Q >= 1 ? 'text-safe' : Q >= 0.5 ? 'text-warn' : 'text-ink/85';
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {features.has('fulldash') && (
-        <div className="bg-panel rounded-lg p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-slate-400 flex items-center gap-1">
+        <div className="bg-panel p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
+          <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
             Q: Energy Gain <Cite id="jet_record" />
           </div>
           <div className={`font-mono text-3xl font-black ${qColor}`}>{Q.toFixed(2)}</div>
-          <div className="text-[8px] text-slate-500">fusion ÷ heating electrical draw</div>
+          <div className="text-[8px] text-ink/55">fusion ÷ heating electrical draw</div>
           <div className="w-full text-left">
             <CalcDrawer calc={{
               meaning: `Every megawatt of electricity fed to the heating systems buys ${Q.toFixed(2)} MW of fusion heat.`,
@@ -239,19 +239,19 @@ function BigMetrics({ features }) {
         </div>
       )}
       {features.has('neutrons') && (
-        <div className="bg-panel rounded-lg p-3 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-slate-400">Fusion Power</div>
+        <div className="bg-panel p-3 flex flex-col items-center justify-center">
+          <div className="text-[9px] uppercase tracking-widest text-ink/70">Fusion Power</div>
           <div className="font-mono text-lg font-bold text-accent">{fmtPower(pFus)}</div>
-          <div className="text-[8px] text-slate-500">thermal</div>
+          <div className="text-[8px] text-ink/55">thermal</div>
         </div>
       )}
       {features.has('finance') && (
-        <div className="bg-panel rounded-lg p-3 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-slate-400">Net to Grid</div>
+        <div className="bg-panel p-3 flex flex-col items-center justify-center">
+          <div className="text-[9px] uppercase tracking-widest text-ink/70">Net to Grid</div>
           <div className={`font-mono text-lg font-bold ${net >= 0 ? 'text-safe' : 'text-crit'}`}>
             {net >= 0 ? '+' : ''}{fmtPower(net)}
           </div>
-          <div className="text-[8px] text-slate-500">after recirculating power</div>
+          <div className="text-[8px] text-ink/55">after recirculating power</div>
           <div className="w-full text-left">
             <CalcDrawer calc={{
               meaning: `The plant generates ${fmtPower(p.grossElecMW)} of electricity and spends ${fmtPower(p.recircMW)} running itself. The grid gets the difference.`,
@@ -270,14 +270,14 @@ function BigMetrics({ features }) {
         </div>
       )}
       {features.has('fulldash') && (
-        <div className="bg-panel rounded-lg p-3 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-slate-400 flex items-center gap-1">
+        <div className="bg-panel p-3 flex flex-col items-center justify-center">
+          <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
             n·T·τ <Cite id="lawson" />
           </div>
           <div className={`font-mono text-sm font-bold ${ignition ? 'text-accent' : 'text-ink'}`}>
             {fmtSci(triple)}
           </div>
-          <div className="text-[8px] text-slate-500">
+          <div className="text-[8px] text-ink/55">
             {ignition ? '★ IGNITED' : `ignition at ${fmtSci(IGNITION_TRIPLE, 0)}`}
           </div>
         </div>
@@ -309,13 +309,13 @@ function StructurePanel() {
     ['magnets', 'Magnets', st.magnets, 'quench'],
   ];
   return (
-    <div className="bg-panel rounded-lg p-3">
+    <div className="bg-panel p-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] uppercase tracking-wider text-slate-400">Structural Health &amp; Maintenance</span>
+        <span className="text-[10px] uppercase tracking-wider text-ink/70">Structural Health &amp; Maintenance</span>
         {plasmaOn ? (
           <button
             onClick={shutdown}
-            className="text-[9px] font-semibold px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-warn"
+            className="text-[9px] font-semibold px-2 py-1 rounded bg-raise hover:bg-raise-hi text-warn"
             title="Vent the plasma to open a maintenance window"
           >
             SHUT DOWN PLASMA
@@ -331,11 +331,11 @@ function StructurePanel() {
           const cost = ((100 - v) / 100) * SERVICE_COSTS[key];
           const canService = worn && !plasmaOn && funds >= cost;
           const load = loads[key];
-          const loadColor = load > 0.95 ? 'text-crit' : load > 0.8 ? 'text-warn' : 'text-slate-500';
+          const loadColor = load > 0.95 ? 'text-crit' : load > 0.8 ? 'text-warn' : 'text-ink/55';
           return (
             <div key={key}>
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-slate-400 flex items-center gap-1">
+                <span className="text-ink/70 flex items-center gap-1">
                   {label} <Cite id={cite} />
                   <span className={`font-mono text-[9px] ${loadColor}`}>load {(load * 100).toFixed(0)}%</span>
                 </span>
@@ -347,7 +347,7 @@ function StructurePanel() {
                       disabled={!canService}
                       title={plasmaOn ? 'Shut down the plasma first' : funds < cost ? 'Insufficient funds' : `Restore to 100% for ${fmtMoney(cost)}`}
                       className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                        canService ? 'bg-accent text-base font-bold hover:brightness-110' : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                        canService ? 'bg-accent text-base font-bold hover:brightness-110' : 'bg-raise text-ink/55 cursor-not-allowed'
                       }`}
                     >
                       SERVICE {fmtMoney(cost)}
@@ -355,14 +355,14 @@ function StructurePanel() {
                   )}
                 </span>
               </div>
-              <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden mt-0.5">
+              <div className="h-1.5 bg-raise rounded-full overflow-hidden mt-0.5">
                 <div className="h-full rounded-full" style={{ width: `${v}%`, background: color, transition: 'width 0.3s' }} />
               </div>
             </div>
           );
         })}
       </div>
-      <p className="text-[9px] text-slate-500 mt-1.5">Service requires plasma off.</p>
+      <p className="text-[9px] text-ink/55 mt-1.5">Service requires plasma off.</p>
     </div>
   );
 }
@@ -414,7 +414,7 @@ export function TelemetryPanel({ features }) {
             key={t.id}
             onClick={() => setMetric(t.id)}
             className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${
-              active?.id === t.id ? 'bg-accent text-base' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              active?.id === t.id ? 'bg-accent text-base' : 'bg-raise text-ink/85 hover:bg-raise-hi'
             }`}
           >
             {t.label}
@@ -425,7 +425,7 @@ export function TelemetryPanel({ features }) {
             onClick={() => setMetric('overlay')}
             title="All channels on one plot, each scaled to its own peak"
             className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${
-              overlayActive ? 'bg-accent text-base' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              overlayActive ? 'bg-accent text-base' : 'bg-raise text-ink/85 hover:bg-raise-hi'
             }`}
           >
             Overlay
@@ -435,7 +435,7 @@ export function TelemetryPanel({ features }) {
         <button
           onClick={() => exportTelemetryCsv(mode)}
           title="Download this run's telemetry as CSV"
-          className="text-[9px] px-2 py-0.5 rounded-full font-semibold bg-slate-700 text-slate-300 hover:bg-slate-600"
+          className="text-[9px] px-2 py-0.5 rounded-full font-semibold bg-raise text-ink/85 hover:bg-raise-hi"
         >
           Export CSV
         </button>
@@ -450,12 +450,12 @@ export function TelemetryPanel({ features }) {
 function NeutronPanel() {
   const rate = useReactorStore((s) => s.sim.physics.neutronRate);
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-1 flex items-center gap-1">
         Neutron Monitoring <Cite id="dpa_materials" />
       </div>
       <div className="font-mono text-sm font-bold text-accent">{rate > 0 ? `${fmtSci(rate)} n/s` : ', no flux'}</div>
-      <p className="text-[9px] text-slate-500 mt-1">Each count is one fusion reaction.</p>
+      <p className="text-[9px] text-ink/55 mt-1">Each count is one fusion reaction.</p>
     </div>
   );
 }
@@ -468,17 +468,17 @@ function VacuumPanel() {
   const named = levelId >= 3; // "Greenwald" is introduced in the Mission 3 briefing
   const color = gwFrac < 0.7 ? 'text-safe' : gwFrac < 0.95 ? 'text-warn' : 'text-crit';
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-1 flex items-center gap-1">
         Fuel Density Diagnostics <Cite id="greenwald" />
       </div>
       <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
         <div>
-          <div className="text-slate-500 text-[9px]">DENSITY (10²⁰ m⁻³)</div>
+          <div className="text-ink/55 text-[9px]">DENSITY (10²⁰ m⁻³)</div>
           <div className="font-bold">{density.toFixed(2)}</div>
         </div>
         <div>
-          <div className="text-slate-500 text-[9px]">{named ? 'DENSITY LIMIT (GREENWALD)' : 'DENSITY LIMIT'}</div>
+          <div className="text-ink/55 text-[9px]">{named ? 'DENSITY LIMIT (GREENWALD)' : 'DENSITY LIMIT'}</div>
           <div className={`font-bold ${color}`}>{(gwFrac * 100).toFixed(0)}% of {gwLimit.toFixed(2)}</div>
         </div>
       </div>

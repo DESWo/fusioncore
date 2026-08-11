@@ -34,7 +34,7 @@ function ProcessLegend() {
     // pool runs 340x less power, so its crowds are smaller.
     const perDot = plantKey === 'research' ? 1e11 : 3e13;
     return (
-      <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 w-56 bg-slate-900/90 border border-slate-700 rounded-md px-2 py-1.5 text-[8px] text-slate-300 grid gap-1">
+      <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 w-56 bg-base/90 border border-raise px-2 py-1.5 text-[8px] text-ink/85 grid gap-1">
         <div className="text-[8px] uppercase tracking-widest text-accent font-bold">
           What you are seeing
         </div>
@@ -47,7 +47,7 @@ function ProcessLegend() {
         <Chip color="#FCD34D">
           Flash: a uranium nucleus splits. Heat, plus 2 to 3 fresh neutrons. That is the chain reaction.
         </Chip>
-        <Chip color="#94A3B8">
+        <Chip color="#A9B0BE">
           Dots vanishing near the top are being eaten by the control rods ({(p.rodPos ?? 100).toFixed(0)}% inserted).
         </Chip>
         <Chip color="#C084FC">
@@ -56,7 +56,7 @@ function ProcessLegend() {
         <Chip color="#38BDF8">
           Coolant rising through the core, carrying the heat away. It leaves warmer than it came.
         </Chip>
-        <div className="text-slate-500 border-t border-slate-700 pt-1">
+        <div className="text-ink/55 border-t border-raise pt-1">
           Each dot stands for ≈ {fmtSci(perDot, 0)} real neutrons. The population you
           see grows and shrinks exactly as reactor power does.
         </div>
@@ -66,7 +66,7 @@ function ProcessLegend() {
 
   const streaksPerSec = Math.min(p.pFusionMW / 30, 10);
   return (
-    <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 w-56 bg-slate-900/90 border border-slate-700 rounded-md px-2 py-1.5 text-[8px] text-slate-300 grid gap-1">
+    <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 w-56 bg-base/90 border border-raise px-2 py-1.5 text-[8px] text-ink/85 grid gap-1">
       <div className="text-[8px] uppercase tracking-widest text-accent font-bold">
         What you are seeing
       </div>
@@ -85,7 +85,7 @@ function ProcessLegend() {
       <Chip color="#F8FAFC">
         The neutron has no charge, so the bottle cannot hold it. It flies straight out to the blanket and becomes heat.
       </Chip>
-      <div className="text-slate-500 border-t border-slate-700 pt-1">
+      <div className="text-ink/55 border-t border-raise pt-1">
         {p.pFusionMW > 0.5
           ? `Real rate: ${fmtSci(p.neutronRate)} fusions/s. Each streak here stands for ≈ ${fmtSci(p.neutronRate / Math.max(streaksPerSec, 0.3), 0)} of them.`
           : 'No fusion yet. Heat the fuel and add density to see reactions.'}
@@ -96,12 +96,12 @@ function ProcessLegend() {
 
 function StressLegend() {
   return (
-    <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 bg-slate-900/85 border border-slate-700 rounded-md px-2 py-1.5 pointer-events-none">
+    <div className="absolute bottom-6 right-2 lg:right-[424px] z-10 bg-base/85 border border-raise px-2 py-1.5 pointer-events-none">
       <div
         className="h-1.5 w-32 rounded-full"
         style={{ background: 'linear-gradient(90deg, hsl(209,90%,32%), hsl(125,90%,38%), hsl(63,90%,42%), hsl(0,90%,48%))' }}
       />
-      <div className="flex justify-between text-[8px] text-slate-400 mt-0.5 font-mono">
+      <div className="flex justify-between text-[8px] text-ink/70 mt-0.5 font-mono">
         <span>0%</span><span>load vs design limit</span><span>100%+</span>
       </div>
       <div className="text-[8px] text-crit mt-0.5">pulsing = active hazard countdown</div>
@@ -123,7 +123,7 @@ export default function AnalysisOverlay() {
       {/* The instrument column is 404px wide and pinned right from lg up, so
           a plain right-2 put this toggle underneath it on desktop. Same offset
           the notification stack already uses in App.jsx. */}
-      <div className={`absolute top-2 right-2 lg:right-[424px] z-10 flex rounded overflow-hidden border border-slate-600 ${tutHighlight ? 'ui-highlight' : ''}`}>
+      <div className={`absolute top-2 right-2 lg:right-[424px] z-10 flex rounded overflow-hidden border border-raise-hi ${tutHighlight ? 'ui-highlight' : ''}`}>
         {MODES.map(([key, label]) => (
           <button
             key={key}
@@ -131,7 +131,7 @@ export default function AnalysisOverlay() {
             className={`text-[9px] font-bold px-2 py-1 ${
               viewMode === key
                 ? 'bg-accent text-base'
-                : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
+                : 'bg-panel/80 text-ink/85 hover:bg-raise'
             }`}
           >
             {label}

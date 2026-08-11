@@ -9,7 +9,7 @@ const STYLE_BY_PRIORITY = {
   2: 'status-crit bg-crit/5',
   3: 'status-warn bg-warn/5',
   4: 'border border-safe/50 bg-safe/5',
-  5: 'border border-slate-600 bg-slate-800/60',
+  5: 'border border-raise-hi bg-panel/60',
 };
 
 export default function NotificationStack() {
@@ -27,7 +27,7 @@ export default function NotificationStack() {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            className={`rounded-md p-2 ${STYLE_BY_PRIORITY[n.priority] ?? STYLE_BY_PRIORITY[5]}`}
+            className={`p-2 ${STYLE_BY_PRIORITY[n.priority] ?? STYLE_BY_PRIORITY[5]}`}
           >
             <div className="flex items-start justify-between gap-1">
               <span className="text-[10px] font-bold tracking-wide flex items-center gap-1">
@@ -37,12 +37,12 @@ export default function NotificationStack() {
               <button
                 onClick={() => dismiss(n.id)}
                 aria-label="Dismiss notification"
-                className="text-slate-500 hover:text-ink px-1 inline-flex items-center"
+                className="text-ink/55 hover:text-ink px-1 inline-flex items-center"
               >
                 <Icon name="x" className="w-3 h-3" />
               </button>
             </div>
-            <p className="text-[10px] text-slate-300 leading-snug mt-0.5">{n.text}</p>
+            <p className="text-[10px] text-ink/85 leading-snug mt-0.5">{n.text}</p>
           </motion.div>
         ))}
       </AnimatePresence>

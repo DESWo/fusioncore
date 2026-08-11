@@ -126,7 +126,7 @@ export default function FissionProcess() {
           for (const [cx, cz] of ROD_COLS) {
             if (Math.hypot(n.pos.x - cx, n.pos.z - cz) < 0.075) {
               if (Math.random() < dt * 9 * (1 - pressure)) {
-                flashes.push({ pos: n.pos.clone(), t: 0, color: '#94A3B8' });
+                flashes.push({ pos: n.pos.clone(), t: 0, color: '#A9B0BE' });
                 neutrons.splice(i, 1);
               }
               break;

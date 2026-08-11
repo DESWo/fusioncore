@@ -6,10 +6,10 @@ import Icon from './Icon.jsx';
 export default function SourcesFooter() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="shrink-0 border-t border-slate-700 bg-panel">
+    <div className="shrink-0 border-t border-raise bg-panel">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full px-3 py-1.5 text-left text-[10px] uppercase tracking-widest text-slate-400 hover:text-accent flex items-center justify-between"
+        className="w-full px-3 py-1.5 text-left text-[10px] uppercase tracking-widest text-ink/70 hover:text-accent flex items-center justify-between"
         aria-expanded={open}
       >
         <span>Sources &amp; Citations Index</span>
@@ -20,13 +20,13 @@ export default function SourcesFooter() {
           {Object.entries(sources).map(([key, s]) => (
             <div key={key} className="text-[10px] leading-snug">
               <span className="text-ink">{s.title}</span>{' '}
-              <span className="text-slate-500">, {s.source}</span>{' '}
-              <a href={s.url} target="_blank" rel="noreferrer" className="text-sky-500 underline">
+              <span className="text-ink/55">, {s.source}</span>{' '}
+              <a href={s.url} target="_blank" rel="noreferrer" className="text-accent underline">
                 link
               </a>
             </div>
           ))}
-          <p className="text-[9px] text-slate-500 italic mt-1">
+          <p className="text-[9px] text-ink/55 italic mt-1">
             Equations are slightly simplified for real-time gameplay. Each citation popover
             notes what the full analytical treatment adds.
           </p>

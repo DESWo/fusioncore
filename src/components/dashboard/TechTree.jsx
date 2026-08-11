@@ -9,11 +9,11 @@ export default function TechTree() {
   const purchase = useReactorStore((s) => s.purchaseTech);
 
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70">
         R&amp;D Technology Tree: {Math.floor(rd.points)} pts available
       </div>
-      <div className="text-[8px] text-slate-500 italic mb-2">
+      <div className="text-[8px] text-ink/55 italic mb-2">
         every upgrade is a compromise. Read the fine print before you sign
       </div>
       <div className="grid gap-2">
@@ -28,8 +28,8 @@ export default function TechTree() {
           return (
             <div
               key={t.id}
-              className={`rounded-md border p-2 ${
-                owned ? 'border-safe/50 bg-safe/5' : available ? 'border-slate-600' : 'border-slate-700 opacity-50'
+              className={`border p-2 ${
+                owned ? 'border-safe/50 bg-safe/5' : available ? 'border-raise-hi' : 'border-raise opacity-50'
               }`}
             >
               <div className="flex items-center justify-between gap-2">
@@ -45,14 +45,14 @@ export default function TechTree() {
                     className={`text-[10px] font-mono px-2 py-1 rounded whitespace-nowrap ${
                       available && affordable
                         ? 'bg-accent text-base font-bold hover:brightness-110'
-                        : 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                        : 'bg-raise text-ink/70 cursor-not-allowed'
                     }`}
                   >
                     {t.cost.toLocaleString()} R&amp;D
                   </button>
                 )}
               </div>
-              <p className="text-[10px] text-slate-400 mt-1 leading-snug">{t.desc}</p>
+              <p className="text-[10px] text-ink/70 mt-1 leading-snug">{t.desc}</p>
               <div className="mt-1 grid gap-0.5">
                 {t.pros.map((p) => (
                   <div key={p} className="text-[10px] text-safe leading-snug flex gap-1">

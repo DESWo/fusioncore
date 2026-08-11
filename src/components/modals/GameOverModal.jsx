@@ -20,7 +20,7 @@ export default function GameOverModal() {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-panel border-2 border-crit rounded-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
+        className="bg-panel border-2 border-crit max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
         role="alertdialog"
         aria-modal="true"
         aria-label="Reactor SCRAM damage report"
@@ -34,57 +34,57 @@ export default function GameOverModal() {
         </h2>
 
         <div className="mt-4 grid gap-3 text-xs leading-relaxed">
-          <p className="text-slate-200">
+          <p className="text-ink">
             {gameOver.text} {gameOver.cite && <Cite id={gameOver.cite} />}
           </p>
 
           {gameOver.report && (
-            <div className="rounded-md bg-slate-900 p-3 border border-slate-700">
+            <div className="bg-base p-3 border border-raise">
               <div className="text-[9px] uppercase tracking-widest text-crit mb-1.5 font-bold">Failure Analysis</div>
-              <div className="text-[9px] uppercase tracking-widest text-slate-500">Primary cause</div>
-              <p className="text-[11px] text-slate-200 mt-0.5">{gameOver.report.primary}</p>
-              <div className="text-[9px] uppercase tracking-widest text-slate-500 mt-2">Contributing factors</div>
+              <div className="text-[9px] uppercase tracking-widest text-ink/55">Primary cause</div>
+              <p className="text-[11px] text-ink mt-0.5">{gameOver.report.primary}</p>
+              <div className="text-[9px] uppercase tracking-widest text-ink/55 mt-2">Contributing factors</div>
               <ul className="mt-0.5 grid gap-0.5">
                 {gameOver.report.factors.map((f) => (
-                  <li key={f} className="text-[11px] text-slate-300 flex gap-1.5">
+                  <li key={f} className="text-[11px] text-ink/85 flex gap-1.5">
                     <span className="text-crit shrink-0">•</span><span>{f}</span>
                   </li>
                 ))}
               </ul>
-              <div className="text-[9px] uppercase tracking-widest text-slate-500 mt-2">Recommendation</div>
+              <div className="text-[9px] uppercase tracking-widest text-ink/55 mt-2">Recommendation</div>
               <p className="text-[11px] text-accent mt-0.5">{gameOver.report.recommendation}</p>
             </div>
           )}
 
-          <div className="rounded-md bg-slate-900 p-3 border border-slate-700">
-            <div className="text-[9px] uppercase tracking-widest text-slate-500 mb-1">Historical precedent</div>
-            <p className="text-[11px] text-slate-400">{gameOver.historical}</p>
+          <div className="bg-base p-3 border border-raise">
+            <div className="text-[9px] uppercase tracking-widest text-ink/55 mb-1">Historical precedent</div>
+            <p className="text-[11px] text-ink/70">{gameOver.historical}</p>
           </div>
-          <div className="rounded-md bg-slate-900 p-3 border border-slate-700 font-mono text-[11px] grid grid-cols-2 gap-1">
-            <span className="text-slate-500">Disruptions this run</span><span className="text-right">{stats.disruptions}</span>
-            <span className="text-slate-500">Magnet quenches</span><span className="text-right">{stats.quenches}</span>
-            <span className="text-slate-500">Peak Q achieved</span><span className="text-right">{stats.maxQ.toFixed(2)}</span>
-            <span className="text-slate-500">Prior repairs</span><span className="text-right">{stats.repairs}</span>
+          <div className="bg-base p-3 border border-raise font-mono text-[11px] grid grid-cols-2 gap-1">
+            <span className="text-ink/55">Disruptions this run</span><span className="text-right">{stats.disruptions}</span>
+            <span className="text-ink/55">Magnet quenches</span><span className="text-right">{stats.quenches}</span>
+            <span className="text-ink/55">Peak Q achieved</span><span className="text-right">{stats.maxQ.toFixed(2)}</span>
+            <span className="text-ink/55">Prior repairs</span><span className="text-right">{stats.repairs}</span>
           </div>
         </div>
 
-        <div className="mt-5 border-t border-slate-700 pt-4">
+        <div className="mt-5 border-t border-raise pt-4">
           <div className="flex justify-between text-sm">
-            <span className="text-slate-300">Full repair &amp; component replacement</span>
+            <span className="text-ink/85">Full repair &amp; component replacement</span>
             <span className="font-mono font-bold text-warn">{fmtMoney(gameOver.fee)}</span>
           </div>
           <div className="flex justify-between text-[11px] mt-1">
-            <span className="text-slate-500">Capital reserves</span>
-            <span className={`font-mono ${canAfford ? 'text-slate-300' : 'text-crit'}`}>{fmtMoney(funds)}</span>
+            <span className="text-ink/55">Capital reserves</span>
+            <span className={`font-mono ${canAfford ? 'text-ink/85' : 'text-crit'}`}>{fmtMoney(funds)}</span>
           </div>
-          <p className="text-[10px] text-slate-500 mt-2">
+          <p className="text-[10px] text-ink/55 mt-2">
             Authorizing repairs restores all structural systems to 100%, flushes the vacuum
             chamber, and resets controls to the Level {levelId} safe baseline.
           </p>
           <button
             onClick={repair}
             autoFocus
-            className={`mt-4 w-full py-2.5 rounded-lg font-bold text-sm tracking-widest ${
+            className={`mt-4 w-full py-2.5 font-bold text-sm tracking-widest ${
               canAfford
                 ? 'bg-warn text-base hover:brightness-110'
                 : 'bg-crit text-white hover:brightness-110'

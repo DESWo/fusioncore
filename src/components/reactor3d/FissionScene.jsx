@@ -71,16 +71,16 @@ function RodBank() {
     <group ref={groupRef} position={[0, 2.2, 0]}>
       <mesh position={[0, 0.85, 0]}>
         <cylinderGeometry args={[0.14, 0.14, 0.5, 12]} />
-        <meshStandardMaterial color="#64748B" metalness={0.8} roughness={0.35} />
+        <meshStandardMaterial color="#4A5568" metalness={0.8} roughness={0.35} />
       </mesh>
       <mesh position={[0, 0.55, 0]}>
         <boxGeometry args={[1.05, 0.1, 1.05]} />
-        <meshStandardMaterial color="#475569" metalness={0.75} roughness={0.4} />
+        <meshStandardMaterial color="#313A49" metalness={0.75} roughness={0.4} />
       </mesh>
       {positions.map(([x, z], i) => (
         <mesh key={i} position={[x, -0.35, z]}>
           <cylinderGeometry args={[0.045, 0.045, 1.7, 8]} />
-          <meshStandardMaterial color="#94A3B8" metalness={0.9} roughness={0.25} />
+          <meshStandardMaterial color="#A9B0BE" metalness={0.9} roughness={0.25} />
         </mesh>
       ))}
     </group>
@@ -207,10 +207,10 @@ function PoolTank() {
  * and the point is the neutrons rather than the hardware.
  */
 function Tag({ position, children, tone = 'slate' }) {
-  const color = tone === 'accent' ? 'text-accent border-accent/50' : 'text-slate-300 border-slate-600';
+  const color = tone === 'accent' ? 'text-accent border-accent/50' : 'text-ink/85 border-raise-hi';
   return (
     <Html position={position} center distanceFactor={9} zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
-      <div className={`label-mono text-[7px] whitespace-nowrap px-1 py-px rounded-sm border bg-slate-900/85 ${color}`}>
+      <div className={`label-mono text-[7px] whitespace-nowrap px-1 py-px border bg-base/85 ${color}`}>
         {children}
       </div>
     </Html>
@@ -245,10 +245,10 @@ function StatusOverlay() {
   const rho = useReactorStore((s) => s.sim.physics.reactivityPcm);
   return (
     <div className="absolute top-2 left-2 z-10 text-[10px] font-mono pointer-events-none">
-      <div className={critical ? 'text-safe' : scrammed ? 'text-crit' : 'text-slate-500'}>
+      <div className={critical ? 'text-safe' : scrammed ? 'text-crit' : 'text-ink/55'}>
         ● {critical ? 'CRITICAL' : scrammed ? 'TRIPPED' : 'SHUTDOWN'}
       </div>
-      <div className="text-slate-400">
+      <div className="text-ink/70">
         {(P >= 1 ? `${(P / 1000).toFixed(2)} GW` : `${(P * 1000).toFixed(0)} kW`)} · ρ {rho >= 0 ? '+' : ''}{rho.toFixed(0)} pcm
       </div>
     </div>
@@ -322,11 +322,11 @@ export default function FissionScene() {
         // button sat underneath the column at >=1024px and could not be
         // clicked at all, on desktop, which is where it is most needed.
         // bottom-16 keeps it clear of AnalysisOverlay's legend at bottom-6.
-        className="absolute bottom-16 right-2 lg:right-[424px] z-10 label-mono text-[9px] px-2 py-1 rounded bg-slate-800/80 border border-slate-600 text-slate-300 hover:text-ink hover:border-accent"
+        className="absolute bottom-16 right-2 lg:right-[424px] z-10 label-mono text-[9px] px-2 py-1 rounded bg-panel/80 border border-raise-hi text-ink/85 hover:text-ink hover:border-accent"
       >
         RESET VIEW
       </button>
-      <div className="absolute bottom-1.5 left-2 text-[9px] text-slate-500 pointer-events-none">
+      <div className="absolute bottom-1.5 left-2 text-[9px] text-ink/55 pointer-events-none">
         drag to orbit · scroll to zoom · rods move with your slider
       </div>
     </div>

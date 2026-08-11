@@ -12,8 +12,8 @@ export default function ScenarioPanel() {
   // postings. Classic campaigns only.
   if (career) return null;
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1.5">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-1.5">
         Simulator Scenarios (IC sets)
       </div>
       <div className="grid gap-1.5">
@@ -23,14 +23,14 @@ export default function ScenarioPanel() {
             onClick={() => {
               if (window.confirm(`Load "${sc.label}"? This ends campaign scoring for the current save.`)) load(key);
             }}
-            className="text-left rounded-md border border-slate-600 hover:bg-slate-700 px-2 py-1.5"
+            className="text-left border border-raise-hi hover:bg-raise px-2 py-1.5"
           >
             <span className="text-[11px] font-semibold">{sc.label}</span>
-            <span className="text-[10px] text-slate-400 block">{sc.desc}</span>
+            <span className="text-[10px] text-ink/70 block">{sc.desc}</span>
           </button>
         ))}
       </div>
-      <p className="text-[9px] text-slate-500 mt-1.5">Loading an IC ends campaign scoring for this save.</p>
+      <p className="text-[9px] text-ink/55 mt-1.5">Loading an IC ends campaign scoring for this save.</p>
     </div>
   );
 }

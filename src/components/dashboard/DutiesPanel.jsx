@@ -18,18 +18,18 @@ export default function DutiesPanel() {
   if (!spec && recent.length === 0) return null;
 
   return (
-    <div className="bg-panel rounded-lg p-3 border border-violet-400/25">
-      <div className="text-[10px] uppercase tracking-wider text-violet-300 mb-1.5">
+    <div className="bg-panel p-3 border border-accent/25">
+      <div className="text-[10px] uppercase tracking-wider text-accent mb-1.5">
         Standing Orders
       </div>
 
       {spec ? (
         <div>
-          <div className="label-mono text-[9px] text-slate-400">[ {spec.from} ]</div>
-          <p className="text-[11px] text-slate-200 leading-snug mt-1">{spec.text}</p>
-          <div className="h-1 bg-slate-700 rounded-full overflow-hidden mt-2">
+          <div className="label-mono text-[9px] text-ink/70">[ {spec.from} ]</div>
+          <p className="text-[11px] text-ink leading-snug mt-1">{spec.text}</p>
+          <div className="h-1 bg-raise rounded-full overflow-hidden mt-2">
             <div
-              className="h-full bg-violet-400 rounded-full"
+              className="h-full bg-accent rounded-full"
               style={{
                 width: `${Math.min((duties.current.sustain / spec.sustainTicks) * 100, 100)}%`,
                 transition: 'width 0.3s',
@@ -37,12 +37,12 @@ export default function DutiesPanel() {
             />
           </div>
           <div className="flex justify-between text-[9px] font-mono mt-0.5">
-            <span className="text-slate-500">
+            <span className="text-ink/55">
               holding {Math.round((duties.current.sustain / spec.sustainTicks) * 100)}%
             </span>
             {spec.windowTicks && (
               <span className={
-                spec.windowTicks - (ticks - duties.current.issuedTick) < 300 ? 'text-crit' : 'text-slate-500'
+                spec.windowTicks - (ticks - duties.current.issuedTick) < 300 ? 'text-crit' : 'text-ink/55'
               }>
                 window: {Math.max(((spec.windowTicks - (ticks - duties.current.issuedTick)) / 600), 0).toFixed(1)} h
               </span>
@@ -50,19 +50,19 @@ export default function DutiesPanel() {
           </div>
         </div>
       ) : (
-        <p className="text-[10px] text-slate-500">
+        <p className="text-[10px] text-ink/55">
           Inbox clear. {duties.idx >= set.length ? 'No further directives at this posting.' : 'The next directive will find you.'}
         </p>
       )}
 
       {recent.length > 0 && (
-        <div className="mt-2 pt-1.5 border-t border-slate-700 grid gap-0.5">
+        <div className="mt-2 pt-1.5 border-t border-raise grid gap-0.5">
           {recent.map((l) => (
             <div key={l.id} className="flex items-start gap-1.5 text-[9px]">
               <span className={l.result === 'done' ? 'text-safe' : 'text-crit'}>
                 {l.result === 'done' ? '✓' : '✗'}
               </span>
-              <span className="text-slate-500 leading-snug">
+              <span className="text-ink/55 leading-snug">
                 {l.from}: {l.text.length > 70 ? `${l.text.slice(0, 70)}…` : l.text}
               </span>
             </div>

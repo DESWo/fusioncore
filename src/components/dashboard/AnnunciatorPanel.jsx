@@ -21,7 +21,7 @@ import { tilesFor, STATE_CODES } from '../../engine/annunciator.js';
 // ships three colorblind overlays that swap these very variables. The dashed
 // and doubled borders come from the existing status-* shape coding.
 const TILE_STYLE = {
-  off: 'bg-slate-800/50 border border-slate-700 text-slate-500',
+  off: 'bg-panel/50 border border-raise text-ink/55',
   normal: 'bg-safe/10 border border-safe/50 text-safe',
   caution: 'status-warn bg-warn/15 text-warn',
   alarm: 'status-crit bg-crit/20 text-crit',
@@ -81,9 +81,9 @@ function AnnunciatorPanel() {
   const unacked = Object.keys(ann.latched).length;
 
   return (
-    <div className="bg-panel/70 border-b border-slate-700/60 px-2 py-1.5">
+    <div className="bg-panel/70 border-b border-raise/60 px-2 py-1.5">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[8px] uppercase tracking-widest text-slate-400">
+        <span className="text-[8px] uppercase tracking-widest text-ink/70">
           Annunciator
         </span>
         <button
@@ -98,7 +98,7 @@ function AnnunciatorPanel() {
           className={`text-[9px] font-bold tracking-wider px-2 py-0.5 rounded ${
             unacked > 0
               ? 'bg-crit/25 text-crit hover:bg-crit/40'
-              : 'bg-slate-800 text-slate-600 cursor-not-allowed'
+              : 'bg-panel text-ink/40 cursor-not-allowed'
           }`}
         >
           ACK{unacked > 0 ? ` ${unacked}` : ''}

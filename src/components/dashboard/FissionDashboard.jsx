@@ -30,24 +30,24 @@ function ReactivityPanel() {
   ];
   const rho = p.reactivityPcm;
   const trend = rho > 100 ? 'RISING FAST' : rho > 10 ? 'rising' : rho > -10 ? 'steady' : rho > -400 ? 'falling' : 'falling fast';
-  const rhoColor = rho > 400 ? 'text-crit' : rho > 100 ? 'text-warn' : rho > -100 ? 'text-safe' : 'text-slate-400';
+  const rhoColor = rho > 400 ? 'text-crit' : rho > 100 ? 'text-warn' : rho > -100 ? 'text-safe' : 'text-ink/70';
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5 flex items-center gap-1">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-0.5 flex items-center gap-1">
         Reaction Balance <Cite id="point_kinetics" />
       </div>
-      <div className="text-[8px] text-slate-500 italic mb-1">technical: reactivity, in pcm</div>
+      <div className="text-[8px] text-ink/55 italic mb-1">technical: reactivity, in pcm</div>
       <div className="grid gap-0.5">
         {rows.map(([k, v]) => (
           <div key={k} className="flex justify-between text-[10px]">
-            <span className="text-slate-400">{k}</span>
-            <span className={`font-mono ${v >= 0 ? 'text-safe' : 'text-slate-300'}`}>
+            <span className="text-ink/70">{k}</span>
+            <span className={`font-mono ${v >= 0 ? 'text-safe' : 'text-ink/85'}`}>
               {v >= 0 ? '+' : ''}{v.toFixed(0)}
             </span>
           </div>
         ))}
-        <div className="flex justify-between text-[11px] pt-1 mt-0.5 border-t border-slate-700">
-          <span className="text-slate-300 font-semibold">Power trend: {trend}</span>
+        <div className="flex justify-between text-[11px] pt-1 mt-0.5 border-t border-raise">
+          <span className="text-ink/85 font-semibold">Power trend: {trend}</span>
           <span className={`font-mono font-bold ${rhoColor}`}>{rho >= 0 ? '+' : ''}{rho.toFixed(0)} pcm</span>
         </div>
         <CalcDrawer calc={{
@@ -78,13 +78,13 @@ function VesselDesignPanel() {
   const changed = Math.abs(t - design.vesselT) > 0.0001 || mat !== design.material;
   const canApply = changed && !critical && funds >= prev.refitCost;
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400">Vessel Design</div>
-      <div className="text-[8px] text-slate-500 italic mb-1.5">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70">Vessel Design</div>
+      <div className="text-[8px] text-ink/55 italic mb-1.5">
         change the wall, watch stress, weight, and cost move together
       </div>
       <div className="flex items-baseline justify-between text-[10px]">
-        <label htmlFor="vessel-t" className="text-slate-400">Wall thickness</label>
+        <label htmlFor="vessel-t" className="text-ink/70">Wall thickness</label>
         <span className="font-mono text-accent">{(t * 100).toFixed(0)} cm</span>
       </div>
       <input
@@ -93,10 +93,10 @@ function VesselDesignPanel() {
         aria-label={`Vessel wall thickness ${(t * 100).toFixed(0)} centimeters`}
       />
       <div className="flex items-center justify-between mt-2 text-[10px]">
-        <label htmlFor="vessel-mat" className="text-slate-400">Steel grade</label>
+        <label htmlFor="vessel-mat" className="text-ink/70">Steel grade</label>
         <select
           id="vessel-mat" value={mat} onChange={(e) => setMat(e.target.value)}
-          className="bg-slate-900 border border-slate-600 rounded text-[10px] p-1"
+          className="bg-base border border-raise-hi rounded text-[10px] p-1"
         >
           {Object.entries(VESSEL_MATERIALS).map(([k, m]) => (
             <option key={k} value={k}>{m.label}</option>
@@ -104,20 +104,20 @@ function VesselDesignPanel() {
         </select>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 mt-2 text-[10px]">
-        <div className="flex justify-between"><span className="text-slate-400">Wall stress</span><span className="font-mono">{prev.stress.toFixed(0)} MPa</span></div>
-        <div className="flex justify-between"><span className="text-slate-400">Allowable</span><span className="font-mono">{prev.allowMPa} MPa</span></div>
+        <div className="flex justify-between"><span className="text-ink/70">Wall stress</span><span className="font-mono">{prev.stress.toFixed(0)} MPa</span></div>
+        <div className="flex justify-between"><span className="text-ink/70">Allowable</span><span className="font-mono">{prev.allowMPa} MPa</span></div>
         <div className="flex justify-between">
-          <span className="text-slate-400">Safety factor</span>
+          <span className="text-ink/70">Safety factor</span>
           <span className={`font-mono font-bold ${prev.fos >= 1.2 ? 'text-safe' : prev.fos >= 1.0 ? 'text-warn' : 'text-crit'}`}>{prev.fos.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between"><span className="text-slate-400">Vessel mass</span><span className="font-mono">{prev.massT.toFixed(0)} t</span></div>
+        <div className="flex justify-between"><span className="text-ink/70">Vessel mass</span><span className="font-mono">{prev.massT.toFixed(0)} t</span></div>
       </div>
       <button
         onClick={() => apply(t, mat, prev.refitCost)}
         disabled={!canApply}
         title={critical ? 'SCRAM first' : !changed ? 'No change selected' : funds < prev.refitCost ? 'Insufficient funds' : ''}
         className={`mt-2 w-full py-1.5 rounded text-[10px] font-bold ${
-          canApply ? 'bg-accent text-base hover:brightness-110' : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+          canApply ? 'bg-accent text-base hover:brightness-110' : 'bg-raise text-ink/55 cursor-not-allowed'
         }`}
       >
         {changed ? `APPLY REFIT ${fmtMoney(prev.refitCost)}` : 'CURRENT DESIGN'}
@@ -160,19 +160,19 @@ function PlantOpsPanel({ plant }) {
   const stateColor = state === 'ON LINE' ? 'text-safe'
     : state === 'CRITICAL' || state === 'HOT STANDBY' ? 'text-accent'
     : state === 'TRIPPED' || state === 'TRIPPED / HOT' ? 'text-crit'
-    : 'text-slate-300';
+    : 'text-ink/85';
   return (
-    <div className="bg-panel rounded-lg p-3">
+    <div className="bg-panel p-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] uppercase tracking-wider text-slate-400">Plant Operations</span>
+        <span className="text-[10px] uppercase tracking-wider text-ink/70">Plant Operations</span>
         <span className={`label-mono text-[10px] ${stateColor}`}>[ {state} ]</span>
       </div>
       <div className="grid grid-cols-2 gap-2">
         {plant.heatupPlant && (
           <button
             onClick={() => setControl('heaters', !c.heaters)}
-            className={`py-2 rounded-md text-[10px] font-bold border ${
-              c.heaters ? 'border-warn/70 bg-warn/10 text-warn' : 'border-slate-600 text-slate-300 hover:bg-raise'
+            className={`py-2 text-[10px] font-bold border ${
+              c.heaters ? 'border-warn/70 bg-warn/10 text-warn' : 'border-raise-hi text-ink/85 hover:bg-raise'
             } ${tutStep?.highlight === 'heaters' ? 'ui-highlight' : ''}`}
             title="Pressurizer and heatup heaters. With the pumps, they warm the primary toward hot standby"
           >
@@ -183,12 +183,12 @@ function PlantOpsPanel({ plant }) {
         <button
           onClick={() => setControl('genOnline', !c.genOnline)}
           disabled={!c.genOnline && !canSync}
-          className={`py-2 rounded-md text-[10px] font-bold border ${
+          className={`py-2 text-[10px] font-bold border ${
             c.genOnline
               ? 'border-safe/70 bg-safe/10 text-safe'
               : canSync
                 ? 'border-accent/70 bg-accent/10 text-accent hover:bg-accent/20'
-                : 'border-slate-700 text-slate-500 cursor-not-allowed'
+                : 'border-raise text-ink/55 cursor-not-allowed'
           }`}
           title={c.genOnline ? 'Open the breaker (stop selling)' : canSync ? 'Close the generator breaker and sell to the grid' : `Needs ~${(plant.nominalMW * 0.08).toFixed(0)} MW of steam first`}
         >
@@ -197,7 +197,7 @@ function PlantOpsPanel({ plant }) {
         )}
       </div>
       {plant.heatupPlant && p.TcoolC < plant.critInterlockC && !p.critical && (
-        <p className="text-[9px] text-slate-500 mt-1.5">
+        <p className="text-[9px] text-ink/55 mt-1.5">
           Primary at {p.TcoolC.toFixed(0)} °C. Rod interlock releases at {plant.critInterlockC} °C:
           a cold core is a MORE reactive core, so criticality waits for temperature.
         </p>
@@ -226,16 +226,16 @@ function FuelCyclePanel({ plant }) {
     ['Fabrication + logistics', `$${((cost.fabrication + cost.logistics) / 1e6).toFixed(0)}M`],
   ];
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 flex items-center gap-1">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 flex items-center gap-1">
         Fuel Cycle <Cite id="pwr" />
       </div>
-      <div className="text-[8px] text-slate-500 italic mb-1.5">
+      <div className="text-[8px] text-ink/55 italic mb-1.5">
         loaded core: {core.enrichPct.toFixed(2)}% U-235 · burnup {(p.burnup * 100).toFixed(1)}%
       </div>
 
       <div className="flex items-baseline justify-between text-[10px]">
-        <label htmlFor="fuel-enrich" className="text-slate-400">Order enrichment</label>
+        <label htmlFor="fuel-enrich" className="text-ink/70">Order enrichment</label>
         <span className="font-mono text-accent">{enrich.toFixed(2)}% U-235</span>
       </div>
       <input
@@ -248,16 +248,16 @@ function FuelCyclePanel({ plant }) {
       <div className="grid gap-0.5 mt-1.5">
         {rows.map(([k, v]) => (
           <div key={k} className="flex justify-between text-[10px]">
-            <span className="text-slate-400">{k}</span>
-            <span className="font-mono text-slate-200">{v}</span>
+            <span className="text-ink/70">{k}</span>
+            <span className="font-mono text-ink">{v}</span>
           </div>
         ))}
-        <div className="flex justify-between text-[10px] pt-1 border-t border-slate-700">
-          <span className="text-slate-300 font-semibold">Batch total (±market)</span>
+        <div className="flex justify-between text-[10px] pt-1 border-t border-raise">
+          <span className="text-ink/85 font-semibold">Batch total (±market)</span>
           <span className="font-mono font-bold text-ink">${(cost.total / 1e6).toFixed(0)}M</span>
         </div>
         <div className="flex justify-between text-[9px]">
-          <span className="text-slate-500">Excess reactivity vs standard core</span>
+          <span className="text-ink/55">Excess reactivity vs standard core</span>
           <span className={`font-mono ${excessF >= 1 ? 'text-safe' : 'text-warn'}`}>×{excessF.toFixed(2)}</span>
         </div>
       </div>
@@ -267,14 +267,14 @@ function FuelCyclePanel({ plant }) {
         disabled={!canOrder}
         title={fc.order ? 'Order already in fabrication' : funds < cost.total * 1.06 ? 'Insufficient funds' : `Delivery in ${(FUEL_ORDER_TICKS / 600).toFixed(0)} sim-hours`}
         className={`mt-2 w-full py-1.5 rounded text-[10px] font-bold ${
-          canOrder ? 'bg-accent text-base hover:brightness-110' : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+          canOrder ? 'bg-accent text-base hover:brightness-110' : 'bg-raise text-ink/55 cursor-not-allowed'
         }`}
       >
         {fc.order ? `IN FABRICATION: ${(fc.order.ticksLeft / 600).toFixed(1)} h` : `ORDER FUEL ~$${(cost.total / 1e6).toFixed(0)}M`}
       </button>
 
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-700">
-        <span className="text-[10px] text-slate-400">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-raise">
+        <span className="text-[10px] text-ink/70">
           {fc.reloadTicksLeft > 0
             ? `Reload outage: ${(fc.reloadTicksLeft / 600).toFixed(1)} h remaining`
             : fc.onSite
@@ -286,14 +286,14 @@ function FuelCyclePanel({ plant }) {
           disabled={!canReload}
           title={p.critical ? 'SCRAM first' : !fc.onSite ? 'Order fuel first' : `${(FUEL_RELOAD_TICKS / 600).toFixed(0)} h outage`}
           className={`text-[9px] font-mono px-2 py-1 rounded ${
-            canReload ? 'bg-warn text-base font-bold hover:brightness-110' : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+            canReload ? 'bg-warn text-base font-bold hover:brightness-110' : 'bg-raise text-ink/55 cursor-not-allowed'
           }`}
         >
           RELOAD CORE
         </button>
       </div>
       {fc.reloadTicksLeft > 0 && (
-        <div className="h-1 bg-slate-700 rounded-full overflow-hidden mt-1.5">
+        <div className="h-1 bg-raise rounded-full overflow-hidden mt-1.5">
           <div
             className="h-full bg-warn rounded-full"
             style={{ width: `${(1 - fc.reloadTicksLeft / FUEL_RELOAD_TICKS) * 100}%`, transition: 'width 0.3s' }}
@@ -337,15 +337,15 @@ function PlantDataPanel({ plant }) {
     ['Core burnup', `${(p.burnup * 100).toFixed(2)}%`],
   ];
   return (
-    <div className="bg-panel rounded-lg p-3">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
+    <div className="bg-panel p-3">
+      <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-1 flex items-center gap-1">
         Plant Data <Cite id="point_kinetics" />
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
         {rows.map(([k, v]) => (
           <div key={k} className="flex justify-between text-[10px]">
-            <span className="text-slate-400">{k}</span>
-            <span className="font-mono text-slate-200">{v}</span>
+            <span className="text-ink/70">{k}</span>
+            <span className="font-mono text-ink">{v}</span>
           </div>
         ))}
       </div>
@@ -381,9 +381,9 @@ function RodSetpointControl({ highlight }) {
   };
 
   return (
-    <div className={`px-3 py-2 rounded-lg bg-panel ${highlight ? 'ui-highlight' : ''}`}>
+    <div className={`px-3 py-2 bg-panel ${highlight ? 'ui-highlight' : ''}`}>
       <div className="flex items-baseline justify-between gap-2">
-        <label htmlFor="ctl-rods" className="text-[10px] uppercase tracking-wider text-slate-400 flex items-center gap-1">
+        <label htmlFor="ctl-rods" className="text-[10px] uppercase tracking-wider text-ink/70 flex items-center gap-1">
           Control Rods <Cite id="point_kinetics" />
         </label>
         <span className="font-mono text-xs font-bold text-accent">
@@ -405,14 +405,14 @@ function RodSetpointControl({ highlight }) {
           onChange={(e) => setControl('rods', parseFloat(e.target.value))}
         />
       </div>
-      <div className="flex justify-between text-[8px] text-slate-500 font-mono">
+      <div className="flex justify-between text-[8px] text-ink/55 font-mono">
         <span>0% OUT &middot; FULL POWER</span>
         <span>100% IN &middot; SHUT DOWN</span>
       </div>
-      <p className="text-[9px] text-slate-500 px-1 mt-1">
+      <p className="text-[9px] text-ink/55 px-1 mt-1">
         Rods travel at drive speed.{' '}
         <span style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 3, ...triangle }} />
-        Marker shows actual position: <span className="font-mono text-slate-300">{actual.toFixed(1)}% in</span>
+        Marker shows actual position: <span className="font-mono text-ink/85">{actual.toFixed(1)}% in</span>
         {traveling ? ', still traveling' : ', settled'}
       </p>
     </div>
@@ -437,9 +437,9 @@ function FissionStructurePanel({ plant }) {
     ['steamGen', plant.componentLabels.steamGen, st.steamGen, 'pwr'],
   ];
   return (
-    <div className="bg-panel rounded-lg p-3">
+    <div className="bg-panel p-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] uppercase tracking-wider text-slate-400">Structural Health &amp; Maintenance</span>
+        <span className="text-[10px] uppercase tracking-wider text-ink/70">Structural Health &amp; Maintenance</span>
         {p.critical ? (
           <button
             onClick={scram}
@@ -456,14 +456,14 @@ function FissionStructurePanel({ plant }) {
         {bars.map(([key, label, v, cite]) => {
           const color = v > 60 ? 'var(--color-safe)' : v > 30 ? 'var(--color-warn)' : 'var(--color-crit)';
           const load = loads[key];
-          const loadColor = load > 0.95 ? 'text-crit' : load > 0.8 ? 'text-warn' : 'text-slate-500';
+          const loadColor = load > 0.95 ? 'text-crit' : load > 0.8 ? 'text-warn' : 'text-ink/55';
           const worn = v < 99.95;
           const cost = ((100 - v) / 100) * plant.serviceCosts[key];
           const canService = worn && !p.critical && funds >= cost;
           return (
             <div key={key}>
               <div className="flex justify-between items-center text-[10px]">
-                <span className="text-slate-400 flex items-center gap-1">
+                <span className="text-ink/70 flex items-center gap-1">
                   {label} <Cite id={cite} />
                   <span className={`font-mono text-[9px] ${loadColor}`}>load {(load * 100).toFixed(0)}%</span>
                 </span>
@@ -475,7 +475,7 @@ function FissionStructurePanel({ plant }) {
                       disabled={!canService}
                       title={p.critical ? 'SCRAM first' : funds < cost ? 'Insufficient funds' : `Restore for ${fmtMoney(cost)}`}
                       className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                        canService ? 'bg-accent text-base font-bold hover:brightness-110' : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                        canService ? 'bg-accent text-base font-bold hover:brightness-110' : 'bg-raise text-ink/55 cursor-not-allowed'
                       }`}
                     >
                       SERVICE {fmtMoney(cost)}
@@ -483,15 +483,15 @@ function FissionStructurePanel({ plant }) {
                   )}
                 </span>
               </div>
-              <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden mt-0.5">
+              <div className="h-1.5 bg-raise rounded-full overflow-hidden mt-0.5">
                 <div className="h-full rounded-full" style={{ width: `${v}%`, background: color, transition: 'width 0.3s' }} />
               </div>
             </div>
           );
         })}
       </div>
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-700">
-        <span className="text-[10px] text-slate-400">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-raise">
+        <span className="text-[10px] text-ink/70">
           Core burnup: <span className="font-mono text-ink">{(p.burnup * 100).toFixed(1)}%</span>
         </span>
         {plant.simpleRefuel ? (
@@ -500,13 +500,13 @@ function FissionStructurePanel({ plant }) {
             disabled={p.critical}
             title={p.critical ? 'SCRAM first' : `Fresh plates: ${fmtMoney(plant.refuelCost)}`}
             className={`text-[9px] font-mono px-2 py-1 rounded ${
-              !p.critical ? 'bg-warn text-base font-bold hover:brightness-110' : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              !p.critical ? 'bg-warn text-base font-bold hover:brightness-110' : 'bg-raise text-ink/55 cursor-not-allowed'
             }`}
           >
             REFUEL {fmtMoney(plant.refuelCost)}
           </button>
         ) : (
-          <span className="text-[9px] text-slate-500">reloads run through the Fuel Cycle panel</span>
+          <span className="text-[9px] text-ink/55">reloads run through the Fuel Cycle panel</span>
         )}
       </div>
     </div>
@@ -531,10 +531,10 @@ export default function FissionDashboard({ tabletTab }) {
 
       <div className={`${diagVis} grid gap-2.5`}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className="bg-panel rounded-lg p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
-            <div className="text-[9px] uppercase tracking-widest text-slate-400">Thermal Power</div>
+          <div className="bg-panel p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
+            <div className="text-[9px] uppercase tracking-widest text-ink/70">Thermal Power</div>
             <div className="font-mono text-2xl font-black text-accent">{fmtPower(p.P + p.decayMW)}</div>
-            <div className="text-[8px] text-slate-500">
+            <div className="text-[8px] text-ink/55">
               fission {fmtPower(p.P)} · decay {fmtPower(p.decayMW)}
             </div>
           </div>
@@ -544,12 +544,12 @@ export default function FissionDashboard({ tabletTab }) {
         </div>
         <div className="grid grid-cols-2 gap-2">
           {plant.gridConnected ? (
-            <div className="bg-panel rounded-lg p-3 flex flex-col items-center justify-center">
-              <div className="text-[9px] uppercase tracking-widest text-slate-400">Net to Grid</div>
+            <div className="bg-panel p-3 flex flex-col items-center justify-center">
+              <div className="text-[9px] uppercase tracking-widest text-ink/70">Net to Grid</div>
               <div className={`font-mono text-lg font-bold ${p.netElecMW >= 0 ? 'text-safe' : 'text-crit'}`}>
                 {p.netElecMW >= 0 ? '+' : ''}{fmtPower(p.netElecMW)}
               </div>
-              <div className="text-[8px] text-slate-500">{p.homesPowered.toLocaleString()} homes</div>
+              <div className="text-[8px] text-ink/55">{p.homesPowered.toLocaleString()} homes</div>
               <CalcDrawer calc={{
                 meaning: `The plant makes ${fmtPower(p.grossElecMW)} of electricity and spends ${fmtPower(p.recircMW)} running itself. The grid gets the difference.`,
                 drivers: 'More reactor power raises the gross. Pumps and house loads eat a nearly fixed bite.',
@@ -571,12 +571,12 @@ export default function FissionDashboard({ tabletTab }) {
               }} />
             </div>
           ) : (
-            <div className="bg-panel rounded-lg p-3 flex flex-col items-center justify-center">
-              <div className="text-[9px] uppercase tracking-widest text-slate-400">License Headroom</div>
+            <div className="bg-panel p-3 flex flex-col items-center justify-center">
+              <div className="text-[9px] uppercase tracking-widest text-ink/70">License Headroom</div>
               <div className={`font-mono text-lg font-bold ${p.P <= plant.nominalMW ? 'text-safe' : 'text-warn'}`}>
                 {((p.P / plant.nominalMW) * 100).toFixed(1)}%
               </div>
-              <div className="text-[8px] text-slate-500">of the {plant.nominalMW} MW license</div>
+              <div className="text-[8px] text-ink/55">of the {plant.nominalMW} MW license</div>
               <CalcDrawer calc={{
                 meaning: `This reactor is licensed for ${plant.nominalMW} MW thermal. It sells no electricity; the product is neutrons for research and training hours for operators.`,
                 drivers: 'Rod position sets power. The protection system trips the reactor at 118% of license, no exceptions.',
@@ -611,7 +611,7 @@ export default function FissionDashboard({ tabletTab }) {
             format={(v) => v.toFixed(0)} cite="decay_heat"
           />
         </div>
-        <p className="text-[9px] text-slate-500 px-1">
+        <p className="text-[9px] text-ink/55 px-1">
           Reactor status: {p.critical ? `critical at ${((p.P / plant.nominalMW) * 100).toFixed(1)}% power` : p.scrammed ? 'tripped, rods in' : plantStateOf(sim).toLowerCase()}
           {p.xenonPcm > plant.xenonEqPcm * 1.18 && !p.critical ? ' · xenon pit in effect' : ''}
           {p.rodsLocked ? ' · rod interlock engaged' : ''}

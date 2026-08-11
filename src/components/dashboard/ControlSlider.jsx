@@ -14,9 +14,9 @@ export default function ControlSlider({
   const dangerous = danger !== undefined && value > danger;
 
   return (
-    <div className={`px-3 py-2 rounded-lg bg-panel ${highlight ? 'ui-highlight' : ''} ${disabled ? 'ui-locked' : ''}`}>
+    <div className={`px-3 py-2 bg-panel ${highlight ? 'ui-highlight' : ''} ${disabled ? 'ui-locked' : ''}`}>
       <div className="flex items-baseline justify-between gap-2">
-        <label htmlFor={`ctl-${controlKey}`} className="text-[10px] uppercase tracking-wider text-slate-400 flex items-center gap-1">
+        <label htmlFor={`ctl-${controlKey}`} className="text-[10px] uppercase tracking-wider text-ink/70 flex items-center gap-1">
           {label} {cite && <Cite id={cite} />}
         </label>
         <span className={`font-mono text-xs font-bold ${dangerous ? 'text-warn' : 'text-accent'}`}>
@@ -35,7 +35,7 @@ export default function ControlSlider({
         aria-label={`${label}: ${shown} ${unit}`}
         onChange={(e) => setControl(controlKey, parseFloat(e.target.value))}
       />
-      <div className="flex justify-between text-[8px] text-slate-500 font-mono">
+      <div className="flex justify-between text-[8px] text-ink/55 font-mono">
         <span>{min}</span>
         {danger !== undefined && <span className="text-warn">⚠ {danger}+</span>}
         <span>{max}</span>
