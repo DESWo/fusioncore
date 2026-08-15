@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useReactorStore, SERVICE_COSTS, levelsFor, levelFor } from '../../store/reactorStore.js';
 import { unlockedFeatures } from '../../engine/levels.js';
@@ -11,7 +11,7 @@ import CrewPanel from './CrewPanel.jsx';
 import EngineeringPanel from './EngineeringPanel.jsx';
 import Icon from '../common/Icon.jsx';
 import { IGNITION_TRIPLE } from '../../engine/constants.js';
-import { fmtPower, fmtSci, fmtMoney } from '../../utils/format.js';
+import { fmtPower, fmtSci, fmtMoney, fmtKeV, fmtQ, fmtCelsius } from '../../utils/units.js';
 import Gauge from './Gauge.jsx';
 import ControlSlider from './ControlSlider.jsx';
 import HistoryChart from './HistoryChart.jsx';
@@ -83,6 +83,81 @@ export function CampaignMap() {
   );
 }
 
+/**
+ * The emergency stop, in the one place it is allowed to live: pinned to the
+ * top of the instrument column, in both tabs, whatever you have scrolled to.
+ *
+ * Three things make it unlike every other button in the game.
+ *   1. A hazard-striped guard plate. Nothing else wears stripes.
+ *   2. Two stages. One press arms it, a second fires; it disarms itself after
+ *      four seconds, so a stray click cannot vent the plasma and a half-armed
+ *      control cannot sit waiting to catch you out.
+ *   3. Firing flashes the panel red and the slot flips to the shutdown state,
+ *      which is a state change rather than an animation and therefore still
+ *      readable with motion turned off.
+ *
+ * Exported because fission's scram deserves exactly the same object; see the
+ * handover note in the report. `onFire` is passed straight through: what the
+ * control DOES is the store's business, not this component's.
+ */
+export function EmergencyStop({
+  live, label, armedLabel, idleLabel, firedLabel, onFire, locked = false,
+}) {
+  const [armed, setArmed] = useState(false);
+  const [fired, setFired] = useState(false);
+  const timers = useRef([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  const clearTimers = () => {
+    timers.current.forEach(clearTimeout);
+    timers.current = [];
+  };
+  const arm = () => {
+    clearTimers();
+    setArmed(true);
+    timers.current.push(setTimeout(() => setArmed(false), 4000));
+  };
+  const fire = () => {
+    clearTimers();
+    setArmed(false);
+    setFired(true);
+    onFire();
+    timers.current.push(setTimeout(() => setFired(false), 1600));
+  };
+
+  return (
+    <div className={`estop-bar ${locked ? 'ui-locked' : ''}`}>
+      {live ? (
+        <div className="estop-guard">
+          <button
+            type="button"
+            onClick={armed ? fire : arm}
+            className={`estop ${armed ? 'is-armed' : ''}`}
+            title={armed ? 'Press again to confirm' : 'Guarded: press once to arm, again to fire'}
+            aria-label={armed
+              ? `${armedLabel}. Armed. Activate again to confirm.`
+              : `${label}. Guarded emergency control: activate once to arm, again to fire.`}
+          >
+            <span className="estop-cap" aria-hidden="true" />
+            <span className="min-w-0">
+              <span className="estop-kicker">{armed ? '▲ ARMED · CONFIRM' : 'EMERGENCY · PRESS TWICE'}</span>
+              <span className="estop-label">{armed ? armedLabel : label}</span>
+            </span>
+          </button>
+        </div>
+      ) : (
+        <div className="estop-idle">
+          <span className="estop-idle-dot" aria-hidden="true" />
+          <span className="label-mono text-[9px] text-ink/85" aria-live="polite">
+            {fired ? firedLabel : idleLabel}
+          </span>
+        </div>
+      )}
+      {fired && <div className="estop-flash" aria-hidden="true" />}
+    </div>
+  );
+}
+
 export function ObjectiveBanner() {
   const mode = useReactorStore((s) => s.mode);
   const levelId = useReactorStore((s) => s.level.id);
@@ -112,7 +187,7 @@ export function ObjectiveBanner() {
           </p>
           <button
             onClick={() => setCareerOpen(true)}
-            className="mt-2 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded bg-accent/20 text-accent hover:bg-accent/30"
+            className="btn-nav is-on mt-2 text-[10px] font-bold"
           >
             {next ? 'READ REVIEW & OFFER' : 'OPEN CAREER FILE'}
           </button>
@@ -212,7 +287,7 @@ function BigMetrics({ features }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {features.has('fulldash') && (
-        <div className="bg-panel p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
+        <div className="readout p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
           <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
             Q: Energy Gain <Cite id="jet_record" />
           </div>
@@ -239,14 +314,14 @@ function BigMetrics({ features }) {
         </div>
       )}
       {features.has('neutrons') && (
-        <div className="bg-panel p-3 flex flex-col items-center justify-center">
+        <div className="readout p-3 flex flex-col items-center justify-center">
           <div className="text-[9px] uppercase tracking-widest text-ink/70">Fusion Power</div>
           <div className="font-mono text-lg font-bold text-accent">{fmtPower(pFus)}</div>
           <div className="text-[8px] text-ink/55">thermal</div>
         </div>
       )}
       {features.has('finance') && (
-        <div className="bg-panel p-3 flex flex-col items-center justify-center">
+        <div className="readout p-3 flex flex-col items-center justify-center">
           <div className="text-[9px] uppercase tracking-widest text-ink/70">Net to Grid</div>
           <div className={`font-mono text-lg font-bold ${net >= 0 ? 'text-safe' : 'text-crit'}`}>
             {net >= 0 ? '+' : ''}{fmtPower(net)}
@@ -270,7 +345,7 @@ function BigMetrics({ features }) {
         </div>
       )}
       {features.has('fulldash') && (
-        <div className="bg-panel p-3 flex flex-col items-center justify-center">
+        <div className="readout p-3 flex flex-col items-center justify-center">
           <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
             n·T·τ <Cite id="lawson" />
           </div>
@@ -291,7 +366,6 @@ function StructurePanel() {
   const plasmaOn = useReactorStore((s) => s.sim.physics.plasmaOn);
   const funds = useReactorStore((s) => s.econ.funds);
   const repair = useReactorStore((s) => s.repairComponent);
-  const shutdown = useReactorStore((s) => s.shutdownPlasma);
   const pFus = useReactorStore((s) => s.sim.physics.pFusionMW);
   const divT = useReactorStore((s) => s.sim.physics.divertorTempC);
   const divLimit = useReactorStore((s) => s.sim.physics.divertorLimitC);
@@ -309,20 +383,16 @@ function StructurePanel() {
     ['magnets', 'Magnets', st.magnets, 'quench'],
   ];
   return (
-    <div className="bg-panel p-3">
+    <div className="readout p-3">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[10px] uppercase tracking-wider text-ink/70">Structural Health &amp; Maintenance</span>
-        {plasmaOn ? (
-          <button
-            onClick={shutdown}
-            className="text-[9px] font-semibold px-2 py-1 rounded bg-raise hover:bg-raise-hi text-warn"
-            title="Vent the plasma to open a maintenance window"
-          >
-            SHUT DOWN PLASMA
-          </button>
-        ) : (
-          <span className="text-[9px] font-mono text-safe">MAINTENANCE WINDOW OPEN</span>
-        )}
+        {/* The shutdown button used to live here, nine pixels tall, three
+            scrolls down. It is now the pinned emergency stop at the top of the
+            column: one plasma-off control, in one place. This is the readout
+            half of it. */}
+        <span className={`text-[9px] font-mono ${plasmaOn ? 'text-ink/55' : 'text-safe'}`}>
+          {plasmaOn ? 'SERVICE LOCKED: PLASMA ON' : 'MAINTENANCE WINDOW OPEN'}
+        </span>
       </div>
       <div className="grid gap-1.5">
         {bars.map(([key, label, v, cite]) => {
@@ -346,9 +416,7 @@ function StructurePanel() {
                       onClick={() => repair(key)}
                       disabled={!canService}
                       title={plasmaOn ? 'Shut down the plasma first' : funds < cost ? 'Insufficient funds' : `Restore to 100% for ${fmtMoney(cost)}`}
-                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                        canService ? 'bg-accent text-base font-bold hover:brightness-110' : 'bg-raise text-ink/55 cursor-not-allowed'
-                      }`}
+                      className="btn-plant text-[9px]"
                     >
                       SERVICE {fmtMoney(cost)}
                     </button>
@@ -362,24 +430,25 @@ function StructurePanel() {
           );
         })}
       </div>
-      <p className="text-[9px] text-ink/55 mt-1.5">Service requires plasma off.</p>
     </div>
   );
 }
 
+/* `label` is what the chart is called; `short` is what fits on the tab. The
+   full name still rides along to the plot, so nothing is renamed away. */
 const TELEMETRY_TABS = [
-  { id: 'T', label: 'Temperature', color: '#F59E0B', fmt: (v) => `${v.toFixed(1)} keV`, feature: 'gauges' },
-  { id: 'pFus', label: 'Fusion Power', color: '#38BDF8', fmt: fmtPower, feature: 'neutrons' },
-  { id: 'Q', label: 'Q Factor', color: '#22C55E', fmt: (v) => v.toFixed(2), feature: 'fulldash' },
-  { id: 'net', label: 'Net Power', color: '#A78BFA', fmt: fmtPower, feature: 'finance' },
+  { id: 'T', label: 'Temperature', short: 'Temp', color: '#F59E0B', fmt: fmtKeV, feature: 'gauges' },
+  { id: 'pFus', label: 'Fusion Power', short: 'Fusion', color: '#38BDF8', fmt: fmtPower, feature: 'neutrons' },
+  { id: 'Q', label: 'Q Factor', short: 'Q', color: '#22C55E', fmt: fmtQ, feature: 'fulldash' },
+  { id: 'net', label: 'Net Power', short: 'Net', color: '#A78BFA', fmt: fmtPower, feature: 'finance' },
 ];
 
 const FISSION_TELEMETRY_TABS = [
   { id: 'P', label: 'Power', color: '#38BDF8', fmt: fmtPower },
-  { id: 'Tfuel', label: 'Fuel Temp', color: '#F59E0B', fmt: (v) => `${v.toFixed(0)} °C` },
+  { id: 'Tfuel', label: 'Fuel Temp', short: 'Fuel T', color: '#F59E0B', fmt: fmtCelsius },
   { id: 'rho', label: 'Reactivity', color: '#22C55E', fmt: (v) => `${v.toFixed(0)} pcm` },
   { id: 'xe', label: 'Xenon', color: '#A78BFA', fmt: (v) => `${v.toFixed(0)} pcm` },
-  { id: 'net', label: 'Net Power', color: '#F8FAFC', fmt: fmtPower },
+  { id: 'net', label: 'Net Power', short: 'Net', color: '#F8FAFC', fmt: fmtPower },
 ];
 
 function exportTelemetryCsv(mode) {
@@ -409,24 +478,25 @@ export function TelemetryPanel({ features }) {
   return (
     <div>
       <div className="flex gap-1 mb-1 items-center flex-wrap">
+        {/* Navigation, not plant action: these change which trace you are
+            looking at and touch nothing. Quiet by class. */}
         {avail.length > 1 && avail.map((t) => (
           <button
             key={t.id}
             onClick={() => setMetric(t.id)}
-            className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${
-              active?.id === t.id ? 'bg-accent text-base' : 'bg-raise text-ink/85 hover:bg-raise-hi'
-            }`}
+            aria-pressed={active?.id === t.id}
+            title={t.label}
+            className={`btn-nav text-[9px] ${active?.id === t.id ? 'is-on' : ''}`}
           >
-            {t.label}
+            {t.short ?? t.label}
           </button>
         ))}
         {overlayReady && (
           <button
             onClick={() => setMetric('overlay')}
+            aria-pressed={overlayActive}
             title="All channels on one plot, each scaled to its own peak"
-            className={`text-[9px] px-2 py-0.5 rounded-full font-semibold ${
-              overlayActive ? 'bg-accent text-base' : 'bg-raise text-ink/85 hover:bg-raise-hi'
-            }`}
+            className={`btn-nav text-[9px] ${overlayActive ? 'is-on' : ''}`}
           >
             Overlay
           </button>
@@ -435,9 +505,9 @@ export function TelemetryPanel({ features }) {
         <button
           onClick={() => exportTelemetryCsv(mode)}
           title="Download this run's telemetry as CSV"
-          className="text-[9px] px-2 py-0.5 rounded-full font-semibold bg-raise text-ink/85 hover:bg-raise-hi"
+          className="btn-nav text-[9px]"
         >
-          Export CSV
+          CSV
         </button>
       </div>
       {overlayActive
@@ -450,7 +520,7 @@ export function TelemetryPanel({ features }) {
 function NeutronPanel() {
   const rate = useReactorStore((s) => s.sim.physics.neutronRate);
   return (
-    <div className="bg-panel p-3">
+    <div className="readout p-3">
       <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-1 flex items-center gap-1">
         Neutron Monitoring <Cite id="dpa_materials" />
       </div>
@@ -468,7 +538,7 @@ function VacuumPanel() {
   const named = levelId >= 3; // "Greenwald" is introduced in the Mission 3 briefing
   const color = gwFrac < 0.7 ? 'text-safe' : gwFrac < 0.95 ? 'text-warn' : 'text-crit';
   return (
-    <div className="bg-panel p-3">
+    <div className="readout p-3">
       <div className="text-[10px] uppercase tracking-wider text-ink/70 mb-1 flex items-center gap-1">
         Fuel Density Diagnostics <Cite id="greenwald" />
       </div>
@@ -497,6 +567,8 @@ export default function Dashboard({ tabletTab }) {
   const divLimit = useReactorStore((s) => s.sim.physics.divertorLimitC);
   const bMax = useReactorStore((s) => s.sim.controls.bMax);
   const safeB = useReactorStore((s) => s.sim.physics.magnetSafeB);
+  const plasmaOn = useReactorStore((s) => s.sim.physics.plasmaOn);
+  const shutdown = useReactorStore((s) => s.shutdownPlasma);
 
   const features = unlockedFeatures(levelId);
   const ob = onboarding.active;
@@ -509,6 +581,17 @@ export default function Dashboard({ tabletTab }) {
 
   return (
     <div className="flex-1 overflow-y-auto p-2.5 grid gap-2.5 content-start min-h-0">
+      {/* Pinned, both tabs, every scroll position: you should never have to go
+          looking for the way to stop the machine. */}
+      <EmergencyStop
+        live={plasmaOn}
+        label="SHUT DOWN PLASMA"
+        armedLabel="VENT THE PLASMA NOW"
+        idleLabel="PLASMA OFF · MAINTENANCE WINDOW OPEN"
+        firedLabel="PLASMA VENTED · MAINTENANCE WINDOW OPEN"
+        onFire={shutdown}
+        locked={lockAll}
+      />
       <HazardBanner />
       <CampaignMap />
       <ObjectiveBanner />

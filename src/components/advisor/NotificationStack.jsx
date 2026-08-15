@@ -93,7 +93,7 @@ export default function NotificationStack() {
           return (
             <motion.div
               key={n.id}
-              layout
+              layout={!still}
               initial={still ? false : { opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}

@@ -312,35 +312,363 @@ button {
   border-radius: 2px;
 }
 
-/* ---- Range sliders (industrial look) ---- */
+/* ---- Range sliders (industrial look) ----
+   A carved track and a knurled handle, rather than a web form's hairline and
+   dot. Everything set here is a property career mode already re-declares for
+   its own flat, warm sliders (track: height/background/radius; thumb:
+   size/radius/background/border/shadow), so the tactile treatment cannot leak
+   into a theme that is deliberately not a control panel. Anything that career
+   does NOT re-declare lives on .ctl-range below instead. */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  height: 6px;
-  border-radius: 3px;
-  background: #242B37;
+  height: 10px;
+  border-radius: 5px;
+  /* two layers: a shadow falling from the top lip, then the track metal */
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 60%),
+    linear-gradient(180deg, #1B212B, #2E3745);
   cursor: pointer;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  border: 2px solid var(--color-ink);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  /* grip lines first, then a lit-from-above cap: this is the part you grab */
+  background:
+    repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--color-base) 55%, transparent) 0 1px,
+      transparent 1px 4px),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color-accent) 82%, white),
+      var(--color-accent) 55%,
+      color-mix(in srgb, var(--color-accent) 72%, black));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, black);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.65),
+    0 0 10px color-mix(in srgb, var(--color-accent) 45%, transparent);
 }
 input[type="range"]:disabled::-webkit-slider-thumb {
-  background: #313A49;
+  background: var(--color-raise-hi);
+  border-color: var(--color-raise-hi);
   box-shadow: none;
 }
 input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(90deg,
+      color-mix(in srgb, var(--color-base) 55%, transparent) 0 1px,
+      transparent 1px 4px),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color-accent) 82%, white),
+      var(--color-accent) 55%,
+      color-mix(in srgb, var(--color-accent) 72%, black));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, black);
+}
+/* Reactor-side sliders only (never career): the states a passive readout can
+   never have. Hue-independent, so the colourblind overlays do not touch them. */
+.ctl-range:hover::-webkit-slider-thumb { filter: brightness(1.12); }
+.ctl-range:active::-webkit-slider-thumb { filter: brightness(0.9); transform: scale(0.94); }
+.ctl-range:hover::-moz-range-thumb { filter: brightness(1.12); }
+.ctl-range:active::-moz-range-thumb { filter: brightness(0.9); transform: scale(0.94); }
+.ctl-range:disabled { cursor: not-allowed; }
+
+/* A 10px-tall bar is a fine mouse target and a poor finger target. On touch,
+   the element grows to a 24px hit area and the track is painted as a band in
+   the middle of it, so the look is unchanged and the reach is not. */
+@media (pointer: coarse) {
+  input[type="range"] {
+    height: 24px;
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg,
+        transparent 0 7px,
+        rgba(0, 0, 0, 0.55) 7px 12px,
+        transparent 12px 100%),
+      linear-gradient(180deg,
+        transparent 0 7px,
+        #2E3745 7px 17px,
+        transparent 17px 100%);
+  }
+}
+
+/* ---- Controls you can touch, readouts you cannot ----------------------
+   Every surface in here used to be `bg-panel`: a slider, a toggle and a
+   passive number were the same object with different contents, and the only
+   way to find out which ones answered to a hand was to hover them all.
+
+   Two surfaces now carry that distinction, and they are built to survive a
+   squint rather than a close read:
+
+     .ctl      RAISED. Lit from above, dropped shadow beneath, and a grab rail
+               down the left edge. Reacts to hover and focus.
+     .readout  RECESSED. Flat plate, inset shadow, no rail, no reaction.
+
+   The difference is elevation and light, not hue, so the three colourblind
+   overlays leave it completely intact. */
+.ctl {
+  position: relative;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color-raise) 88%, var(--color-ink)),
+      var(--color-raise) 55%,
+      color-mix(in srgb, var(--color-raise) 82%, black));
+  border: 1px solid var(--color-raise-hi);
+  border-top-color: color-mix(in srgb, var(--color-raise-hi) 78%, var(--color-ink));
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5), 0 3px 8px rgba(0, 0, 0, 0.32);
+  transition: border-color 0.18s ease-out, box-shadow 0.18s ease-out;
+}
+/* The grab rail: the edge of the thing you would reach for on a real panel. */
+.ctl::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  pointer-events: none;
+}
+.ctl:hover {
+  border-color: color-mix(in srgb, var(--color-raise-hi) 55%, var(--color-accent));
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5), 0 5px 14px rgba(0, 0, 0, 0.42);
+}
+.ctl:hover::before { background: var(--color-accent); }
+.ctl:has(:focus-visible) { border-color: var(--color-accent); }
+.ctl:has(:disabled)::before { background: var(--color-raise-hi); }
+
+.readout {
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-panel) 90%, black);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 6%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Two classes of button --------------------------------------------
+   Moving around the interface and doing something to the plant were the same
+   pill before this. They are not the same act:
+
+     .btn-nav    changes what you are LOOKING at. Quiet by design: no fill, a
+                 hairline edge, and it only comes forward on hover or when on.
+     .btn-plant  changes the MACHINE. Bevelled cap, lit top edge, a shadow it
+                 sits on, and it travels downward under the pointer.
+
+   Press travel is a transform, which is instant rather than animated, so it
+   survives reduced motion untouched. */
+.btn-nav {
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+.btn-nav:hover:not(:disabled) {
+  color: var(--color-ink);
+  background: var(--color-raise);
+}
+.btn-nav.is-on {
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+.btn-plant {
+  position: relative;
+  top: 0;
+  border-radius: 4px;
+  padding: 0.3rem 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-base);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--color-accent) 80%, white),
+      var(--color-accent) 52%,
+      color-mix(in srgb, var(--color-accent) 78%, black));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 55%, black);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 0 color-mix(in srgb, var(--color-accent) 35%, black),
+    0 3px 8px rgba(0, 0, 0, 0.45);
+}
+.btn-plant:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-plant:active:not(:disabled) {
+  top: 2px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.btn-plant:disabled {
+  color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  background: var(--color-raise);
+  border-color: var(--color-raise-hi);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ---- The emergency stop -----------------------------------------------
+   The one control that gets a treatment nothing else in the game shares: a
+   hazard-striped guard plate, a two-stage arm, and a flash across the whole
+   viewport when it fires. The stripes are texture rather than hue, so no
+   colourblind overlay can flatten it into an ordinary red button, and the
+   armed state says ARMED in words as well as in colour.
+
+   The label sits on a dark, red-TINTED body rather than on a red fill: text
+   on saturated alarm red does not clear AA under every overlay (the
+   deuteranopia magenta is the worst case), and an emergency control is the
+   last place to accept unreadable text. Colour is carried by the border, the
+   cap and the stripes, which carry no text at all. */
+.estop-bar {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+}
+/* The scroll container pads 10px; without this, content slides through the
+   gap above a sticky bar. Behind the bar's own content, above everything
+   outside it. */
+.estop-bar::before {
+  content: '';
+  position: absolute;
+  inset: -10px -10px -2px -10px;
+  background: var(--color-base);
+  z-index: -1;
+}
+.estop-guard {
+  padding: 4px;
+  border-radius: 8px;
+  background: repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--color-warn) 80%, black) 0 9px,
+    var(--color-base) 9px 18px);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+}
+.estop {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  border-radius: 5px;
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  color: var(--color-ink);
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--color-crit) 30%, var(--color-base)),
+    color-mix(in srgb, var(--color-crit) 16%, var(--color-base)));
+  border: 2px solid var(--color-crit);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-ink) 22%, transparent),
+    0 3px 0 color-mix(in srgb, var(--color-crit) 45%, black),
+    0 6px 16px rgba(0, 0, 0, 0.55);
+}
+.estop:hover { filter: brightness(1.12); }
+.estop:active { transform: translateY(2px); box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.55); }
+/* The mushroom cap: a shape, so severity is never carried by hue alone. */
+.estop-cap {
+  flex: none;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: var(--color-accent);
-  border: 2px solid var(--color-ink);
+  background: radial-gradient(circle at 35% 30%,
+    color-mix(in srgb, var(--color-crit) 60%, white),
+    var(--color-crit) 60%,
+    color-mix(in srgb, var(--color-crit) 70%, black));
+  border: 2px solid color-mix(in srgb, var(--color-base) 60%, var(--color-crit));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-crit) 55%, transparent);
+}
+.estop-kicker {
+  display: block;
+  font-size: 0.5rem;
+  letter-spacing: 0.22em;
+  color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+}
+.estop-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.15;
+}
+.estop.is-armed {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--color-crit) 55%, var(--color-base)),
+    color-mix(in srgb, var(--color-crit) 38%, var(--color-base)));
+  animation: estop-armed 0.85s ease-in-out infinite;
+}
+.estop.is-armed .estop-kicker { color: var(--color-ink); }
+@keyframes estop-armed {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--color-ink) 22%, transparent),
+      0 3px 0 color-mix(in srgb, var(--color-crit) 45%, black),
+      0 0 0 0 color-mix(in srgb, var(--color-crit) 75%, transparent);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--color-ink) 22%, transparent),
+      0 3px 0 color-mix(in srgb, var(--color-crit) 45%, black),
+      0 0 0 7px transparent;
+  }
+}
+/* Armed is a state you must not miss. Under reduced motion the pulse is
+   replaced by a held ring rather than dropped, the same policy the
+   annunciator follows. */
+body.reduced-motion .estop.is-armed {
+  animation: none;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-ink) 22%, transparent),
+    0 3px 0 color-mix(in srgb, var(--color-crit) 45%, black),
+    0 0 0 4px color-mix(in srgb, var(--color-crit) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .estop.is-armed {
+    animation: none;
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--color-ink) 22%, transparent),
+      0 3px 0 color-mix(in srgb, var(--color-crit) 45%, black),
+      0 0 0 4px color-mix(in srgb, var(--color-crit) 55%, transparent);
+  }
+}
+/* Plasma off / rods in: same slot, same place on screen, no alarm colour.
+   The location is what the player learns, so the slot never disappears. */
+.estop-idle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  background: color-mix(in srgb, var(--color-panel) 90%, black);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.estop-idle-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-safe);
+}
+/* Firing feedback: the room notices. Fixed, so it flashes across the whole
+   instrument column (the glass panel's backdrop-filter is its containing
+   block) or the viewport where no filtered ancestor intercepts it. Pure
+   decoration layered on a state change that is legible without it, so the
+   reduced-motion clamp is free to drop it. */
+.estop-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center,
+    transparent 45%,
+    color-mix(in srgb, var(--color-crit) 55%, transparent) 100%);
+  animation: estop-fire 0.45s ease-out 2;
+}
+@keyframes estop-fire {
+  0%   { opacity: 0.95; }
+  100% { opacity: 0; }
 }
 
 /* ---- Scrollbars ---- */

@@ -63,6 +63,22 @@ function rungOf(ticks, grace) {
 /** Grace ticks are the countdown's own unit; seconds round UP so 0 s means 0 s. */
 const secondsLeft = (ticks) => Math.ceil(ticks / 10);
 
+/**
+ * A countdown pulses fast because a clock is running out. A breach pulses slow
+ * and shallow because it is not counting anything: the damage is continuous,
+ * and a strobe held for the minutes a player might take to cool a divertor is
+ * fatigue, not information. Both stay well under 3 Hz. Under reduced motion
+ * both hold solid, which keeps the alarm and drops only the animation.
+ */
+function pulse(rung, still) {
+  if (still) return { animate: { opacity: 1 }, transition: { duration: 0 } };
+  const slow = rung === 'breach';
+  return {
+    animate: { opacity: slow ? [0.55, 1, 0.55] : [0.25, 1, 0.25] },
+    transition: { duration: slow ? 1.6 : 0.8, repeat: Infinity, ease: 'easeInOut' },
+  };
+}
+
 export default function HazardBanner() {
   const hazards = useReactorStore((s) => s.sim.hazards);
   const graceSetting = useReactorStore((s) => s.sim.difficulty?.graceTicks);
@@ -105,8 +121,7 @@ export default function HazardBanner() {
             className="absolute inset-0 border-4 border-crit"
             style={{ boxShadow: 'inset 0 0 70px color-mix(in srgb, var(--color-crit) 30%, transparent)' }}
             initial={false}
-            animate={still ? { opacity: 1 } : { opacity: [0.4, 1, 0.4] }}
-            transition={still ? { duration: 0 } : { duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
+            {...pulse(worst, still)}
           />
         </div>,
         document.body,
@@ -121,16 +136,20 @@ function HazardRow({ row, grace, still }) {
   const breach = rung === 'breach';
   const left = Math.max(ticks, 0) / grace;
 
-  // The quiet rung: one line, no more panel than a slider label gets.
+  // The quiet rung: dashed border, small type, no bar and no big numeral.
+  // It still carries the fix, because this is the rung with time left to act.
   if (rung === 'exceeded') {
     return (
-      <div className="status-warn bg-warn/10 px-2 py-1 flex items-center justify-between gap-2">
-        <span className="text-[10px] font-bold text-warn flex items-center gap-1.5 min-w-0">
-          <Icon name="warn" className="w-3 h-3 shrink-0" />
-          <span className="truncate">{info.label}</span>
-          <span className="label-mono text-[8px] text-warn/70 shrink-0">{RUNG_WORD.exceeded}</span>
-        </span>
-        <span className="font-mono text-[11px] text-warn tabular-nums shrink-0">{secondsLeft(ticks)}s</span>
+      <div className="status-warn bg-warn/10 px-2 py-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] font-bold text-warn flex items-center gap-1.5 min-w-0">
+            <Icon name="warn" className="w-3 h-3 shrink-0" />
+            <span className="truncate">{info.label}</span>
+            <span className="label-mono text-[8px] text-warn/70 shrink-0">{RUNG_WORD.exceeded}</span>
+          </span>
+          <span className="font-mono text-[11px] text-warn tabular-nums shrink-0">{secondsLeft(ticks)}s</span>
+        </div>
+        <div className="text-[9px] text-ink/65 pl-[18px]">{info.fix}</div>
       </div>
     );
   }
@@ -145,8 +164,7 @@ function HazardRow({ row, grace, still }) {
         <motion.div
           className="absolute inset-0 bg-crit/25 pointer-events-none"
           initial={false}
-          animate={still ? { opacity: 1 } : { opacity: [0.25, 1, 0.25] }}
-          transition={still ? { duration: 0 } : { duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}
+          {...pulse(rung, still)}
           aria-hidden="true"
         />
       )}
