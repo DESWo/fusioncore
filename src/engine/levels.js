@@ -119,17 +119,32 @@ export const LEVELS = [
     id: 7,
     name: 'City Scale',
     objective: 'Power 1,000,000 homes with net fusion electricity',
-    hint: 'You need the full tech tree.',
+    hint: 'HTS magnets, H-mode and plasma shaping. Then hold it.',
     why: 'A gigawatt is a real city.',
-    brief: 'All tech, field ~19 T, density ~3.0, max cooling.',
+    // Measured, not guessed: shaping is what takes this from 0.52M homes to
+    // 1.35M, and the tungsten divertor is what makes running there legal
+    // (limit 1200 °C -> 2200 °C). The breeding blanket is not required for the
+    // power target, and the stellarator does not unlock until level 8, so the
+    // old "you need the full tech tree" was advice the player could not take.
+    brief: 'HTS + H-mode + shaping + tungsten divertor. Field ~19 T, density ~3.0, max cooling.',
     terms: [
       { term: 'REBCO', def: 'superconducting tape enabling 20 T magnets.' },
     ],
     unlocks: ['advwarn'],
     unlockText: 'Advanced diagnostic warning overlays',
-    sustainTicks: LEVEL_SUSTAIN_TICKS,
+    // A city is not powered by a five-second spike. At the old 50 ticks you
+    // could slam every slider to maximum, clip a gigawatt for five sim-seconds
+    // while the machine tore itself apart, and be rewarded for it. Holding for
+    // 30 s makes the reckless route pay for itself: over the divertor limit
+    // erosion runs at 1%/s, so a burn like that spends roughly a third of the
+    // divertor to pass, and drops below the health floor if it was already worn.
+    sustainTicks: 300,
     target: { label: 'homes', read: (s) => s.physics.homesPowered, goal: 1_000_000, unit: '', dp: 0 },
-    check: ({ physics }) => physics.homesPowered >= 1_000_000,
+    // The health floor is level 5's, deliberately: "a plant that breaks itself
+    // earns nothing" is a lesson this level should not quietly repeal.
+    check: ({ physics, structure }) =>
+      physics.homesPowered >= 1_000_000
+      && structure.firstWall > 50 && structure.divertor > 50 && structure.magnets > 50,
     cutscene: 'A million homes draw their light from your torus.',
   },
   {

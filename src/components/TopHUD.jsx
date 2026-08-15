@@ -5,6 +5,19 @@ import Icon from './common/Icon.jsx';
 
 const SPEEDS = [0.25, 1, 2, 4, 8];
 
+/**
+ * Speed does not just fast-forward the clock. The loop ticks at TICK_MS/speed
+ * and the background disruption roll happens once per tick, so running at 8x
+ * spends eight times as much operating risk per second you sit there. That is
+ * physically honest (risk is per unit of plant time, not per unit of yours) and
+ * completely invisible unless someone says it out loud.
+ */
+function riskNote(sp) {
+  if (sp > 1) return `. ${sp}x the plant time per second, and ${sp}x the disruption risk with it`;
+  if (sp < 1) return '. Slower plant time, and less risk per second, for delicate manoeuvres';
+  return '. Real time';
+}
+
 function fmtMoney(v) {
   const abs = Math.abs(v);
   const sign = v < 0 ? '-' : '';
@@ -102,7 +115,8 @@ export default function TopHUD() {
           <button
             key={sp}
             onClick={() => setSpeed(sp)}
-            aria-label={`Set simulation speed ${sp}x`}
+            aria-label={`Set simulation speed ${sp}x${riskNote(sp)}`}
+            title={`${sp}x sim speed${riskNote(sp)}`}
             className={`px-2 h-6 rounded-full font-mono text-[10px] inline-flex items-center justify-center ${speed === sp ? 'bg-accent text-base font-bold' : 'text-ink/85 hover:bg-raise'}`}
           >
             {sp}x

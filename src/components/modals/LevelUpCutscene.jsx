@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useReactorStore, levelsFor, levelFor } from '../../store/reactorStore.js';
 import { RD_BONUS_LEVEL } from '../../engine/constants.js';
 import { scoreCampaign } from '../../engine/scorecard.js';
+import { fmtMoney } from '../../utils/units.js';
 import SpeakerIcon from '../common/SpeakerIcon.jsx';
 
 /** Framer Motion milestone cutscene between levels (spec §8). */
@@ -120,7 +121,9 @@ export default function LevelUpCutscene() {
             </div>
 
             <div className="mt-3 border-t border-raise pt-2 font-mono text-[10px] text-ink/55">
-              {Math.round(card.summary.hours)} h online · ${card.summary.funds.toFixed(2)}B left
+              {/* summary.funds is raw dollars, so `.toFixed(2)}B` rendered a
+                  $10B bank as "$9999974793.69B". fmtMoney picks the unit. */}
+              {Math.round(card.summary.hours)} h online · {fmtMoney(card.summary.funds)} left
               {dailySeed && <> · daily plant {dailySeed}</>}
             </div>
             {dailySeed && (
