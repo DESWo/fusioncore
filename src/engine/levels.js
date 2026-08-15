@@ -17,6 +17,7 @@ export const LEVELS = [
     unlocks: ['heat', 'gauges'],
     unlockText: 'Heating controls · core temperature gauge',
     sustainTicks: LEVEL_SUSTAIN_TICKS,
+    target: { label: 'Ti', read: (s) => s.physics.T, goal: 1.5, unit: 'keV', dp: 1 },
     check: ({ physics }) => physics.plasmaOn && physics.T >= 1.5,
     cutscene: 'For the first time, a star burns steadily inside your machine.',
   },
@@ -34,6 +35,7 @@ export const LEVELS = [
     unlocks: ['density', 'vacuum'],
     unlockText: 'Fuel density slider · density diagnostics',
     sustainTicks: LEVEL_SUSTAIN_TICKS,
+    target: { label: 'Ti', read: (s) => s.physics.T, goal: 8.6, unit: 'keV', dp: 1 },
     check: ({ physics }) => physics.T >= 8.6,
     cutscene: 'Ten times hotter than the core of the Sun.',
   },
@@ -53,6 +55,7 @@ export const LEVELS = [
     sustainTicks: LEVEL_SUSTAIN_TICKS,
     // High enough that a hot-but-thin plasma (min density) does not pass:
     // the level's lesson is that fusion needs collisions, not just heat.
+    target: { label: 'neutrons', read: (s) => s.physics.neutronRate, goal: 2e18, unit: 'n/s', sci: true },
     check: ({ physics }) => physics.neutronRate > 2e18,
     cutscene: 'Deuterium and tritium are fusing in your core.',
   },
@@ -71,6 +74,7 @@ export const LEVELS = [
     unlocks: ['fulldash'],
     unlockText: 'Full dashboard: Q readout, Lawson plot, structure health, divertor cooling',
     sustainTicks: LEVEL_SUSTAIN_TICKS,
+    target: { label: 'Q', read: (s) => s.physics.Q, goal: 1.0, unit: '', dp: 2 },
     check: ({ physics }) => physics.Q > 1.0,
     cutscene: 'Q > 1. Headlines worldwide carry one word: BREAKEVEN.',
   },
@@ -88,6 +92,7 @@ export const LEVELS = [
     unlocks: ['tritium', 'blanket'],
     unlockText: 'Tritium inventory management · breeding blanket systems',
     sustainTicks: 600, // 1 sim-hour
+    target: { label: 'worst part', read: (s) => Math.min(s.structure.firstWall, s.structure.divertor, s.structure.magnets), goal: 50, unit: '%', dp: 0 },
     check: ({ physics, structure }) =>
       physics.plasmaOn && structure.firstWall > 50 && structure.divertor > 50 && structure.magnets > 50,
     cutscene: 'One full hour of sustained burn. This is an operating regime.',
@@ -106,6 +111,7 @@ export const LEVELS = [
     unlocks: ['finance'],
     unlockText: 'Financial ledger · live LCOE tracking',
     sustainTicks: LEVEL_SUSTAIN_TICKS,
+    target: { label: 'net', read: (s) => s.physics.netElecMW, goal: 0, unit: 'MW', dp: 0 },
     check: ({ physics }) => physics.netElecMW > 0,
     cutscene: 'Somewhere, a kettle boils on fusion electrons.',
   },
@@ -122,6 +128,7 @@ export const LEVELS = [
     unlocks: ['advwarn'],
     unlockText: 'Advanced diagnostic warning overlays',
     sustainTicks: LEVEL_SUSTAIN_TICKS,
+    target: { label: 'homes', read: (s) => s.physics.homesPowered, goal: 1_000_000, unit: '', dp: 0 },
     check: ({ physics }) => physics.homesPowered >= 1_000_000,
     cutscene: 'A million homes draw their light from your torus.',
   },

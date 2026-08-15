@@ -43,5 +43,45 @@ ok([fmtQ(NaN), fmtKeV(Infinity), fmtCelsius(undefined), fmtNet(NaN)]
 // ---- money keeps its existing contract ----
 eq(fmtMoney(19_800_000_000), '$19.80B', 'money is unchanged');
 
+// ---- a level's displayed target must agree with its authoritative check ----
+// `check` decides whether you passed. `target` only exists so the UI can draw
+// progress toward it. If they ever disagree, the bar fills while the mission
+// does not complete, which is worse than showing no bar at all.
+{
+  const { LEVELS } = await import('../src/engine/levels.js');
+  const { createSimState } = await import('../src/engine/physics.js');
+  const { createEconState } = await import('../src/engine/economy.js');
+
+  let agree = true;
+  for (const lvl of LEVELS) {
+    if (!lvl.target) continue;
+    const sim = createSimState();
+    const econ = createEconState();
+    // Force the target's own quantity just past its goal, leave the rest alone,
+    // then ask the real check whether that counts.
+    const t = lvl.target;
+    const probe = JSON.parse(JSON.stringify(sim));
+    const bump = t.goal === 0 ? 1 : t.goal * 1.0001 + 1e-9;
+    if (t.label === 'Ti') probe.physics.T = bump;
+    else if (t.label === 'Q') probe.physics.Q = bump;
+    else if (t.label === 'neutrons') probe.physics.neutronRate = bump;
+    else if (t.label === 'net') probe.physics.netElecMW = bump;
+    else if (t.label === 'homes') probe.physics.homesPowered = bump;
+    else if (t.label === 'worst part') {
+      probe.structure.firstWall = probe.structure.divertor = probe.structure.magnets = bump;
+    }
+    probe.physics.plasmaOn = true;
+    const reads = t.read(probe);
+    const meetsTarget = reads >= t.goal;
+    const passesCheck = lvl.check({ ...probe, econ });
+    if (!(meetsTarget && passesCheck)) {
+      agree = false;
+      console.log(`      level ${lvl.id} ${lvl.name}: target reads ${reads}, goal ${t.goal}, check ${passesCheck}`);
+    }
+  }
+  ok(agree, 'levels: every displayed target agrees with the check that actually gates the mission');
+}
+
 console.log(failures === 0 ? '\nALL UNIT CHECKS PASSED' : `\n${failures} UNIT CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
+

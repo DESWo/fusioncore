@@ -2,6 +2,7 @@ import NumberFlow from '@number-flow/react';
 import { useReactorStore, levelFor } from '../store/reactorStore.js';
 import { fissionPlantOf } from '../engine/fission.js';
 import { powerParts } from '../utils/format.js';
+import ObjectiveHUD from './ObjectiveHUD.jsx';
 
 // The cinematic reading of the machine: mission as a single giant caption,
 // the three numbers that matter in display type, the advisor as a ticker.
@@ -106,27 +107,23 @@ export default function HeroOverlay() {
         key={`${mode}-${level.id}-${completed}`}
         className="absolute inset-x-0 bottom-0 px-8 pb-7 pr-[440px] flex flex-col gap-5"
       >
-        {/* mission caption */}
+        {/* The mission caption and its hold bar moved to ObjectiveHUD, which
+            also shows the threshold you are measured against. Two components
+            each telling half of "what am I doing and how close am I" was the
+            duplication; this one keeps the campaign-complete state, which has
+            no target to draw. */}
         <div>
-          <div className="reveal label-mono text-[11px] text-accent mb-2" style={{ '--reveal-i': 0 }}>
-            {completed
-              ? career ? '[ POSTING COMPLETE ]' : '[ CAMPAIGN COMPLETE / SANDBOX ]'
-              : `[ MISSION ${level.id} / ${level.name} ]`}
-          </div>
-          <h2 className="reveal display-caps text-3xl xl:text-4xl max-w-2xl text-ink" style={{ '--reveal-i': 1 }}>
-            {completed
-              ? career ? 'The review is on your desk.' : 'The machine is yours.'
-              : level.objective}
-          </h2>
-          {!completed && progress > 0 && progress < 1 && (
-            <div className="mt-3 max-w-2xl">
-              <div className="h-0.5 bg-raise/80 overflow-hidden rounded-full">
-                <div className="h-full bg-accent" style={{ width: `${progress * 100}%`, transition: 'width 0.15s' }} />
+          {completed ? (
+            <>
+              <div className="reveal label-mono text-[11px] text-accent mb-2" style={{ '--reveal-i': 0 }}>
+                {career ? '[ POSTING COMPLETE ]' : '[ CAMPAIGN COMPLETE / SANDBOX ]'}
               </div>
-              <div className="label-mono text-[10px] text-accent mt-1">
-                Holding / {Math.round(progress * 100)}%
-              </div>
-            </div>
+              <h2 className="reveal display-caps text-3xl xl:text-4xl max-w-2xl text-ink" style={{ '--reveal-i': 1 }}>
+                {career ? 'The review is on your desk.' : 'The machine is yours.'}
+              </h2>
+            </>
+          ) : (
+            <ObjectiveHUD />
           )}
         </div>
 
