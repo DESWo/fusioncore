@@ -82,6 +82,58 @@ eq(fmtMoney(19_800_000_000), '$19.80B', 'money is unchanged');
   ok(agree, 'levels: every displayed target agrees with the check that actually gates the mission');
 }
 
+
+// ---- progressive disclosure: the arc has to actually be an arc ----
+// The point of three states is that groups recede. If nothing ever steps back,
+// level 8 is level 1 with seven more panels attached, which is the failure this
+// table exists to prevent.
+{
+  const { FOCUS, FOCUS_GROUPS, FOCUS_LEVELS, focusFor } = await import('../src/engine/focus.js');
+  const rank = { [FOCUS.HIDDEN]: 0, [FOCUS.PERIPHERAL]: 1, [FOCUS.PRIMARY]: 2 };
+
+  // Every level names exactly one job. Two primaries is no hierarchy at all.
+  const primaries = FOCUS_LEVELS.map((l) =>
+    FOCUS_GROUPS.filter((g) => focusFor(l)[g] === FOCUS.PRIMARY));
+  ok(primaries.every((p) => p.length === 1),
+    `focus: every level has exactly one primary group (${primaries.map((p) => p[0]).join(' -> ')})`);
+
+  // Nothing that has been shown is ever hidden again. Taking information away
+  // reads as a bug, not as an interface with an opinion.
+  let neverRegresses = true;
+  for (const g of FOCUS_GROUPS) {
+    let seen = false;
+    for (const l of FOCUS_LEVELS) {
+      const f = focusFor(l)[g];
+      if (f !== FOCUS.HIDDEN) seen = true;
+      else if (seen) { neverRegresses = false; console.log(`      ${g} went hidden again at level ${l}`); }
+    }
+  }
+  ok(neverRegresses, 'focus: nothing that has been shown is ever hidden again');
+
+  // And the half that matters: groups DO step back. A group that has been the
+  // job and never yields is an accumulating dashboard wearing a disguise.
+  const recedes = FOCUS_GROUPS.filter((g) => {
+    const arc = FOCUS_LEVELS.map((l) => rank[focusFor(l)[g]]);
+    const peak = Math.max(...arc);
+    return peak === 2 && arc[arc.length - 1] < 2;
+  });
+  ok(recedes.length >= 4,
+    `focus: groups recede after their moment (${recedes.join(', ')} step back from primary)`);
+
+  // Level 1 is almost empty on purpose.
+  const l1Visible = FOCUS_GROUPS.filter((g) => focusFor(1)[g] !== FOCUS.HIDDEN);
+  ok(l1Visible.length === 1,
+    `focus: level 1 shows one group and nothing else (${l1Visible.join(', ')})`);
+
+  // Level 8 still has the plasma, just not as the headline.
+  ok(focusFor(8).stability === FOCUS.PERIPHERAL && focusFor(8).economics === FOCUS.PRIMARY,
+    'focus: at level 8 economics leads and the plasma is still there, quietly');
+
+  // Out-of-range ids clamp rather than throwing: sandbox runs past level 8.
+  ok(focusFor(99) === focusFor(8) && focusFor(0) === focusFor(1),
+    'focus: level ids clamp, so sandbox and bad input do not crash the layout');
+}
+
 console.log(failures === 0 ? '\nALL UNIT CHECKS PASSED' : `\n${failures} UNIT CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);
 
