@@ -1,5 +1,5 @@
 import { useReactorStore } from '../../store/reactorStore.js';
-import { fmtMoney } from '../../utils/format.js';
+import { fmtMoney, fmtNet } from '../../utils/units.js';
 import Cite from '../common/Cite.jsx';
 import CalcDrawer from '../common/CalcDrawer.jsx';
 
@@ -13,7 +13,9 @@ export default function Finance() {
 
   const rows = [
     ['Grid spot price', `$${econ.price.toFixed(2)}/MWh`, 'lcoe_lazard'],
-    ['Net to grid', `${netMW.toFixed(1)} MWe`, 'recirc'],
+    // Same quantity as the Net to Grid tile, so it must read the same: this
+    // said "-80.6 MWe" beside the tile's "-81 MW" for the identical number.
+    ['Net to grid', fmtNet(netMW), 'recirc'],
     ['Homes powered', homes.toLocaleString(), null],
     ['Operating margin', `${fmtMoney(econ.incomeRate)}/h`, null],
     ['Cumulative export', `${econ.mwhCum.toFixed(0)} MWh`, null],

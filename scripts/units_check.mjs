@@ -3,7 +3,8 @@
 // Run: npm run units
 import {
   fmtQ, fmtRatio, fmtKeV, fmtMillionC, fmtSeconds, fmtDensity,
-  fmtPercent, fmtCelsius, fmtPcm, fmtNet, fmtPower, fmtMoney, UNIT_SEP as U,
+  fmtPercent, fmtCelsius, fmtPcm, fmtNet, fmtPower, fmtMoney, fmtTesla,
+  bare, UNIT_SEP as U,
 } from '../src/utils/units.js';
 
 let failures = 0;
@@ -28,6 +29,19 @@ eq(fmtCelsius(985.4), `985${U}°C`, 'component temperatures are whole');
 eq(fmtPercent(0.9337), '93%', 'percentages are whole');
 eq(fmtPercent(93.37, true), '93%', 'percent accepts an already-scaled value');
 eq(fmtPcm(-3067.2), `-3067${U}pcm`, 'pcm is whole');
+eq(fmtTesla(10.47), `10.5${U}T`, 'magnetic field keeps 1dp, matching its slider step');
+
+// ---- bare readouts: same rule, unit supplied by the caller ----
+// `Gauge` prints the unit in its own label, so it needs the number alone. The
+// point of deriving it is that it cannot drift from the unit-carrying version.
+eq(bare(fmtKeV(8.64)), '8.6', 'a bare keV readout keeps the same 1dp as fmtKeV');
+eq(bare(fmtSeconds(1.024)), '1.02', 'a bare confinement time keeps 2dp');
+eq(bare(fmtMillionC(19.66)), '228', 'a bare million-°C readout is whole');
+eq(bare(fmtDensity(1.05)), '1.05', 'a bare density keeps its slider-step precision');
+// format.js separates with an ordinary space rather than NBSP; splitting on
+// only NBSP returned these untouched, which renders as "105 MW MW".
+eq(bare(fmtPower(104.73)), '105', 'bare strips an ordinary space too, not just NBSP');
+eq(bare(fmtCelsius(NaN)), '--', 'a missing value stays -- rather than becoming empty');
 
 // ---- the sign on net power is information, not decoration ----
 eq(fmtNet(38.2), '+38 MW', 'exporting reads as a gain');

@@ -680,6 +680,48 @@ body.reduced-motion .estop.is-armed {
 /* ---- Terminal feed ---- */
 .terminal-line { font-family: var(--font-mono); font-size: 0.72rem; line-height: 1.5; }
 
+/* ---- Focus hierarchy: the dashboard's shape changes with the campaign ----
+   `focusFor(levelId)` (src/engine/focus.js) marks each information group
+   HIDDEN, PERIPHERAL or PRIMARY per level; HIDDEN groups are simply never
+   rendered, and these two classes carry the other two states for whichever
+   group's panels a level puts them around (Dashboard.jsx picks the class per
+   group, once, rather than every panel styling itself).
+
+   `zoom` rather than `transform: scale()`: several of the wrapped panels
+   (Finance, EngineeringPanel, AsBuiltPanel, Gauge) set their own type in
+   fixed px and live outside this component, so a transform would need a
+   matching negative-margin hack to avoid leaving dead space where the box
+   used to be. `zoom` resizes the box itself, so it works uniformly whether
+   the panel inside is ours or borrowed.
+
+   Colour and opacity are deliberately untouched: dimming TEXT is what would
+   cut into contrast, so de-emphasis here is carried by size and the room
+   given to it, never by fading anything out. `.ctl` / `.readout` keep their
+   own elevation and shading exactly as before, just rendered smaller or
+   larger. */
+.peripheral {
+  zoom: 0.85;
+}
+.focus-primary {
+  zoom: 1.15;
+}
+
+/* `zoom` scales the layout box, and that includes the 44px floor set above:
+   at 0.85 a compliant button lands at 37px, quietly undoing a rule this file
+   sets on purpose. Peripheral is meant to be quieter, not harder to hit, so
+   declare the floor pre-divided by the same factor. 44 / 0.85 = 51.8.
+   `.focus-primary` needs no counterpart: 44 * 1.15 already clears it. */
+@media (pointer: coarse) {
+  .peripheral button {
+    min-height: 52px;
+    min-width: 52px;
+  }
+  .peripheral input[type="range"] {
+    height: 29px;
+    border-radius: 15px;
+  }
+}
+
 /* ---- Onboarding mask ---- */
 .ui-locked { pointer-events: none; opacity: 0.35; filter: saturate(0.4); }
 .ui-highlight {

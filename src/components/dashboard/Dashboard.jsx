@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useReactorStore, SERVICE_COSTS, levelsFor, levelFor } from '../../store/reactorStore.js';
 import { unlockedFeatures } from '../../engine/levels.js';
+import { focusFor, FOCUS, FOCUS_GROUPS } from '../../engine/focus.js';
 import { tutorialStep } from '../../engine/tutorials.js';
 import { nextPosting } from '../../engine/career.js';
 import HazardBanner from './HazardBanner.jsx';
@@ -11,7 +12,10 @@ import CrewPanel from './CrewPanel.jsx';
 import EngineeringPanel from './EngineeringPanel.jsx';
 import Icon from '../common/Icon.jsx';
 import { IGNITION_TRIPLE } from '../../engine/constants.js';
-import { fmtPower, fmtSci, fmtMoney, fmtKeV, fmtQ, fmtCelsius } from '../../utils/units.js';
+import {
+  fmtPower, fmtSci, fmtMoney, fmtKeV, fmtQ, fmtCelsius,
+  fmtMillionC, fmtSeconds, fmtDensity, fmtPercent, fmtPcm, fmtTesla, bare,
+} from '../../utils/units.js';
 import Gauge from './Gauge.jsx';
 import ControlSlider from './ControlSlider.jsx';
 import HistoryChart from './HistoryChart.jsx';
@@ -245,25 +249,35 @@ export function ObjectiveBanner() {
   );
 }
 
-function BigMetrics({ features }) {
+/**
+ * Focus group: gain — "is it producing enough fusion to matter". Q, the
+ * ignition triple product, and the neutron count. Both feature flags are
+ * checked (rather than nesting under one) because `fulldash` implies
+ * `neutrons` was already unlocked, but the group itself may be invoked
+ * before either is true (a level can mark `gain` non-hidden ahead of the
+ * mechanical unlock; see the hard constraint in the task: unlocked AND
+ * non-hidden to render).
+ */
+function GainGroup({ features, primary }) {
   const Q = useReactorStore((s) => s.sim.physics.Q);
   const pFus = useReactorStore((s) => s.sim.physics.pFusionMW);
-  const net = useReactorStore((s) => s.sim.physics.netElecMW);
   const triple = useReactorStore((s) => s.sim.physics.tripleProduct);
   const ignition = useReactorStore((s) => s.sim.physics.ignition);
   const p = useReactorStore((s) => s.sim.physics);
   const c = useReactorStore((s) => s.sim.controls);
 
+  if (!features.has('fulldash') && !features.has('neutrons')) return null;
+
   // "Currently limited by": every number should answer WHY it is what it is
   const qLimits = [];
   if (p.plasmaOn && p.beamCoupling < 0.75) {
-    qLimits.push(`Beam shine-through: only ${(p.beamCoupling * 100).toFixed(0)}% of the heating beam couples into fuel this thin`);
+    qLimits.push(`Beam shine-through: only ${fmtPercent(p.beamCoupling)} of the heating beam couples into fuel this thin`);
   }
   if (p.pBremsMW > 0.25 * Math.max(p.pAlphaMW + c.heat * p.beamCoupling, 0.1)) {
-    qLimits.push(`Radiation loss: ${p.pBremsMW.toFixed(1)} MW glows away as X-rays (impurities in the plasma raise this)`);
+    qLimits.push(`Radiation loss: ${fmtPower(p.pBremsMW)} glows away as X-rays (impurities in the plasma raise this)`);
   }
   if (!ignition) {
-    qLimits.push(`Confinement: n·T·τ is at ${Math.min((triple / IGNITION_TRIPLE) * 100, 99).toFixed(0)}% of ignition; the plasma still needs external heat`);
+    qLimits.push(`Confinement: n·T·τ is at ${fmtPercent(Math.min((triple / IGNITION_TRIPLE) * 100, 99), true)} of ignition; the plasma still needs external heat`);
   }
   if (p.greenwaldFrac > 0.9) {
     qLimits.push('Density limit: almost no headroom to add fuel at this field');
@@ -272,10 +286,82 @@ function BigMetrics({ features }) {
     qLimits.push('Magnetic field at the machine maximum');
   }
 
+  const qColor = Q >= 1 ? 'text-safe' : Q >= 0.5 ? 'text-warn' : 'text-ink/85';
+  return (
+    <div className={`grid gap-2.5 ${primary ? 'focus-primary' : 'peripheral'}`}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {features.has('fulldash') && (
+          <div className="readout p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
+            <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
+              Q: Energy Gain <Cite id="jet_record" />
+            </div>
+            <div className={`font-mono text-3xl font-black ${qColor}`}>{fmtQ(Q)}</div>
+            <div className="text-[8px] text-ink/55">fusion ÷ heating electrical draw</div>
+            <div className="w-full text-left">
+              <CalcDrawer calc={{
+                meaning: `Every megawatt of electricity fed to the heating systems buys ${fmtQ(Q)} MW of fusion heat.`,
+                drivers: 'Hotter, denser, better-confined plasma raises it. Radiation and beam shine-through losses eat it.',
+                equation: 'Q = P_fusion / P_heating-electric',
+                steps: [
+                  ['Heating wall-plug draw', fmtPower(p.pInputElecMW)],
+                  ['Absorbed by the plasma', fmtPower(c.heat * p.beamCoupling)],
+                  ['Radiation loss (X-rays)', `−${fmtPower(p.pBremsMW)}`],
+                  ['Alpha self-heating', `+${fmtPower(p.pAlphaMW)}`],
+                  ['Fusion power out', fmtPower(p.pFusionMW)],
+                  ['Q', fmtQ(Q)],
+                ],
+                limitedBy: qLimits.slice(0, 3),
+                assumptions: 'Engineering Q against the wall-plug draw, a tougher standard than the physics Q quoted for JET and NIF.',
+                cite: 'jet_record',
+              }} />
+            </div>
+          </div>
+        )}
+        {features.has('neutrons') && (
+          <div className="readout p-3 flex flex-col items-center justify-center">
+            <div className="text-[9px] uppercase tracking-widest text-ink/70">Fusion Power</div>
+            <div className="font-mono text-lg font-bold text-accent">{fmtPower(pFus)}</div>
+            <div className="text-[8px] text-ink/55">thermal</div>
+          </div>
+        )}
+        {features.has('fulldash') && (
+          <div className="readout p-3 flex flex-col items-center justify-center">
+            <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
+              n·T·τ <Cite id="lawson" />
+            </div>
+            <div className={`font-mono text-sm font-bold ${ignition ? 'text-accent' : 'text-ink'}`}>
+              {fmtSci(triple)}
+            </div>
+            <div className="text-[8px] text-ink/55">
+              {ignition ? '★ IGNITED' : `ignition at ${fmtSci(IGNITION_TRIPLE, 0)}`}
+            </div>
+          </div>
+        )}
+      </div>
+      {features.has('neutrons') && <NeutronPanel />}
+    </div>
+  );
+}
+
+/**
+ * Focus group: power — "does any of it reach the meter". Just the
+ * recirculating-power tile; gated on `finance` since that is the first
+ * feature that makes net power meaningful (see report for why `power` can
+ * still render nothing between its own PERIPHERAL onset and the finance
+ * unlock two levels later — the unlock/hidden intersection rule at work,
+ * not a bug).
+ */
+function PowerGroup({ features, primary }) {
+  const net = useReactorStore((s) => s.sim.physics.netElecMW);
+  const p = useReactorStore((s) => s.sim.physics);
+  const c = useReactorStore((s) => s.sim.controls);
+
+  if (!features.has('finance')) return null;
+
   const recircItems = [
-    [`Heating systems: ${p.pInputElecMW.toFixed(0)} MW wall-plug draw`, p.pInputElecMW],
-    [`Magnets: ${p.magnetDrawMW.toFixed(0)} MW to hold ${c.B.toFixed(1)} T`, p.magnetDrawMW],
-    [`Divertor cooling pumps: ${(c.cooling * 0.3).toFixed(0)} MW`, c.cooling * 0.3],
+    [`Heating systems: ${fmtPower(p.pInputElecMW)} wall-plug draw`, p.pInputElecMW],
+    [`Magnets: ${fmtPower(p.magnetDrawMW)} to hold ${fmtTesla(c.B)}`, p.magnetDrawMW],
+    [`Divertor cooling pumps: ${fmtPower(c.cooling * 0.3)}`, c.cooling * 0.3],
     ['Plant baseline (cryo, tritium plant, controls): 15 MW', 15],
   ].sort((a, b) => b[1] - a[1]);
   const netLimits = [
@@ -283,85 +369,57 @@ function BigMetrics({ features }) {
     ...recircItems.slice(0, 2).map(([t]) => t),
   ];
 
-  const qColor = Q >= 1 ? 'text-safe' : Q >= 0.5 ? 'text-warn' : 'text-ink/85';
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      {features.has('fulldash') && (
-        <div className="readout p-3 col-span-2 sm:col-span-1 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
-            Q: Energy Gain <Cite id="jet_record" />
-          </div>
-          <div className={`font-mono text-3xl font-black ${qColor}`}>{Q.toFixed(2)}</div>
-          <div className="text-[8px] text-ink/55">fusion ÷ heating electrical draw</div>
-          <div className="w-full text-left">
-            <CalcDrawer calc={{
-              meaning: `Every megawatt of electricity fed to the heating systems buys ${Q.toFixed(2)} MW of fusion heat.`,
-              drivers: 'Hotter, denser, better-confined plasma raises it. Radiation and beam shine-through losses eat it.',
-              equation: 'Q = P_fusion / P_heating-electric',
-              steps: [
-                ['Heating wall-plug draw', `${p.pInputElecMW.toFixed(1)} MW`],
-                ['Absorbed by the plasma', `${(c.heat * p.beamCoupling).toFixed(1)} MW`],
-                ['Radiation loss (X-rays)', `−${p.pBremsMW.toFixed(1)} MW`],
-                ['Alpha self-heating', `+${p.pAlphaMW.toFixed(1)} MW`],
-                ['Fusion power out', `${p.pFusionMW.toFixed(1)} MW`],
-                ['Q', Q.toFixed(2)],
-              ],
-              limitedBy: qLimits.slice(0, 3),
-              assumptions: 'Engineering Q against the wall-plug draw, a tougher standard than the physics Q quoted for JET and NIF.',
-              cite: 'jet_record',
-            }} />
-          </div>
+    <div className={primary ? 'focus-primary' : 'peripheral'}>
+      <div className={`readout ${primary ? 'p-5 max-w-sm' : 'p-3 max-w-[220px]'} flex flex-col items-center justify-center`}>
+        <div className={`uppercase tracking-widest text-ink/70 ${primary ? 'text-[11px]' : 'text-[9px]'}`}>Net to Grid</div>
+        <div className={`font-mono font-bold ${primary ? 'text-4xl' : 'text-lg'} ${net >= 0 ? 'text-safe' : 'text-crit'}`}>
+          {net >= 0 ? '+' : ''}{fmtPower(net)}
         </div>
-      )}
-      {features.has('neutrons') && (
-        <div className="readout p-3 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-ink/70">Fusion Power</div>
-          <div className="font-mono text-lg font-bold text-accent">{fmtPower(pFus)}</div>
-          <div className="text-[8px] text-ink/55">thermal</div>
+        <div className={`text-ink/55 ${primary ? 'text-[10px]' : 'text-[8px]'}`}>after recirculating power</div>
+        <div className="w-full text-left">
+          <CalcDrawer calc={{
+            meaning: `The plant generates ${fmtPower(p.grossElecMW)} of electricity and spends ${fmtPower(p.recircMW)} running itself. The grid gets the difference.`,
+            drivers: 'More fusion power raises the gross. Heating, magnets, cooling, and house loads all bite before the meter.',
+            equation: 'P_net = P_gross − P_recirculating',
+            steps: [
+              ['Gross electric', fmtPower(p.grossElecMW)],
+              ...recircItems.map(([t, v]) => [t.split(':')[0], `−${fmtPower(v)}`]),
+              ['Net to grid', fmtPower(net)],
+            ],
+            limitedBy: netLimits,
+            assumptions: 'Fixed steam-cycle efficiency around 35%, adjusted by your as-built turbine. Real plants also vary with condenser temperature.',
+            cite: 'recirc',
+          }} />
         </div>
-      )}
-      {features.has('finance') && (
-        <div className="readout p-3 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-ink/70">Net to Grid</div>
-          <div className={`font-mono text-lg font-bold ${net >= 0 ? 'text-safe' : 'text-crit'}`}>
-            {net >= 0 ? '+' : ''}{fmtPower(net)}
-          </div>
-          <div className="text-[8px] text-ink/55">after recirculating power</div>
-          <div className="w-full text-left">
-            <CalcDrawer calc={{
-              meaning: `The plant generates ${fmtPower(p.grossElecMW)} of electricity and spends ${fmtPower(p.recircMW)} running itself. The grid gets the difference.`,
-              drivers: 'More fusion power raises the gross. Heating, magnets, cooling, and house loads all bite before the meter.',
-              equation: 'P_net = P_gross − P_recirculating',
-              steps: [
-                ['Gross electric', fmtPower(p.grossElecMW)],
-                ...recircItems.map(([t, v]) => [t.split(':')[0], `−${v.toFixed(0)} MW`]),
-                ['Net to grid', fmtPower(net)],
-              ],
-              limitedBy: netLimits,
-              assumptions: 'Fixed steam-cycle efficiency around 35%, adjusted by your as-built turbine. Real plants also vary with condenser temperature.',
-              cite: 'recirc',
-            }} />
-          </div>
-        </div>
-      )}
-      {features.has('fulldash') && (
-        <div className="readout p-3 flex flex-col items-center justify-center">
-          <div className="text-[9px] uppercase tracking-widest text-ink/70 flex items-center gap-1">
-            n·T·τ <Cite id="lawson" />
-          </div>
-          <div className={`font-mono text-sm font-bold ${ignition ? 'text-accent' : 'text-ink'}`}>
-            {fmtSci(triple)}
-          </div>
-          <div className="text-[8px] text-ink/55">
-            {ignition ? '★ IGNITED' : `ignition at ${fmtSci(IGNITION_TRIPLE, 0)}`}
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
 
-function StructurePanel() {
+/**
+ * Focus group: scale — "is it a power station". Homes powered, pulled
+ * straight from physics so it stands on its own rather than riding along
+ * inside the financial ledger. Gated on `finance` for the same reason as
+ * PowerGroup: homes powered is zero and meaningless before net export exists.
+ */
+function ScaleGroup({ features, primary }) {
+  const homes = useReactorStore((s) => s.sim.physics.homesPowered);
+
+  if (!features.has('finance')) return null;
+
+  return (
+    <div className={primary ? 'focus-primary' : 'peripheral'}>
+      <div className={`readout ${primary ? 'p-5 max-w-sm' : 'p-3 max-w-[220px]'} flex flex-col items-center justify-center`}>
+        <div className={`uppercase tracking-widest text-ink/70 ${primary ? 'text-[11px]' : 'text-[9px]'}`}>Homes Powered</div>
+        <div className={`font-mono font-bold text-accent ${primary ? 'text-4xl' : 'text-lg'}`}>{homes.toLocaleString()}</div>
+        <div className={`text-ink/55 ${primary ? 'text-[10px]' : 'text-[8px]'}`}>net export ÷ ~1 kW average home</div>
+      </div>
+    </div>
+  );
+}
+
+function StructurePanel({ primary = false }) {
   const st = useReactorStore((s) => s.sim.structure);
   const plasmaOn = useReactorStore((s) => s.sim.physics.plasmaOn);
   const funds = useReactorStore((s) => s.econ.funds);
@@ -383,18 +441,18 @@ function StructurePanel() {
     ['magnets', 'Magnets', st.magnets, 'quench'],
   ];
   return (
-    <div className="readout p-3">
+    <div className={`readout ${primary ? 'p-5' : 'p-3'}`}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] uppercase tracking-wider text-ink/70">Structural Health &amp; Maintenance</span>
+        <span className={`uppercase tracking-wider text-ink/70 ${primary ? 'text-xs' : 'text-[10px]'}`}>Structural Health &amp; Maintenance</span>
         {/* The shutdown button used to live here, nine pixels tall, three
             scrolls down. It is now the pinned emergency stop at the top of the
             column: one plasma-off control, in one place. This is the readout
             half of it. */}
-        <span className={`text-[9px] font-mono ${plasmaOn ? 'text-ink/55' : 'text-safe'}`}>
+        <span className={`font-mono ${primary ? 'text-[10px]' : 'text-[9px]'} ${plasmaOn ? 'text-ink/55' : 'text-safe'}`}>
           {plasmaOn ? 'SERVICE LOCKED: PLASMA ON' : 'MAINTENANCE WINDOW OPEN'}
         </span>
       </div>
-      <div className="grid gap-1.5">
+      <div className={`grid ${primary ? 'gap-2.5' : 'gap-1.5'}`}>
         {bars.map(([key, label, v, cite]) => {
           const color = v > 60 ? 'var(--color-safe)' : v > 30 ? 'var(--color-warn)' : 'var(--color-crit)';
           const worn = v < 99.95;
@@ -404,13 +462,13 @@ function StructurePanel() {
           const loadColor = load > 0.95 ? 'text-crit' : load > 0.8 ? 'text-warn' : 'text-ink/55';
           return (
             <div key={key}>
-              <div className="flex justify-between items-center text-[10px]">
+              <div className={`flex justify-between items-center ${primary ? 'text-xs' : 'text-[10px]'}`}>
                 <span className="text-ink/70 flex items-center gap-1">
                   {label} <Cite id={cite} />
-                  <span className={`font-mono text-[9px] ${loadColor}`}>load {(load * 100).toFixed(0)}%</span>
+                  <span className={`font-mono text-[9px] ${loadColor}`}>load {fmtPercent(load)}</span>
                 </span>
                 <span className="flex items-center gap-2">
-                  <span className="font-mono" style={{ color }}>{v.toFixed(1)}%</span>
+                  <span className="font-mono" style={{ color }}>{fmtPercent(v, true)}</span>
                   {worn && (
                     <button
                       onClick={() => repair(key)}
@@ -423,7 +481,7 @@ function StructurePanel() {
                   )}
                 </span>
               </div>
-              <div className="h-1.5 bg-raise rounded-full overflow-hidden mt-0.5">
+              <div className={`bg-raise rounded-full overflow-hidden mt-0.5 ${primary ? 'h-2.5' : 'h-1.5'}`}>
                 <div className="h-full rounded-full" style={{ width: `${v}%`, background: color, transition: 'width 0.3s' }} />
               </div>
             </div>
@@ -446,8 +504,8 @@ const TELEMETRY_TABS = [
 const FISSION_TELEMETRY_TABS = [
   { id: 'P', label: 'Power', color: '#38BDF8', fmt: fmtPower },
   { id: 'Tfuel', label: 'Fuel Temp', short: 'Fuel T', color: '#F59E0B', fmt: fmtCelsius },
-  { id: 'rho', label: 'Reactivity', color: '#22C55E', fmt: (v) => `${v.toFixed(0)} pcm` },
-  { id: 'xe', label: 'Xenon', color: '#A78BFA', fmt: (v) => `${v.toFixed(0)} pcm` },
+  { id: 'rho', label: 'Reactivity', color: '#22C55E', fmt: fmtPcm },
+  { id: 'xe', label: 'Xenon', color: '#A78BFA', fmt: fmtPcm },
   { id: 'net', label: 'Net Power', short: 'Net', color: '#F8FAFC', fmt: fmtPower },
 ];
 
@@ -545,32 +603,117 @@ function VacuumPanel() {
       <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
         <div>
           <div className="text-ink/55 text-[9px]">DENSITY (10²⁰ m⁻³)</div>
-          <div className="font-bold">{density.toFixed(2)}</div>
+          <div className="font-bold">{bare(fmtDensity(density))}</div>
         </div>
         <div>
           <div className="text-ink/55 text-[9px]">{named ? 'DENSITY LIMIT (GREENWALD)' : 'DENSITY LIMIT'}</div>
-          <div className={`font-bold ${color}`}>{(gwFrac * 100).toFixed(0)}% of {gwLimit.toFixed(2)}</div>
+          <div className={`font-bold ${color}`}>{fmtPercent(gwFrac)} of {bare(fmtDensity(gwLimit))}</div>
         </div>
       </div>
     </div>
   );
 }
 
-export default function Dashboard({ tabletTab }) {
-  const levelId = useReactorStore((s) => s.level.id);
-  const onboarding = useReactorStore((s) => s.onboarding);
+/**
+ * Focus group: stability — "is the plasma alive and behaving". The core
+ * gauge row plus fuel density diagnostics. Never returns null: the core
+ * temp gauge has no feature gate of its own, so this group is on screen
+ * from the moment a plasma exists, matching its X,X,P,P,P,P,P,P arc (it is
+ * shown from level 1 and never regresses to hidden).
+ */
+function StabilityGroup({ features, primary }) {
   const T = useReactorStore((s) => s.sim.physics.T);
   const tauE = useReactorStore((s) => s.sim.physics.tauE);
   const beta = useReactorStore((s) => s.sim.physics.beta);
   const betaLimit = useReactorStore((s) => s.sim.physics.betaLimit);
   const divT = useReactorStore((s) => s.sim.physics.divertorTempC);
   const divLimit = useReactorStore((s) => s.sim.physics.divertorLimitC);
+
+  return (
+    <div className={`grid gap-2.5 ${primary ? 'focus-primary' : 'peripheral'}`}>
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {features.has('density') ? (
+          <Gauge label="Core Temp" value={T} max={40} unit="keV" display={bare(fmtKeV(T))} zones={[0.99, 0.995]} cite="ipb98" />
+        ) : (
+          <Gauge label="Core Temp" value={T} max={40} unit="million °C" display={bare(fmtMillionC(T))} zones={[0.99, 0.995]} cite="ipb98" />
+        )}
+        {features.has('fulldash') && (
+          <Gauge label="Confinement τE" value={tauE} max={3} unit="s" display={bare(fmtSeconds(tauE))} zones={[0.99, 0.995]} cite="ipb98" />
+        )}
+        {features.has('density') && (
+          <Gauge
+            label={features.has('fulldash') ? 'Beta Limit' : 'Pressure Limit'}
+            value={betaLimit > 0 ? beta / betaLimit : 0} max={1.2}
+            unit={features.has('fulldash') ? 'β/βmax' : '% of max'}
+            display={fmtPercent(betaLimit > 0 ? beta / betaLimit : 0)} zones={[0.7, 0.92]} cite="troyon"
+          />
+        )}
+        {features.has('fulldash') && (
+          <Gauge label="Divertor" value={divT} max={Math.max(divLimit * 1.3, 1)} unit="°C" display={bare(fmtCelsius(divT))} zones={[divLimit / (divLimit * 1.3) * 0.85, divLimit / (divLimit * 1.3)]} cite="divertor_iter" />
+        )}
+      </div>
+      {features.has('vacuum') && <VacuumPanel />}
+    </div>
+  );
+}
+
+/**
+ * Focus group: endurance — "will the machine survive the run". Structural
+ * health, the engineering-margin readout, and the as-built plant. All three
+ * live elsewhere or locally, so this is a pure grouping wrapper.
+ */
+function EnduranceGroup({ features, primary }) {
+  if (!features.has('neutrons') && !features.has('fulldash')) return null;
+  return (
+    <div className={`grid gap-2.5 ${primary ? 'focus-primary' : 'peripheral'}`}>
+      {features.has('neutrons') && <StructurePanel primary={primary} />}
+      {features.has('fulldash') && <EngineeringPanel />}
+      {features.has('fulldash') && <AsBuiltPanel />}
+    </div>
+  );
+}
+
+/**
+ * Focus group: economics — "does it sell". Just the financial ledger; `Finance`
+ * is owned elsewhere, so its own type never resizes, only the space around it.
+ */
+function EconomicsGroup({ features, primary }) {
+  if (!features.has('finance')) return null;
+  return (
+    <div className={primary ? 'focus-primary' : 'peripheral'}>
+      <Finance />
+    </div>
+  );
+}
+
+/** One entry per FOCUS_GROUPS key (src/engine/focus.js), so the render order
+ *  below can be derived from focusFor() instead of hand-maintained. */
+const GROUP_COMPONENTS = {
+  stability: StabilityGroup,
+  gain: GainGroup,
+  endurance: EnduranceGroup,
+  power: PowerGroup,
+  scale: ScaleGroup,
+  economics: EconomicsGroup,
+};
+
+export default function Dashboard({ tabletTab }) {
+  const levelId = useReactorStore((s) => s.level.id);
+  const onboarding = useReactorStore((s) => s.onboarding);
   const bMax = useReactorStore((s) => s.sim.controls.bMax);
   const safeB = useReactorStore((s) => s.sim.physics.magnetSafeB);
   const plasmaOn = useReactorStore((s) => s.sim.physics.plasmaOn);
   const shutdown = useReactorStore((s) => s.shutdownPlasma);
 
   const features = unlockedFeatures(levelId);
+  // The dashboard's shape for this level: which groups show, and which one
+  // is today's job. Order is derived, not hand-listed — the PRIMARY group
+  // (there is ever at most one; units_check.mjs asserts exactly one) floats
+  // to the front and the rest keep FOCUS_GROUPS' order, via a stable sort.
+  const focus = focusFor(levelId);
+  const groupOrder = [...FOCUS_GROUPS]
+    .filter((g) => focus[g] !== FOCUS.HIDDEN)
+    .sort((a, b) => (focus[a] === FOCUS.PRIMARY ? -1 : 0) - (focus[b] === FOCUS.PRIMARY ? -1 : 0));
   const ob = onboarding.active;
   const tutStep = tutorialStep(onboarding);
   const lockAll = !!tutStep?.lock; // frozen tutorial steps lock all but the star
@@ -597,35 +740,13 @@ export default function Dashboard({ tabletTab }) {
       <ObjectiveBanner />
 
       <div className={`${diagVis} grid gap-2.5`}>
-        {features.has('neutrons') && <BigMetrics features={features} />}
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {features.has('density') ? (
-            <Gauge label="Core Temp" value={T} max={40} unit="keV" display={T.toFixed(1)} zones={[0.99, 0.995]} cite="ipb98" />
-          ) : (
-            <Gauge label="Core Temp" value={T} max={40} unit="million °C" display={(T * 11.6).toFixed(0)} zones={[0.99, 0.995]} cite="ipb98" />
-          )}
-          {features.has('fulldash') && (
-            <Gauge label="Confinement τE" value={tauE} max={3} unit="s" display={tauE.toFixed(2)} zones={[0.99, 0.995]} cite="ipb98" />
-          )}
-          {features.has('density') && (
-            <Gauge
-              label={features.has('fulldash') ? 'Beta Limit' : 'Pressure Limit'}
-              value={betaLimit > 0 ? beta / betaLimit : 0} max={1.2}
-              unit={features.has('fulldash') ? 'β/βmax' : '% of max'}
-              display={`${((beta / betaLimit) * 100).toFixed(0)}%`} zones={[0.7, 0.92]} cite="troyon"
-            />
-          )}
-          {features.has('fulldash') && (
-            <Gauge label="Divertor" value={divT} max={Math.max(divLimit * 1.3, 1)} unit="°C" display={divT.toFixed(0)} zones={[divLimit / (divLimit * 1.3) * 0.85, divLimit / (divLimit * 1.3)]} cite="divertor_iter" />
-          )}
-        </div>
-        {features.has('vacuum') && <VacuumPanel />}
-        {features.has('neutrons') && <NeutronPanel />}
-        {features.has('neutrons') && <StructurePanel />}
-        {features.has('fulldash') && <EngineeringPanel />}
-        {features.has('fulldash') && <AsBuiltPanel />}
+        {groupOrder.map((g) => {
+          const GroupPanels = GROUP_COMPONENTS[g];
+          return <GroupPanels key={g} features={features} primary={focus[g] === FOCUS.PRIMARY} />;
+        })}
+        {/* Spans every group rather than belonging to one: left in a fixed
+            slot rather than reordered with the groups above. */}
         <TelemetryPanel features={features} />
-        {features.has('finance') && <Finance />}
       </div>
 
       <div className={`${controlsVis} grid gap-2.5`}>
@@ -649,21 +770,21 @@ export default function Dashboard({ tabletTab }) {
           {features.has('density') && (
             <ControlSlider
               controlKey="density" label="Fuel Density (gas fueling)" unit="×10²⁰ m⁻³" min={0.1} max={5} step={0.05}
-              format={(v) => v.toFixed(2)} cite="greenwald"
+              format={(v) => bare(fmtDensity(v))} cite="greenwald"
               disabled={lockAll}
             />
           )}
           {features.has('fuelmix') && (
             <ControlSlider
               controlKey="fuelMix" label="Tritium Fraction (D-T mix)" unit="" min={0.05} max={0.95} step={0.05}
-              format={(v) => `${(v * 100).toFixed(0)}% T`} cite="tbr"
+              format={(v) => `${fmtPercent(v)} T`} cite="tbr"
               disabled={lockAll}
             />
           )}
           {features.has('fulldash') && (
             <ControlSlider
               controlKey="cooling" label="Divertor Active Cooling" unit="MW" min={0} max={100} step={1}
-              format={(v) => v.toFixed(0)} cite="divertor_iter"
+              format={(v) => String(Math.round(v))} cite="divertor_iter"
               disabled={lockAll}
             />
           )}

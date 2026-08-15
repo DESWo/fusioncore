@@ -77,6 +77,27 @@ export const fmtCelsius = (c) => `${fixed(c, 0)}${NB}°C`;
 /** Reactivity, in pcm. Whole numbers: it is already a fine-grained unit. */
 export const fmtPcm = (pcm) => `${fixed(pcm, 0)}${NB}pcm`;
 
+/** Magnetic field. 1dp, matching the slider's own 0.1 T steps. */
+export const fmtTesla = (t) => `${fixed(t, 1)}${NB}T`;
+
+/**
+ * The number without its unit, for the places that already print the unit
+ * themselves: `Gauge` puts it in the label ("Core Temp (keV)"), so passing the
+ * full string would render "10.5 keV keV".
+ *
+ * Deliberately derived from the formatters above rather than written as four
+ * more `fixed(v, n)` variants. The precision rule for a quantity then lives in
+ * exactly one place, and a bare readout cannot drift to a different number of
+ * decimals than the same quantity shown with its unit. Non-finite values pass
+ * through as `--`, which carries no separator.
+ *
+ * Splits on ordinary spaces as well as the no-break separator: the formatters
+ * in this file use NBSP, but `fmtPower` and `fmtMoney` come from format.js and
+ * use a plain space. Matching only NBSP silently returned the string untouched
+ * for those, which reads as "50 MW MW" once the caller adds its own unit.
+ */
+export const bare = (formatted) => String(formatted).split(/[\s ]/)[0];
+
 /**
  * Net power to the grid. Always carries its sign, because the sign IS the
  * information: a plant that consumes 40 MW and one that exports 40 MW are
