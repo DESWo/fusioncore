@@ -1,91 +1,127 @@
 # FusionCore
 
-You run the world's first commercially viable fusion reactor. Confine a star,
-balance the books, power a city.
+Confine a star, keep it lit, and sell the power.
 
-An educational browser game: a real-time tokamak engineering simulation where every
-micro-adjustment changes how the reactor behaves, and every number carries a citation
-to real plasma-physics literature.
+A browser game about operating a fusion reactor, where the physics is real
+enough to teach you something and honest about where it isn't.
 
-## Run it
+**[Play it](https://deswo.github.io/fusioncore/)** · no install, saves in your browser
+
+## What you actually do
+
+You run a tokamak from a control room. Three sliders do most of the work:
+magnetic field, heating power, and how much fuel you inject. Everything else
+follows from those.
+
+The machine fights back. Push density too hard and the plasma disrupts. Push
+the field past the coil rating and the magnets quench. Run the divertor over
+its thermal limit and it erodes while you watch. You get a grace window on
+every violation, and an alarm board that latches until you acknowledge it.
+
+Eight missions, each one a real milestone in the history of the field:
+
+| | |
+|---|---|
+| 1 · First Light | Sustain a stable plasma |
+| 2 · Heating Up | 100 million °C (8.6 keV) |
+| 3 · First Fusion | Measurable neutron flux |
+| 4 · Breakeven | Q > 1.0, more energy out than in |
+| 5 · Endurance | One hour without breaking the machine |
+| 6 · First Customers | Net electricity to the grid |
+| 7 · City Scale | Power a million homes |
+| 8 · Commercial Era | Beat $100/MWh over the plant's life |
+
+R&D points buy real technology: H-mode confinement, REBCO high-temperature
+superconducting magnets, tungsten divertors, lithium breeding blankets, a
+stellarator conversion. Each one changes the machine's physics constants, and
+each one is a trade rather than an upgrade.
+
+There is also a **fission plant** (rods, xenon, decay heat, a real fuel cycle)
+and a **career mode** that runs a working life from age 18 to retirement.
+
+## The physics, and where it bends
+
+Every constant traces to a source. `src/data/sources.json` has the citations,
+and the game shows them inline rather than in a footnote.
+
+**Fusion power.** P = ¼ n² ⟨σv⟩ E V, with ⟨σv⟩ a 5th-degree log-log polynomial
+fitted through six NRL Plasma Formulary points between 1 and 50 keV.
+
+**Confinement.** An IPB98(y,2)-inspired scaling:
+τ_E = H · c₁ · B^0.15 · P^−0.69 · n^0.41, with machine size folded into c₁.
+
+**Limits.** The Greenwald density limit and a Troyon-like beta limit drive
+disruption probability. Divertor erosion runs at 1%/s over the thermal limit.
+First-wall neutron damage depletes over 120 minutes at 500 MW.
+
+**Economy.** $50/MWh spot with noise, $30,000/g tritium, 35% thermal
+conversion, and recirculating power taken off the top before anything reaches
+the meter.
+
+**Fission.** Point kinetics with delayed neutrons under the prompt-jump
+approximation, Doppler and coolant temperature feedback, xenon poisoning,
+decay heat and fuel burnup.
+
+### What was deliberately simplified
+
+Being upfront about this is the point. A simulation that hides its
+approximations teaches the wrong lesson.
+
+**The plasma is a single zone.** No radial profiles, no transport equation.
+Real tokamaks have peaked density and temperature profiles that change the
+answer; here everything is volume-averaged. This is the largest simplification
+in the model and it is what makes a 10 Hz browser game possible.
+
+**τ_E is calibrated, not derived.** The source spec pins τ_E(t=0) = 0.5 s, but
+with its own scaling exponents that calibration makes Q > 1 mathematically
+unreachable inside the slider bounds. The game would be unwinnable at Level 4.
+The engine uses c₁ = 4.2 instead, giving τ_E ≈ 1.0 s at start. Verified
+end-to-end by `npm run balance`: breakeven lands at Q ≈ 1.26 on a maxed
+non-superconducting machine, and gigawatt scale requires the HTS and H-mode
+path, which is exactly the progression the spec intends.
+
+**Disruptions are probabilistic, not predicted.** Real disruption physics is an
+open research problem. Here, crossing a limit raises a probability rather than
+triggering a simulated instability.
+
+**Fission uses the prompt-jump approximation.** Prompt neutron kinetics are
+collapsed, so the model is accurate for the slow manoeuvres the game asks for
+and would not be for a prompt-critical excursion.
+
+**Q is engineering Q, not physics Q.** It is measured against wall-plug heating
+draw, which is a tougher standard than the physics Q usually quoted for JET and
+NIF. A machine at Q = 1 here has genuinely broken even.
+
+## How it's checked
+
+There is no typechecker, so the check scripts are the safety net:
 
 ```bash
-npm install
-npm run dev        # http://localhost:5199
-npm run build      # production bundle in dist/
-npm run balance    # levels are winnable, plus the annunciator and contrast checks
+npm run balance   # proves all 8 levels are winnable inside the slider bounds
+npm run career    # career systems against the written spec
 ```
 
-## The game
-
-Eight levels, each unlocked by holding a real reactor milestone:
-
-1. **First Light**. Sustain a stable plasma
-2. **Heating Up**: T ≥ 8.6 keV (≈ 100 million °C)
-3. **First Fusion**. Measurable neutron flux
-4. **Breakeven**: Q > 1.0
-5. **Endurance**. One hour without breaking the machine
-6. **First Customers**. Net electricity to the grid
-7. **City Scale**. Power 1,000,000 homes
-8. **Commercial Era**. Lifetime LCOE under $100/MWh
-
-R&D points buy real technologies (H-mode control, REBCO HTS magnets, tungsten
-divertors, lithium breeding blankets, a stellarator conversion), each of which
-mutates the machine's physics constants.
-
-## Architecture
-
-- `src/engine/`. Pure, headless physics/economy/levels/tech. No React imports;
-  `scripts/balance_check.mjs` runs the same code in Node to prove winnability.
-- `src/engine/annunciator.js`: the alarm board. Eight tiles wired to plant
-  state, never to scripted events. Four of them read `sim.hazards` for their
-  alarm state rather than re-deriving a threshold, so the panel can never
-  disagree with the physics about whether a limit was crossed; only the caution
-  band is the annunciator's own. A tile latches on any rise in severity and flashes until
-  acknowledged, then stays lit until the condition physically clears.
-  `scripts/annunciator_check.mjs` drives it headlessly (57 assertions).
-- `src/store/reactorStore.js`: Zustand store owning the fixed 10 Hz tick loop
-  (100 ms ticks; speed changes retime the interval: 0.25x → 400 ms). Saves go to
-  IndexedDB via `idb-keyval` on a 60 s autosave, on level completion, and manually.
-- `src/components/`: React UI subscribed through granular selectors. The R3F
-  scene reads state inside `useFrame` via `getState()` so the 3D view never
-  triggers React re-renders.
-- `src/audio/synth.js`. Fully procedural Web Audio soundscape (no audio files):
-  50 Hz plant hum, a magnet tone tracking the field slider, LFO-gated alarms.
-- `src/data/`: `sources.json` (every citation), `advisor_triggers.json`
-  (rule-based advisor conditions, no eval), `didyouknow.json`.
-
-## Physics model (and honest deviations)
-
-- **Fusion power**: P = ¼ n² ⟨σv⟩ E V with ⟨σv⟩ a 5th-degree log-log polynomial
-  through six NRL Plasma Formulary points (1–50 keV).
-- **Confinement**: IPB98(y,2)-inspired τ_E = H · c₁ · B^0.15 · P^−0.69 · n^0.41
-  with machine size folded into c₁.
-- **Ignition criterion**: the Lawson triple product n·T·τ_E must clear
-  3×10²¹ keV·s·m⁻³, a single-power fit to Lawson's 1957 power-balance
-  argument. The PHYSICS view breaks the product into its three factors live,
-  flags whichever of the player's sliders is contributing least, and ties the
-  100-million-°C operating point back to the D-T reactivity curve ⟨σv⟩(T) so
-  the temperature requirement reads as a consequence of the reaction cross
-  section, not an arbitrary target.
-- **Limits**: Greenwald density limit and a Troyon-like beta limit drive
-  disruption probability; exceeding the divertor thermal limit erodes it at the
-  spec's 1%/s; first-wall dpa depletes in 120 minutes at 500 MW per the spec.
-- **Economy**: $50/MWh spot with Gaussian noise, $30,000/g tritium, 35% thermal
-  conversion, recirculating power (heating wall-plug draw, magnets, cooling,
-  plant baseline), cumulative LCOE.
-
-**Deviation from the spec, deliberately:** the spec pins τ_E(t=0) = 0.5 s, but with
-its own scaling exponents that calibration makes Q > 1 mathematically unreachable
-inside the slider bounds. The game would be unwinnable at Level 4. The engine
-uses c₁ = 4.2 (initial τ_E ≈ 1.0 s) instead, verified end-to-end by
-`npm run balance`: breakeven lands at Q ≈ 1.26 with a maxed non-superconducting
-machine, and gigawatt scale requires the HTS + H-mode tech path, exactly the
-progression arc the spec intends.
+`balance` runs the same pure engine modules in Node that the browser runs, so a
+tuning change that quietly makes a level unreachable fails here rather than in
+someone's playthrough.
 
 ## Accessibility
 
-Text-to-speech on every message (Web Speech API, with graceful degradation),
-three colorblind palettes with shape-coded statuses, reduced-motion mode,
-locally-hosted OpenDyslexic font, UI scaling 75–150%, full keyboard focus rings.
-Keyboard: **Space** pause/resume, **1–4** speed steps.
+Text-to-speech on every message, three colourblind palettes with shape-coded
+status (never colour alone), reduced-motion support, a locally hosted
+OpenDyslexic option, UI scaling from 75% to 150%, and full keyboard operation.
+Contrast is asserted by script rather than eyeballed.
+
+## Running it locally
+
+```bash
+npm install
+npm run dev
+```
+
+Architecture and contributor notes are in [DEVELOPING.md](DEVELOPING.md).
+
+---
+
+Built with AI assistance. The physics, the citations and the deliberate
+deviations above are the parts worth reading.

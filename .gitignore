@@ -6,3 +6,9 @@ dist
 # Pages is built and published by .github/workflows/deploy-pages.yml.
 # Never commit a build: the old committed docs/ drifted six days behind source.
 docs
+
+# Local agent tooling. Kept on disk so the dev-server launcher and the working
+# notes still function locally, but not part of the public repo: they are
+# development scaffolding, not something the project ships.
+.claude/
+CLAUDE.md
