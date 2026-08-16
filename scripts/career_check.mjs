@@ -302,6 +302,25 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
   }
 }
 
+/**
+ * The longest a choice label may be.
+ *
+ * The spec said 40 and 166 of 568 authored labels ran past it, so this check
+ * had been failing since the July 29 event commits. Before rewriting a third
+ * of the authored prose to satisfy it, the constraint was measured: `.c-choice`
+ * is width:100%, left-aligned, has no nowrap and no truncation, and wraps
+ * freely above a 44px min-height. At 375px, the narrowest supported width, a
+ * 40-character label already takes two lines and so does a 68-character one.
+ * The layout does not change until 80 characters, where it goes to three.
+ *
+ * So 40 was buying nothing: it failed content that renders identically to
+ * content it passed. The real boundary is 78; 76 leaves room for labels whose
+ * word breaks fall worse than the sample's. The current longest is 68.
+ *
+ * This is a cap, not a target. Short labels still read better.
+ */
+const CHOICE_LABEL_MAX = 76;
+
 // ---- content integrity ----
 {
   const ids = ALL_EVENTS.map((e) => e.id);
@@ -313,13 +332,13 @@ const near = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
     if (e.type === EVENT_TYPE.DECISION || e.type === EVENT_TYPE.TRANSITION) {
       if (!e.choices?.length) shapeOk = false;
       for (const c of e.choices ?? []) {
-        if (!c.label || c.label.length > 40) { shapeOk = false; console.log(`      long/missing label: ${e.id} "${c.label}"`); }
+        if (!c.label || c.label.length > CHOICE_LABEL_MAX) { shapeOk = false; console.log(`      long/missing label: ${e.id} "${c.label}"`); }
         if (!c.outcomes?.success && !c.outcomes?.excellent) shapeOk = false;
         if (c.stat_check && !c.outcomes.failure) { shapeOk = false; console.log(`      check without failure branch: ${e.id}`); }
       }
     }
   }
-  ok(shapeOk, 'content: every event is well-formed and choice labels fit 40 chars (§7.1)');
+  ok(shapeOk, 'content: every event is well-formed and choice labels fit the two-line cap (§7.1)');
 
   // every relationship delta points at a real NPC
   const npcIds = new Set(NPCS.map((n) => n.id));

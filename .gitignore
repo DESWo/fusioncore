@@ -12,3 +12,9 @@ docs
 # development scaffolding, not something the project ships.
 .claude/
 CLAUDE.md
+
+# Working backlog. Useful locally, but it is raw development notes: unread-flag
+# counts, blunt verdicts on half-finished features, quotes from playtests. That
+# is not what the public repo should be presenting. Kept on disk; track the
+# real work in GitHub Issues.
+FEEDBACK.md

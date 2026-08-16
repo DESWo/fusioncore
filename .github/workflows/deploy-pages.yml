@@ -38,6 +38,13 @@ jobs:
         # the tolerance model and the scorecard. A red suite must not ship.
         run: npm run balance
 
+      - name: Verify the career systems still hold
+        # Career mode has its own deterministic assertions: the probability
+        # table, no-dice resolution, relationship threading, and full seeded
+        # playthroughs to 65. Only balance ran here, so a commit could break
+        # every one of them and still deploy green.
+        run: npm run career
+
       - name: Build
         run: npm run build
 
