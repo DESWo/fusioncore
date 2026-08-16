@@ -20,10 +20,22 @@ checks. A tuning change that makes a level unreachable passes every visual
 inspection and fails here. Run it after touching the engine, any level
 definition, or any constant.
 
-`npm run career` currently fails exactly one check, and has since the July 29
-event-authoring commits: 133 choice labels run past the 40-character limit in
-§7.1. Being fixed separately. Until it lands, the gate is "career reports that
-one failure and no other" — a second failure means something broke.
+**`npm run career` is green, and it gates deploys too.** Both suites run in
+`.github/workflows/deploy-pages.yml` before anything is published. It used to
+be balance only, which meant career mode's deterministic assertions could all
+break and still ship: the §2.1 probability table, no-dice resolution,
+relationship threading, and twelve seeded playthroughs to 65.
+
+It had failed since the July 29 event-authoring commits, where 166 of 568
+choice labels ran past the spec's 40-character limit. The limit was the thing
+that was wrong. `.c-choice` is full-width, left-aligned, has no nowrap and no
+truncation, and wraps freely above a 44px min-height: at 375px, the narrowest
+supported width, a 40-character label already takes two lines and so does a
+68-character one. Nothing changes until 80, where it goes to three. So the rule
+rejected content that rendered identically to content it accepted. The cap is
+now `CHOICE_LABEL_MAX = 76` in `scripts/career_check.mjs`, the measured
+two-line boundary with room for worse word breaks, and life events share the
+same constant rather than carrying a second hard-coded number.
 
 ## Back up saves before browser testing
 
