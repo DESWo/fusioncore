@@ -370,14 +370,47 @@ const CHOICE_LABEL_MAX = 76;
 
 // ---- full playthrough simulation ----
 {
-  // Drive the pure engine through a whole life, choosing randomly, and prove
-  // the loop always terminates with a retirement-ready state.
-  const runOnce = (seed) => {
+  // Drive the pure engine through a whole life and prove the loop always
+  // terminates with a retirement-ready state.
+  //
+  // This used to select events and throw the choices away, rebuilding
+  // `flags: new Set()` every year. That made it structurally incapable of
+  // testing anything that accumulates: a simulated career could not become a
+  // person who had repeatedly done something. It now picks a choice per event,
+  // resolves it through the real resolveChoice, and carries the resulting flags
+  // across all 47 years, which is what lets the integrity gates be exercised.
+  //
+  // `policy` decides which choice gets picked, so the same seeded machinery can
+  // walk a scrupulous career or an expedient one:
+  //   'honest'    prefer choices that can set honest_operator / filed_erratum
+  //   'expedient' prefer choices that can set cut_a_corner / stretched_a_claim
+  //   'random'    whatever the seed says
+  const HONEST_FLAGS = ['honest_operator', 'filed_erratum', 'declared_a_conflict'];
+  const EXPEDIENT_FLAGS = ['cut_a_corner', 'stretched_a_claim', 'buried_one'];
+
+  /** Every flag any outcome of this choice could set. */
+  const flagsOffered = (choice) =>
+    Object.values(choice.outcomes ?? {}).flatMap((o) => o.flags_set ?? []);
+
+  const pickChoice = (event, policy, rng) => {
+    const choices = event.choices ?? [];
+    if (!choices.length) return null;
+    const wanted = policy === 'honest' ? HONEST_FLAGS
+      : policy === 'expedient' ? EXPEDIENT_FLAGS : null;
+    if (wanted) {
+      const match = choices.find((c) => flagsOffered(c).some((f) => wanted.includes(f)));
+      if (match) return match;
+    }
+    return choices[Math.floor(rng() * choices.length)] ?? choices[0];
+  };
+
+  const runOnce = (seed, policy = 'random') => {
     let s = seed;
     const rng = () => {
       s = (s * 1664525 + 1013904223) % 4294967296;
       return s / 4294967296;
     };
+    const flags = new Map();
     const player = {
       age: 18, career_stage: STAGE.COLLEGE, career_path: null,
       stats: { SM: 6, IN: 6, CH: 6, GR: 6, CO: 6 }, stress: 0,
@@ -389,13 +422,23 @@ const CHOICE_LABEL_MAX = 76;
     let emptyYears = 0;
     for (let year = 0; year < 47; year++) {
       const ctx = {
-        allEvents: ALL_EVENTS, player, reputation, flags: new Set(),
+        allEvents: ALL_EVENTS, player, reputation, flags,
         relationships: [], history, cooldowns: {}, callbackQueue: [],
         pendingTransitions: [], pendingSim: null,
       };
       const evts = selectYearEvents(ctx, rng);
       if (evts.length === 0) emptyYears++;
-      for (const e of evts) history.push(e.event.id);
+      for (const e of evts) {
+        history.push(e.event.id);
+        // Actually make the decision, and keep what it says about you.
+        const choice = pickChoice(e.event, policy, rng);
+        if (!choice) continue;
+        const { outcomeKey } = resolveChoice({
+          choice, event: e.event, player, relationships: [], reputation,
+        });
+        const outcome = choice.outcomes?.[outcomeKey] ?? choice.outcomes?.success;
+        for (const f of outcome?.flags_set ?? []) flags.set(f, (flags.get(f) ?? 0) + 1);
+      }
       // crude progression so stages advance
       player.age += 1;
       player.college_progress += 1;
@@ -414,7 +457,7 @@ const CHOICE_LABEL_MAX = 76;
         : (qualifiesSenior(player, reputation) ? STAGE.SENIOR
           : qualifiesMidCareer(player, reputation) ? STAGE.MID_CAREER : STAGE.EARLY_CAREER);
     }
-    return { player, reputation, emptyYears, history };
+    return { player, reputation, emptyYears, history, flags };
   };
 
   let worstEmpty = 0;
@@ -429,6 +472,70 @@ const CHOICE_LABEL_MAX = 76;
   // content-depth bar rather than a correctness one: most years should have
   // something authored in them.
   ok(worstEmpty <= 8, `playthrough: authored content covers most years (worst run had ${worstEmpty} bare years of 47; the store fills those with a quiet-year beat)`);
+
+  // ---- the integrity gates have to actually be reachable, both ways ----
+  // A gate nobody can satisfy is worse than no gate: it reads as authored
+  // consequence while being dead content. So walk a scrupulous career and an
+  // expedient one over many seeds and prove each opens its own door.
+  const SEEDS = 40;
+  const honest = [];
+  const expedient = [];
+  for (let seed = 1; seed <= SEEDS; seed++) {
+    honest.push(runOnce(seed, 'honest'));
+    expedient.push(runOnce(seed, 'expedient'));
+  }
+
+  const countOf = (runs, flag) => runs.filter((r) => (r.flags.get(flag) ?? 0) > 0).length;
+  const reached = (runs, flag, n) => runs.filter((r) => (r.flags.get(flag) ?? 0) >= n).length;
+
+  // 14 is the measured separation point. Both halves are asserted, because a
+  // gate the wrong player also passes is not a gate: at 6, where this started,
+  // 38 of 40 expedient careers qualified as well.
+  //
+  // Not every scrupulous seed clears it, and that is not slack in the test.
+  // The gate changes which events are eligible, which changes what gets
+  // selected, which changes how the flag accumulates: it moves the very
+  // distribution it is measured against. So the bar is "almost every
+  // scrupulous career, and no expedient one", which is what holds.
+  const honestReach = reached(honest, 'honest_operator', 14);
+  const expedientReach = reached(expedient, 'honest_operator', 14);
+  ok(honestReach >= SEEDS * 0.9 && expedientReach === 0,
+    `playthrough: the arbitration reaches scrupulous careers and no expedient one (${honestReach}/${SEEDS} vs ${expedientReach}/${SEEDS} at honest_operator x14)`);
+
+  const stretchReach = reached(expedient, 'stretched_a_claim', 2);
+  ok(stretchReach > 0,
+    `playthrough: an expedient career reaches stretched_a_claim x2, so the number comes back (${stretchReach}/${SEEDS} seeds)`);
+
+  const cleanRuns = honest.filter((r) => (r.flags.get('honest_operator') ?? 0) >= 10
+    && (r.flags.get('cut_a_corner') ?? 0) === 0);
+  ok(cleanRuns.length > 0,
+    `playthrough: a clean record (honest x10, never cut a corner) is achievable, so the clearance can fire (${cleanRuns.length}/${SEEDS} seeds)`);
+
+  // The two paths must be genuinely different, or the policy is doing nothing
+  // and the assertions above only measure how much content exists.
+  //
+  // Measured by DEGREE, not presence, and that distinction is a real finding
+  // rather than a technicality: 40 events offer an honest choice and only 6
+  // offer an expedient one, so `honest_operator` shows up in 40/40 runs on both
+  // paths. You cannot currently play a career that avoids being honest, because
+  // the game mostly does not offer the alternative. Until that content exists,
+  // an expedient run is an honest run with a handful of lapses in it.
+  const mean = (runs, flag) =>
+    runs.reduce((sum, r) => sum + (r.flags.get(flag) ?? 0), 0) / runs.length;
+  const honestMean = mean(honest, 'honest_operator');
+  const expedientMean = mean(expedient, 'honest_operator');
+  ok(honestMean > expedientMean,
+    `playthrough: the honest and expedient paths diverge in degree (honest_operator averages ${honestMean.toFixed(1)} vs ${expedientMean.toFixed(1)} per career)`);
+
+  const lapses = mean(expedient, 'stretched_a_claim') + mean(expedient, 'cut_a_corner');
+  ok(lapses > mean(honest, 'stretched_a_claim') + mean(honest, 'cut_a_corner'),
+    `playthrough: the expedient path actually accrues lapses (${lapses.toFixed(2)} vs ${(mean(honest, 'stretched_a_claim') + mean(honest, 'cut_a_corner')).toFixed(2)} per career)`);
+
+  // And flags have to accumulate at all. Before this, the simulator rebuilt an
+  // empty Set every year, so nothing could ever be counted across a career.
+  const deepest = Math.max(...honest.map((r) => r.flags.get('honest_operator') ?? 0));
+  ok(deepest >= 6,
+    `playthrough: flags accumulate across a whole career rather than resetting yearly (deepest honest_operator: ${deepest})`);
 }
 
 // ---- retrospective ----
@@ -726,7 +833,10 @@ const CHOICE_LABEL_MAX = 76;
   for (const e of LIFE_EVENTS) {
     if (!e.id || !e.title || !e.text) lifeShapeOk = false;
     for (const c of e.choices ?? []) {
-      if (!c.label || c.label.length > 40) lifeShapeOk = false;
+      // Same rule as career choices: life events render through the same
+      // `.c-choice` button, so a second hard-coded 40 here was two different
+      // limits on one component.
+      if (!c.label || c.label.length > CHOICE_LABEL_MAX) lifeShapeOk = false;
     }
   }
   ok(lifeShapeOk, 'content: every life event is well-formed');
