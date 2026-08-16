@@ -523,8 +523,11 @@ export default function FissionDashboard({ tabletTab }) {
   const controlsVis = tabletTab === 'controls' ? '' : 'hidden';
   const diagVis = tabletTab === 'diagnostics' ? '' : 'hidden';
 
+  // Same reason as the fusion dashboard: an auto grid track is sized by its
+  // widest child, which pushed the rod slider wider than the column it lives
+  // in. See the note there.
   return (
-    <div className="flex-1 overflow-y-auto p-2.5 grid gap-2.5 content-start min-h-0">
+    <div className="flex-1 overflow-y-auto p-2.5 grid grid-cols-[minmax(0,1fr)] gap-2.5 content-start min-h-0">
       <HazardBanner />
       <CampaignMap />
       <ObjectiveBanner />

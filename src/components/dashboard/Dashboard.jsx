@@ -722,8 +722,16 @@ export default function Dashboard({ tabletTab }) {
   const controlsVis = tabletTab === 'controls' ? '' : 'hidden';
   const diagVis = tabletTab === 'diagnostics' ? '' : 'hidden';
 
+  // grid-cols-[minmax(0,1fr)] below, not the default auto column. An auto-sized
+  // grid track is sized by its widest item, and the campaign map is a flex row
+  // of eight steps that will not shrink below about 560px. That made the track
+  // 560px wide inside a 396px column and every sibling inherited it: the
+  // sliders came out 558px in a 396px box, so you had to scroll sideways to
+  // reach the end of a slider you were dragging. minmax(0,1fr) lets the track
+  // shrink to the column, and the map then scrolls inside the overflow-x-auto
+  // it already had.
   return (
-    <div className="flex-1 overflow-y-auto p-2.5 grid gap-2.5 content-start min-h-0">
+    <div className="flex-1 overflow-y-auto p-2.5 grid grid-cols-[minmax(0,1fr)] gap-2.5 content-start min-h-0">
       {/* Pinned, both tabs, every scroll position: you should never have to go
           looking for the way to stop the machine. */}
       <EmergencyStop
