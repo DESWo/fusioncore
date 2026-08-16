@@ -752,5 +752,57 @@ const CHOICE_LABEL_MAX = 76;
     'character creation: gender and pronouns survive a save/load JSON round trip');
 }
 
+// ---- flags count, so a pattern of behaviour can be gated on ----
+// The hole this closes: 611 distinct flags were written over 852 operations
+// and exactly 5 were ever read, because a Set can only answer "ever?" and most
+// markers are only interesting as "how often?". `honest_operator` alone is
+// written by 37 different events and was consulted by none.
+{
+  const base = {
+    player: { ...freshPlayer(), age: 30, career_stage: STAGE.EARLY_CAREER },
+    reputation: { SCI: 0, PUB: 0, NET: 0 },
+    relationships: [], history: [], cooldowns: {},
+  };
+  const ev = (pre) => ({ id: 'probe', age_range: [0, 200], prerequisites: pre, choices: [] });
+  const held = (counts) => ({ ...base, flags: new Map(Object.entries(counts)) });
+
+  const trusted = ev({ min_flag_count: { honest_operator: 6 } });
+  ok(!isEligible(trusted, held({ honest_operator: 5 })),
+    'flags: five straight calls is not yet the six the event asks for');
+  ok(isEligible(trusted, held({ honest_operator: 6 })),
+    'flags: the sixth makes it eligible, assembled from decisions years apart');
+  ok(!isEligible(trusted, held({})),
+    'flags: a flag never earned reads as zero rather than throwing');
+
+  const clean = ev({ max_flag_count: { cut_a_corner: 0 } });
+  ok(isEligible(clean, held({ honest_operator: 9 })),
+    'flags: max_flag_count admits the player who never cut a corner');
+  ok(!isEligible(clean, held({ cut_a_corner: 1 })),
+    'flags: one corner cut is remembered, and closes that door');
+
+  // The old yes/no gates must be untouched by the Map: `.has()` is the same.
+  ok(isEligible(ev({ flags: ['lab_summer'] }), held({ lab_summer: 1 })),
+    'flags: an existing prerequisites.flags gate still passes on a Map');
+  ok(!isEligible(ev({ not_flags: ['froze_once'] }), held({ froze_once: 2 })),
+    'flags: an existing not_flags gate still blocks on a Map');
+
+  // Repeats have to accumulate, or the whole mechanism is decorative.
+  const tally = new Map();
+  for (const f of ['honest_operator', 'honest_operator', 'filed_erratum']) {
+    tally.set(f, (tally.get(f) ?? 0) + 1);
+  }
+  ok(tally.get('honest_operator') === 2 && tally.get('filed_erratum') === 1,
+    'flags: writing the same flag twice counts twice');
+
+  // A career in progress must not lose its history to the format change.
+  const oldSave = ['lab_summer', 'kept_working'];
+  const migrated = new Map(oldSave.map((f) => [f, 1]));
+  ok(migrated.get('lab_summer') === 1 && migrated.size === 2,
+    'flags: a Set-era save (plain strings) migrates to one occurrence each');
+  const newSave = JSON.parse(JSON.stringify([...new Map([['honest_operator', 7]])]));
+  ok(new Map(newSave).get('honest_operator') === 7,
+    'flags: counts survive the JSON round trip localStorage puts them through');
+}
+
 console.log(failures === 0 ? '\nALL CAREER CHECKS PASSED' : `\n${failures} CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

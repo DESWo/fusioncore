@@ -51,6 +51,21 @@ const RUNS_KEY = 'fusioncore_career_runs_v1';
 // Everything the career keeps in localStorage, so "Delete ALL saves" can honour its word.
 export const CAREER_STORAGE_KEYS = [SAVE_KEY, RUNS_KEY];
 
+/**
+ * Read the saved flags back, from either format.
+ *
+ * Flags used to be a Set and persisted as `["a", "b"]`. They are a Map now, so
+ * they persist as `[["a", 3], ["b", 1]]`. A career in progress must not lose
+ * its history to that change, so an array of plain strings is read as one
+ * occurrence each. Anything absent or malformed starts empty rather than
+ * throwing, because a corrupt flag list should cost continuity, not the run.
+ */
+function loadFlags(saved) {
+  if (!Array.isArray(saved)) return new Map();
+  if (saved.every((e) => typeof e === 'string')) return new Map(saved.map((f) => [f, 1]));
+  return new Map(saved.filter((e) => Array.isArray(e) && typeof e[0] === 'string'));
+}
+
 function freshCounters() {
   return {
     policy_events: 0,
@@ -99,7 +114,7 @@ export const useCareerStore = create((set, get) => ({
   player: freshPlayer(),
   reputation: { SCI: 0, PUB: 0, NET: 0 },
   relationships: [],
-  flags: new Set(),
+  flags: new Map(),
   counters: freshCounters(),
   eventHistory: [],
   cooldowns: {},
@@ -150,7 +165,7 @@ export const useCareerStore = create((set, get) => ({
       player: { ...s.player, stats },
       relationships: cast,
       reputation: { SCI: 0, PUB: 0, NET: 0 },
-      flags: new Set(),
+      flags: new Map(),
       counters: freshCounters(),
       eventHistory: [],
       cooldowns: {},
@@ -383,8 +398,14 @@ export const useCareerStore = create((set, get) => ({
     }
 
     // flags + counters + player markers
-    const flags = new Set(s.flags);
-    for (const f of outcome.flags_set ?? []) flags.add(f);
+    //
+    // A Map, not a Set, because how OFTEN you did something is the interesting
+    // part. `honest_operator` is written by 37 different events and a Set threw
+    // away every repeat, so "you have been straight once" and "you have been
+    // straight a dozen times" were indistinguishable. Map keeps `.has()`, so
+    // the existing `flags` / `not_flags` gates are unaffected.
+    const flags = new Map(s.flags);
+    for (const f of outcome.flags_set ?? []) flags.set(f, (flags.get(f) ?? 0) + 1);
 
     const counters = { ...s.counters };
     if (outcome.policy) counters.policy_events += outcome.policy;
@@ -627,7 +648,7 @@ export const useCareerStore = create((set, get) => ({
         player: d.player,
         reputation: d.reputation,
         relationships: d.relationships,
-        flags: new Set(d.flags ?? []),
+        flags: loadFlags(d.flags),
         counters: { ...freshCounters(), ...(d.counters ?? {}) },
         eventHistory: d.eventHistory ?? [],
         cooldowns: d.cooldowns ?? {},

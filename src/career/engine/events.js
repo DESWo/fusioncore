@@ -27,6 +27,25 @@ export function meetsPrerequisites(event, ctx) {
   }
   for (const f of pre.flags ?? []) if (!flags.has(f)) return false;
   for (const f of pre.not_flags ?? []) if (flags.has(f)) return false;
+
+  // How many times, not merely whether.
+  //
+  // `flags` / `not_flags` ask a yes/no question, and that is the whole reason
+  // 611 flags were being written and 5 read: a one-off marker is only worth
+  // gating on if it was a singular moment, and most are not. `honest_operator`
+  // is written by 37 different events. Asking "have you ever been straight"
+  // is nearly meaningless; asking "have you been straight six times" is a
+  // description of who someone is, assembled from decisions they made years
+  // apart and have probably forgotten making.
+  //
+  // One gate written here therefore consults dozens of past choices, which is
+  // what makes this affordable to author at all.
+  for (const [f, min] of Object.entries(pre.min_flag_count ?? {})) {
+    if ((flags.get?.(f) ?? 0) < min) return false;
+  }
+  for (const [f, max] of Object.entries(pre.max_flag_count ?? {})) {
+    if ((flags.get?.(f) ?? 0) > max) return false;
+  }
   for (const [id, range] of Object.entries(pre.relationships ?? {})) {
     const rel = relationships.find((r) => r.id === id);
     if (!rel) return false;
