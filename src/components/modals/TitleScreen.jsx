@@ -54,12 +54,14 @@ export default function TitleScreen() {
       <div className="stage-scrim absolute inset-x-0 bottom-0 h-[75%]" />
 
       {/* top mono bar */}
-      <div className="absolute top-0 inset-x-0 flex items-center justify-between px-6 sm:px-10 py-5 label-mono text-[10px] text-ink/70">
+      <header className="absolute top-0 inset-x-0 flex items-center justify-between px-6 sm:px-10 py-5 label-mono text-[10px] text-ink/70">
         <span className="text-ink text-[11px]">FUSION<span className="text-accent">CORE</span></span>
         <span className="hidden sm:block">[ An engineering simulation / every number cited ]</span>
-      </div>
+      </header>
 
-      <motion.div
+      {/* motion.main: the h1, the menu, and every button live here, so the
+          title screen gets the same jump-to-main the game screen has. */}
+      <motion.main
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
@@ -207,7 +209,7 @@ export default function TitleScreen() {
           Physics simplified for real-time play, calibrated against ITER Physics
           Basis, NRL Plasma Formulary, and ARIES systems studies.
         </p>
-      </motion.div>
+      </motion.main>
     </div>
   );
 }

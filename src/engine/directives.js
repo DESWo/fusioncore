@@ -20,16 +20,20 @@ export const DIRECTIVE_SETS = {
       id: 'r_hold2',
       from: 'Reactor Supervisor',
       minLevel: 2,
-      text: 'Hold the reactor at 2 MW (plus or minus half a megawatt) for five steady minutes. Smooth is the qualification, not fast.',
+      // Durations here are plant time, like every clock in the game: 300
+      // ticks x 6 sim-s = 30 minutes. Three of these once said "five minutes"
+      // / "twenty minutes" / "ten minutes" for holds that were 6x longer;
+      // units_check now parses every duration claim against sustainTicks.
+      text: 'Hold the reactor at 2 MW (plus or minus half a megawatt) for thirty steady minutes. Smooth is the qualification, not fast.',
       check: (c) => c.P >= 1.5 && c.P <= 2.5,
       sustainTicks: 300,
-      doneText: 'Logged: five minutes rock-steady at 2 MW. That is operator work.',
+      doneText: 'Logged: thirty minutes rock-steady at 2 MW. That is operator work.',
     },
     {
       id: 'r_isotope',
       from: 'Radiochemistry Lab',
       minLevel: 2,
-      text: 'Isotope production run: the lab needs twenty minutes of steady flux above 8 MW. Their samples are already loaded.',
+      text: 'Isotope production run: the lab needs two hours of steady flux above 8 MW. Their samples are already loaded.',
       check: (c) => c.P >= 8,
       sustainTicks: 1200,
       doneText: 'Samples activated. The lab sends coffee and gratitude.',
@@ -94,7 +98,7 @@ export const DIRECTIVE_SETS = {
       id: 'f_investor',
       from: 'Program Director',
       minLevel: 5,
-      text: 'Investor day. Demonstrate a gain of Q = 5 or better held for ten minutes. Nothing sells a fusion program like a burning plasma that stays lit.',
+      text: 'Investor day. Demonstrate a gain of Q = 5 or better held for a full hour. Nothing sells a fusion program like a burning plasma that stays lit.',
       check: (c) => c.Q >= 5,
       sustainTicks: 600,
       doneText: 'The room went quiet, then it went loud. Series funding secured.',

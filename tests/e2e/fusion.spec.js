@@ -1,6 +1,6 @@
 import {
   test, expect, startCampaign, skipTutorial, pauseSim, readSimClock,
-  expectNoPageOverflow, expectEstopReachable,
+  expectDashboardContained, expectEstopReachable,
 } from './helpers.js';
 
 // The primary gameplay loop, proven end to end: boot, render, control, run,
@@ -28,7 +28,7 @@ test.describe('fusion campaign', () => {
     // Alarm board and E-stop render
     await expect(page.getByText(/annunciator/i).first()).toBeVisible();
     await expectEstopReachable(page);
-    await expectNoPageOverflow(page, 'fusion dashboard');
+    await expectDashboardContained(page, 'fusion dashboard');
 
     // Semantic structure: the page heading, the mission heading, and the main
     // landmark exist, so assistive tech can actually navigate the game screen.
@@ -63,7 +63,11 @@ test.describe('fusion campaign', () => {
     await expect(page.getByText(/mission 1 complete/i)).toBeVisible({ timeout: 45_000 });
 
     // The completion cutscene offers the next mission; the loop continues.
+    // Assert the cutscene actually closed and mission 2's own banner heading
+    // rendered - a bare /heating up/i text match was satisfied by the
+    // cutscene's "Next mission" line before the click even happened.
     await page.getByRole('button', { name: /begin mission/i }).click();
-    await expect(page.getByText(/heating up/i).first()).toBeVisible();
+    await expect(page.getByText(/mission 1 complete/i)).toBeHidden();
+    await expect(page.getByRole('heading', { level: 2, name: /mission 2: heating up/i })).toBeVisible();
   });
 });

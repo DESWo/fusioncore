@@ -60,8 +60,14 @@ function rungOf(ticks, grace) {
   return ticks / grace <= 0.5 ? 'urgent' : 'exceeded';
 }
 
-/** Grace ticks are the countdown's own unit; seconds round UP so 0 s means 0 s. */
-const secondsLeft = (ticks) => Math.ceil(ticks / 10);
+/**
+ * Wall-clock seconds remaining at the CURRENT speed; rounds up so 0 s means
+ * 0 s. Ticks drain at 10 x speed per real second, so a countdown that ignored
+ * speed showed "12s" and then expired in 1.5 at 8x - the one display in the
+ * game where lying about time costs the player their divertor. While paused
+ * the clock is not draining; the 1x figure is shown as the resume-speed value.
+ */
+const secondsLeft = (ticks, speed) => Math.ceil(ticks / (10 * (speed > 0 ? speed : 1)));
 
 /**
  * A countdown pulses fast because a clock is running out. A breach pulses slow
@@ -83,6 +89,7 @@ export default function HazardBanner() {
   const hazards = useReactorStore((s) => s.sim.hazards);
   const graceSetting = useReactorStore((s) => s.sim.difficulty?.graceTicks);
   const settingStill = useReactorStore((s) => s.settings.reducedMotion);
+  const speed = useReactorStore((s) => s.speed);
   const osStill = useReducedMotion();
   const still = settingStill || osStill;
   const grace = graceSetting ?? HAZARD_GRACE_TICKS;
@@ -107,7 +114,7 @@ export default function HazardBanner() {
 
       <div className="grid gap-1.5" role="group" aria-label="Active hazards">
         {rows.map((r) => (
-          <HazardRow key={r.key} row={r} grace={grace} still={still} />
+          <HazardRow key={r.key} row={r} grace={grace} still={still} speed={speed} />
         ))}
       </div>
 
@@ -130,7 +137,7 @@ export default function HazardBanner() {
   );
 }
 
-function HazardRow({ row, grace, still }) {
+function HazardRow({ row, grace, still, speed }) {
   const { info, ticks, rung } = row;
   const loud = rung === 'imminent' || rung === 'breach';
   const breach = rung === 'breach';
@@ -147,7 +154,7 @@ function HazardRow({ row, grace, still }) {
             <span className="truncate">{info.label}</span>
             <span className="label-mono text-[8px] text-warn/70 shrink-0">{RUNG_WORD.exceeded}</span>
           </span>
-          <span className="font-mono text-[11px] text-warn tabular-nums shrink-0">{secondsLeft(ticks)}s</span>
+          <span className="font-mono text-[11px] text-warn tabular-nums shrink-0">{secondsLeft(ticks, speed)}s</span>
         </div>
         <div className="text-[9px] text-ink/65 pl-[18px]">{info.fix}</div>
       </div>
@@ -185,7 +192,7 @@ function HazardRow({ row, grace, still }) {
 
         <div className="text-right shrink-0">
           <div className={`font-mono font-bold text-crit tabular-nums leading-none ${loud ? 'text-3xl' : 'text-base'}`}>
-            {breach ? 'NOW' : `${secondsLeft(ticks)}s`}
+            {breach ? 'NOW' : `${secondsLeft(ticks, speed)}s`}
           </div>
           <div className={`text-ink/70 mt-1 ${loud ? 'text-[10px]' : 'text-[9px]'}`}>
             {breach ? `${info.outcome} ongoing` : `to ${info.outcome}`}

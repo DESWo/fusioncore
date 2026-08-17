@@ -110,10 +110,16 @@ export async function readSimClock(page) {
 }
 
 // ---------------------------------------------------------------------------
-// Containment: the page itself must never scroll horizontally. Individual
-// widgets (the mission-chip row) are allowed internal overflow-x scrolling -
-// that is their design - but the document and the dashboard column are not.
+// Containment. Two layers, because the obvious document-level check is nearly
+// vacuous here: both app roots are overflow-hidden and the dashboard scroller
+// is overflow-y-auto (which computes overflow-x to auto), so a grid blowout
+// scrolls or clips INSIDE the column without ever widening document/body
+// scrollWidth. The historical bug - a max-content grid track stretching every
+// panel past a phone viewport - reproduces with the document numbers
+// unchanged. The real guard is expectDashboardContained, which measures the
+// dashboard scroller itself and the boxes of its children.
 
+/** Belt: document/body must not scroll horizontally (catches portal blowouts). */
 export async function expectNoPageOverflow(page, label) {
   const o = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
@@ -124,12 +130,44 @@ export async function expectNoPageOverflow(page, label) {
   expect(o.bodyScrollWidth, `${label}: body must not overflow horizontally`).toBeLessThanOrEqual(o.clientWidth);
 }
 
+/**
+ * The guard with teeth: the dashboard's scroll column must not scroll
+ * horizontally, and every panel in it must sit fully inside the viewport.
+ * This is exactly the measurement that catches the minmax(0,1fr) regression:
+ * with the fix removed, the grid track goes max-content, panel boxes exceed
+ * the viewport, and both assertions here fail at 375px.
+ */
+export async function expectDashboardContained(page, label) {
+  const scroller = page.locator('section[aria-label="Controls and diagnostics"] [class*="overflow-y-auto"]').first();
+  await expect(scroller, `${label}: the dashboard scroll column exists`).toBeVisible();
+  const m = await scroller.evaluate((el) => ({
+    scrollWidth: el.scrollWidth,
+    clientWidth: el.clientWidth,
+    childOverhang: Math.max(0, ...Array.from(el.children).map(
+      (c) => Math.ceil(c.getBoundingClientRect().right - document.documentElement.clientWidth),
+    )),
+  }));
+  expect(m.scrollWidth, `${label}: the dashboard column must not scroll horizontally`)
+    .toBeLessThanOrEqual(m.clientWidth + 1);
+  expect(m.childOverhang, `${label}: every dashboard panel stays inside the viewport (overhang px)`)
+    .toBeLessThanOrEqual(1);
+}
+
+/**
+ * A named critical control must sit fully inside the viewport, never clipped.
+ * Fusion's is the .estop; fission has no EmergencyStop component (its SCRAM
+ * only renders while critical), so its tests pass the rod slider instead -
+ * the control a fission operator can least afford to lose off-screen.
+ */
+export async function expectControlReachable(page, locator, label) {
+  await expect(locator, `${label} is visible`).toBeVisible();
+  const bb = await locator.boundingBox();
+  const vw = page.viewportSize().width;
+  expect(bb.x, `${label} left edge inside viewport`).toBeGreaterThanOrEqual(0);
+  expect(bb.x + bb.width, `${label} right edge inside ${vw}px viewport`).toBeLessThanOrEqual(vw + 0.5);
+}
+
 /** The emergency stop must sit fully inside the viewport, never clipped. */
 export async function expectEstopReachable(page) {
-  const estop = page.locator('.estop');
-  await expect(estop).toBeVisible();
-  const bb = await estop.boundingBox();
-  const vw = page.viewportSize().width;
-  expect(bb.x, 'E-stop left edge inside viewport').toBeGreaterThanOrEqual(0);
-  expect(bb.x + bb.width, `E-stop right edge inside ${vw}px viewport`).toBeLessThanOrEqual(vw + 0.5);
+  await expectControlReachable(page, page.locator('.estop'), 'E-stop');
 }

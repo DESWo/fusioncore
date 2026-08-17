@@ -181,9 +181,11 @@ export function ObjectiveBanner() {
       const next = nextPosting(career.postingId);
       return (
         <div className="bg-panel p-3 border border-accent/40">
-          <div className="text-[10px] uppercase tracking-widest text-accent">
+          {/* Still the mission slot's heading: completion must not demote the
+              screen's structure just as the player finishes. */}
+          <h2 className="text-[10px] uppercase tracking-widest text-accent">
             Posting complete: performance review filed
-          </div>
+          </h2>
           <p className="text-xs text-ink/85 mt-1">
             {next
               ? `A promotion offer is on your desk: ${next.title}. The plant keeps running until you sign.`
@@ -200,7 +202,7 @@ export function ObjectiveBanner() {
     }
     return (
       <div className="bg-panel p-3 border border-safe/40">
-        <div className="text-[10px] uppercase tracking-widest text-safe">Campaign complete: Sandbox mode</div>
+        <h2 className="text-[10px] uppercase tracking-widest text-safe">Campaign complete: Sandbox mode</h2>
         <p className="text-xs text-ink/85 mt-1">
           {mode === 'fission'
             ? 'Free operation. Load scenarios, run transients, watch the margins.'

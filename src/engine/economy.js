@@ -84,8 +84,9 @@ export function econTick(econ, sim, rng = Math.random) {
   e.incomeRate = flow / dtH - MAINT_PER_SIM_HOUR * e.maintMult;
   e.lcoe = e.mwhCum > 1 ? (e.capitalCum + e.opexCum) / e.mwhCum : null;
   // Mission window: identical formula over the deltas since the mission began.
-  // Saves from before this field existed lack the snapshot; they get one
-  // stamped at load, so the fallback zeros only ever cover a single tick.
+  // Old saves get a snapshot stamped by the load migration; the zeros here are
+  // a second line of defense for any state that skipped it, and they degrade
+  // safely - a zero window makes missionLcoe equal lifetime lcoe, never lower.
   const w = e.missionStart ?? { opexCum: 0, capitalCum: 0, mwhCum: 0 };
   const missionMwh = e.mwhCum - w.mwhCum;
   e.missionLcoe = missionMwh > 1

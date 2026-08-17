@@ -86,19 +86,21 @@ export const HAZARD_GRACE_TICKS = 120;
 
 // Difficulty modes: budget, warning window, hardware fragility, random-disruption rate
 export const DIFFICULTIES = {
+  // Warning windows are quoted in real seconds at 1x, the same basis the
+  // HazardBanner counts down in (it rescales with the speed setting).
   engineer: {
     key: 'engineer', label: 'Engineer',
-    tagline: '$20B · 20s warnings · tough hardware · no random disruptions',
+    tagline: '$20B · 20s warnings at 1x · tough hardware · no random disruptions',
     funds: 20e9, graceTicks: 200, damageMult: 0.5, bgRiskMult: 0,
   },
   operator: {
     key: 'operator', label: 'Operator',
-    tagline: '$10B · 12s warnings. The intended experience',
+    tagline: '$10B · 12s warnings at 1x. The intended experience',
     funds: 10e9, graceTicks: 120, damageMult: 1, bgRiskMult: 1,
   },
   director: {
     key: 'director', label: 'Director',
-    tagline: '$4B · 6s warnings · brittle hardware · frequent disruptions',
+    tagline: '$4B · 6s warnings at 1x · brittle hardware · frequent disruptions',
     funds: 4e9, graceTicks: 60, damageMult: 1.5, bgRiskMult: 2,
   },
 };

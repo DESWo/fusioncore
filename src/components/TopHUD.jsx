@@ -15,7 +15,9 @@ const SPEEDS = [0.25, 1, 2, 4, 8];
 function riskNote(sp) {
   if (sp > 1) return `. ${sp}x the plant time per second, and ${sp}x the disruption risk with it`;
   if (sp < 1) return '. Slower plant time, and less risk per second, for delicate manoeuvres';
-  return '. Real time';
+  // Not "real time": at 1x one real second is one plant minute, and calling it
+  // real time contradicted the SIM clock tooltip two elements away.
+  return '. Baseline: 1 real second is 1 plant minute';
 }
 
 function fmtMoney(v) {

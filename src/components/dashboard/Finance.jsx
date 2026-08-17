@@ -7,6 +7,7 @@ export default function Finance() {
   const econ = useReactorStore((s) => s.econ);
   const netMW = useReactorStore((s) => s.sim.physics.netElecMW);
   const homes = useReactorStore((s) => s.sim.physics.homesPowered);
+  const mode = useReactorStore((s) => s.mode);
 
   const tone = (v) => (v == null ? 'text-ink/55'
     : v <= 100 ? 'text-safe' : v <= 300 ? 'text-warn' : 'text-crit');
@@ -63,7 +64,12 @@ export default function Finance() {
             {econ.lcoe === null ? 'no exports yet' : `$${econ.lcoe.toFixed(0)}/MWh`}
           </span>
         </div>
-        <p className="text-[9px] text-ink/55 leading-snug mt-1">Target: mission LCOE ≤ $100/MWh. Cheaper than gas.</p>
+        {/* Only the fusion campaign has a mission gated on this number; the
+            PWR ledger showing the same sentence would announce a target no
+            fission mission actually has. */}
+        {mode === 'fusion' && (
+          <p className="text-[9px] text-ink/55 leading-snug mt-1">Target: mission LCOE ≤ $100/MWh. Cheaper than gas.</p>
+        )}
         <CalcDrawer calc={{
           meaning: econ.lcoe === null
             ? 'Dollars spent divided by electricity sold. Nothing sold yet, so no average exists. Mission LCOE counts from the current mission; lifetime LCOE counts from construction.'

@@ -68,9 +68,12 @@ export default function CareerHUD() {
     >
       <div className="flex items-end justify-between mb-3">
         <div className="min-w-0">
-          <div className="c-display text-[19px] truncate" style={{ color: 'var(--c-ink)' }}>
+          {/* The career screens' h1: TopHUD (and its h1) is unmounted while
+              career mode owns the screen, and the year cards below are h2s.
+              The character's name IS this document's identity. */}
+          <h1 className="c-display text-[19px] truncate" style={{ color: 'var(--c-ink)' }}>
             {player.name || 'Unnamed'}
-          </div>
+          </h1>
           <div className="c-label mt-0.5 truncate">{stageTitle(player)}</div>
         </div>
         <div className="text-right shrink-0 ml-3 leading-none">

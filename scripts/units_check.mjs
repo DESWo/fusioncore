@@ -152,6 +152,50 @@ eq(fmtMoney(19_800_000_000), '$19.80B', 'money is unchanged');
     `levels: every real-time conversion in mission copy matches sustainTicks x TICK_MS (${claims} claim(s) checked)`);
 }
 
+// ---- directive prose durations must match their sustainTicks ----
+// Three career directives shipped saying "five minutes" / "twenty minutes" /
+// "ten minutes" for holds that were mechanically 6x longer, while their
+// siblings ("a full hour" = 600 ticks, "six hours" = 3600) were right - the
+// author knew the convention and three entries slipped. This parses every
+// duration claim in directive text against sustainTicks in plant time.
+{
+  const { DIRECTIVE_SETS } = await import('../src/engine/directives.js');
+  const { SIM_DT_S } = await import('../src/engine/constants.js');
+  const WORDS = {
+    a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6,
+    ten: 10, fifteen: 15, twenty: 20, thirty: 30, forty: 40, sixty: 60,
+    'a full': 1, half: 0.5,
+  };
+  const UNIT_S = { minute: 60, hour: 3600 };
+
+  let consistent = true;
+  let claims = 0;
+  for (const [setName, set] of Object.entries(DIRECTIVE_SETS)) {
+    for (const d of set) {
+      if (!d.sustainTicks || d.sustainTicks <= 1) continue;
+      const actualS = d.sustainTicks * SIM_DT_S;
+      for (const copy of [d.text, d.doneText]) {
+        const re = /\b(a full|half an?|a|an|one|two|three|four|five|six|ten|fifteen|twenty|thirty|forty|sixty|\d+)\s+(?:\w+\s){0,2}?(minute|hour)s?\b/gi;
+        for (const m of (copy ?? '').matchAll(re)) {
+          const qty = WORDS[m[1].toLowerCase().replace(/ an?$/, '')] ?? Number(m[1]);
+          if (!Number.isFinite(qty)) continue;
+          claims++;
+          const statedS = qty * UNIT_S[m[2].toLowerCase()];
+          // windowTicks claims ("inside three hours") are legal too: a stated
+          // duration may describe either the hold or the window.
+          const windowS = (d.windowTicks ?? 0) * SIM_DT_S;
+          if (statedS !== actualS && statedS !== windowS) {
+            consistent = false;
+            console.log(`      ${setName}/${d.id}: says "${m[0]}" (${statedS}s) but holds ${d.sustainTicks} ticks = ${actualS}s${windowS ? ` (window ${windowS}s)` : ''}`);
+          }
+        }
+      }
+    }
+  }
+  ok(consistent && claims >= 6,
+    `directives: every duration claim matches its sustainTicks or window (${claims} claim(s) checked)`);
+}
+
 
 // ---- progressive disclosure: the arc has to actually be an arc ----
 // The point of three states is that groups recede. If nothing ever steps back,
