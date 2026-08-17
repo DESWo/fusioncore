@@ -12,9 +12,10 @@ test.describe('fusion campaign', () => {
     await skipTutorial(page);
     await pauseSim(page); // static assertions must not race the running mission
 
-    // Mission interface
-    await expect(page.getByText(/mission 1: first light/i).first()).toBeVisible();
-    await expect(page.getByText(/hold a stable plasma/i).first()).toBeVisible();
+    // Mission interface. The objective renders twice (mission banner + the
+    // stage overlay, which is hidden below lg), so filter to the visible one.
+    await expect(page.getByText(/mission 1: first light/i).filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByText(/hold a stable plasma/i).filter({ visible: true }).first()).toBeVisible();
 
     // Core controls exist and are interactive range inputs
     const field = page.locator('#ctl-B');
