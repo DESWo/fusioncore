@@ -107,6 +107,39 @@ for (let t = 1; t < 50; t += 0.25) {
 console.log(`${svOk && monotone ? 'PASS' : 'FAIL'}  reactivity fit: sigmaV(10keV)=${sv10.toExponential(2)} m3/s, monotone 1-50keV=${monotone}`);
 if (!svOk || !monotone) failures++;
 
+// The fit is a 5th-degree polynomial run exactly through six anchors, which is
+// the textbook setup for Runge oscillation between the points. The monotonicity
+// sweep above catches a wiggle; this pins the curve to an external reference so
+// an anchor typo cannot shift the whole curve while staying smooth. Reference:
+// Bosch & Hale, Nucl. Fusion 32 (1992) 611, table VIII D-T Maxwellian
+// reactivities. Off-anchor rows are the real test. The ±10% band is deliberate:
+// the NRL anchors themselves sit ~3% below Bosch-Hale mid-range, and the fit
+// should track its own source, not be tuned to a different one. Below 3 keV the
+// two tables genuinely diverge toward 20% (and fusion power there is nil), so
+// the band starts where the game's operating range does.
+{
+  const BOSCH_HALE = {
+    3: 1.867e-24, 4: 5.974e-24, 6: 2.554e-23, 8: 6.222e-23,
+    12: 1.747e-22, 15: 2.740e-22, 25: 5.663e-22, 40: 7.930e-22,
+  };
+  const off = Object.entries(BOSCH_HALE)
+    .map(([t, ref]) => ({ t: Number(t), ratio: sigmaV(Number(t)) / ref }))
+    .filter(({ ratio }) => ratio < 0.90 || ratio > 1.10);
+  console.log(`${off.length === 0 ? 'PASS' : 'FAIL'}  reactivity fit tracks Bosch-Hale within 10% at 8 off-anchor points (3-40 keV)`);
+  if (off.length) {
+    failures++;
+    for (const { t, ratio } of off) console.log(`      ${t} keV: fit/reference = ${ratio.toFixed(3)}`);
+  }
+
+  // The piecewise seams: the sub-keV power law and the 50+ plateau must meet
+  // the polynomial without a step, or dW/dt jumps as a slider crosses them.
+  const seamLo = Math.abs(sigmaV(0.9999) / sigmaV(1.0001) - 1);
+  const seamHi = Math.abs(sigmaV(49.999) / sigmaV(50.001) - 1);
+  const seamsOk = seamLo < 0.01 && seamHi < 0.01;
+  console.log(`${seamsOk ? 'PASS' : 'FAIL'}  reactivity fit is continuous at the 1 keV and 50 keV seams (steps ${(seamLo * 100).toFixed(2)}%, ${(seamHi * 100).toFixed(2)}%)`);
+  if (!seamsOk) failures++;
+}
+
 // ---- Anti-idle checks: missions must NOT complete without player action ----
 {
   const runIdle = (sim2, ticks) => {

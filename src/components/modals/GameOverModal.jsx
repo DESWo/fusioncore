@@ -168,7 +168,7 @@ export default function GameOverModal() {
             onClick={repair}
             autoFocus
             className={`mt-4 w-full py-2.5 font-bold text-sm tracking-widest ${
-              canAfford ? 'bg-warn text-base hover:brightness-110' : 'bg-crit text-white hover:brightness-110'
+              canAfford ? 'bg-warn text-base hover:brightness-110' : 'bg-crit text-base hover:brightness-110'
             }`}
           >
             {canAfford ? 'AUTHORIZE REPAIR FEE' : 'AUTHORIZE EMERGENCY DEBT FINANCING'}

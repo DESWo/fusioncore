@@ -103,7 +103,7 @@ export default function App() {
     };
   }, []);
 
-  // Keyboard shortcuts: space = pause/resume, 1-4 = speed steps
+  // Keyboard shortcuts: space = pause/resume, 1-5 = speed steps
   useEffect(() => {
     const onKey = (e) => {
       const st = useReactorStore.getState();

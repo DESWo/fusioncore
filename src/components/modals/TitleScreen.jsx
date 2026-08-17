@@ -38,6 +38,7 @@ export default function TitleScreen() {
   const newCareerGame = useReactorStore((s) => s.newCareerGame);
   const continueGame = useReactorStore((s) => s.continueGame);
   const wipeSave = useReactorStore((s) => s.wipeSave);
+  const saveError = useReactorStore((s) => s.saveError);
   const setSettingsOpen = useReactorStore((s) => s.setSettingsOpen);
   const careerPosting = saves.career ? getPosting(saves.career.careerPostingId) : null;
   const hasCareerSave = useCareerStore((s) => s.hasSave)();
@@ -177,6 +178,15 @@ export default function TitleScreen() {
                 sub={`${saves.fission.completed ? 'Sandbox' : `Mission ${saves.fission.levelId} of 4`} · ${saves.fission.difficulty}`}
               />
             )}
+            {/* A failed Continue leaves the player here, where TopHUD's warning
+                chip does not exist. Without this the button simply did nothing
+                and there was no way to tell a dead save from a dead click. */}
+            {saveError && (
+              <p role="alert" className="text-[10px] text-crit border border-crit/40 bg-crit/10 px-3 py-2 leading-relaxed">
+                {saveError}
+              </p>
+            )}
+
             <div className="flex items-center gap-4 px-1 mt-1">
               <button onClick={() => setSettingsOpen(true)} className="label-mono text-[9px] text-ink/70 hover:text-ink">
                 Settings

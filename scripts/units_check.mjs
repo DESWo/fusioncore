@@ -96,6 +96,33 @@ eq(fmtMoney(19_800_000_000), '$19.80B', 'money is unchanged');
   ok(agree, 'levels: every displayed target agrees with the check that actually gates the mission');
 }
 
+// ---- a stated hold time must be the hold time the engine enforces ----
+// Level 1 read "10 seconds" while sustainTicks held it for 300 sim-seconds, and
+// nothing caught it because the number lived only in prose. Durations are quoted
+// in sim time, the clock the HUD shows: 1 tick = SIM_DT_S sim-seconds. Levels
+// whose objective names no duration are none of this check's business.
+{
+  const { LEVELS } = await import('../src/engine/levels.js');
+  const { SIM_DT_S } = await import('../src/engine/constants.js');
+  const UNIT_S = { second: 1, minute: 60, hour: 3600 };
+
+  let consistent = true;
+  let checked = 0;
+  for (const lvl of LEVELS) {
+    const m = /(\d+(?:\.\d+)?)\s*(second|minute|hour)s?/i.exec(lvl.objective ?? '');
+    if (!m) continue;
+    checked++;
+    const stated = Number(m[1]) * UNIT_S[m[2].toLowerCase()];
+    const actual = lvl.sustainTicks * SIM_DT_S;
+    if (stated !== actual) {
+      consistent = false;
+      console.log(`      level ${lvl.id} ${lvl.name}: says "${m[0]}" (${stated}s) but holds ${lvl.sustainTicks} ticks = ${actual} sim-seconds`);
+    }
+  }
+  ok(consistent && checked > 0,
+    `levels: every stated hold time matches its sustainTicks (${checked} checked, in sim seconds)`);
+}
+
 
 // ---- progressive disclosure: the arc has to actually be an arc ----
 // The point of three states is that groups recede. If nothing ever steps back,

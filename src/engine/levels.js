@@ -9,7 +9,11 @@ export const LEVELS = [
   {
     id: 1,
     name: 'First Light',
-    objective: 'Hold a stable plasma for 10 seconds',
+    // Stated in sim time, the clock the HUD shows and the same convention as
+    // level 5's "1 hour". 50 ticks x SIM_DT_S = 300 sim-seconds. It used to read
+    // "10 seconds", which matched neither the sim clock (5 minutes) nor the wall
+    // clock (5 seconds); units_check now ties this sentence to sustainTicks.
+    objective: 'Hold a stable plasma for 5 minutes',
     hint: 'Field up, then heating.',
     why: 'No plasma, no fusion.',
     brief: 'Field to 6 T, heating to 15 MW.',

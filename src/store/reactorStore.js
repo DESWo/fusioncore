@@ -41,6 +41,34 @@ const SAVE_KEYS = {
 const LEGACY_SAVE_KEY = 'fusioncore_save_v1';
 const AUTOSAVE_TICKS = 600; // 60 real seconds
 
+// Persistence can fail for reasons the player can actually act on, so the
+// message names the cause rather than saying "an error occurred". Storage gets
+// denied outright in private windows and when cookies are blocked, and fills up
+// mid-run once the origin's quota is reached.
+function describeSaveError(err) {
+  const name = err?.name ?? '';
+  if (name === 'QuotaExceededError') {
+    return 'Storage is full, so progress is no longer being saved. Free up browser storage for this site, or delete an old save from Settings.';
+  }
+  if (name === 'SecurityError' || name === 'InvalidStateError' || name === 'InvalidAccessError') {
+    return 'This browser is blocking storage, so progress is not being saved. A private window, or blocked cookies for this site, will do that.';
+  }
+  return 'Progress is not being saved: the browser refused to write to storage.';
+}
+
+// A save is only restorable if the fields continueGame reads unconditionally are
+// actually there. Without this, a truncated or half-written record threw partway
+// through the migration chain and the Continue button just did nothing.
+function isRestorableSave(save) {
+  return Boolean(
+    save
+    && typeof save === 'object'
+    && save.sim && typeof save.sim === 'object'
+    && save.level && Number.isFinite(save.level.id)
+    && save.econ && save.rd && save.stats,
+  );
+}
+
 function saveMeta(save) {
   if (!save) return null;
   return {
@@ -254,6 +282,11 @@ export const useReactorStore = create((set, get) => ({
   ...createAnnunciatorSlice(set, get),
   screen: 'title', // title | game
   hasSave: false,
+  // Set when persistence actually failed, cleared by the next successful write.
+  // Surfaced in TopHUD, because a run that is silently not being saved is the
+  // one failure the player most needs to know about while there is still time
+  // to do something about it.
+  saveError: null,
   saves: { fusion: null, fission: null, career: null }, // per-slot metadata for the title screen
   viewMode: 'normal', // normal | process (visible physics) | stress (false-color FEA)
   analysisView: false, // kept in sync with viewMode === 'stress' for the scene readers
@@ -414,6 +447,15 @@ export const useReactorStore = create((set, get) => ({
   async continueGame(modeKey = 'fusion') {
     const save = await idbGet(SAVE_KEYS[modeKey] ?? SAVE_KEYS.fusion).catch(() => null);
     if (!save) return;
+    // Everything below reads save.level, save.sim and friends without guarding.
+    // A truncated record therefore threw inside an async action, which surfaces
+    // as an unhandled rejection and a Continue button that visibly does nothing.
+    if (!isRestorableSave(save)) {
+      set({
+        saveError: 'That save could not be read: the file is incomplete. Starting a new run will replace it.',
+      });
+      return;
+    }
     // Migrate older saves that predate level-gated background risk
     if (save.sim?.physics && save.sim.physics.bgRiskScale === undefined) {
       save.sim.physics.bgRiskScale = save.level.id >= 4 ? 1 : save.level.id === 3 ? 0.6 : 0;
@@ -509,7 +551,11 @@ export const useReactorStore = create((set, get) => ({
     // Careers own their slot regardless of which reactor is currently running
     const slot = s.career ? 'career' : s.mode;
     const payload = {
-      version: 3,
+      // Bumped with each shape change. Nothing branches on it today, because the
+      // migrations in continueGame sniff for the fields they add and so handle a
+      // save from any build. It is written for the case where that stops being
+      // enough, and it is kept honest with the migrations that exist.
+      version: 4,
       savedAt: Date.now(),
       mode: s.mode,
       career: s.career,
@@ -518,8 +564,17 @@ export const useReactorStore = create((set, get) => ({
       stats: s.stats, settings: s.settings,
       notebook: s.notebook.slice(-NOTEBOOK_CAP), caseNotes: s.caseNotes,
     };
-    await idbSet(SAVE_KEYS[slot], payload).catch(() => {});
+    // Swallowing this used to be followed by hasSave: true unconditionally, so
+    // a browser that had refused every write still reported a saved game and
+    // the run was lost at the next reload with no warning.
+    try {
+      await idbSet(SAVE_KEYS[slot], payload);
+    } catch (err) {
+      set({ saveError: describeSaveError(err) });
+      return;
+    }
     set((s2) => ({
+      saveError: null,
       hasSave: true,
       saves: { ...s2.saves, [slot]: saveMeta(payload) },
     }));

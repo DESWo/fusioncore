@@ -54,6 +54,7 @@ export default function TopHUD() {
   const career = useReactorStore((s) => s.career);
   const setCareerOpen = useReactorStore((s) => s.setCareerOpen);
   const diffLabel = useReactorStore((s) => s.sim.difficulty?.label);
+  const saveError = useReactorStore((s) => s.saveError);
   const mode = useReactorStore((s) => s.mode);
   const plantKey = useReactorStore((s) => s.sim.plantKey);
   const level = levelFor(mode, levelId, plantKey);
@@ -100,6 +101,21 @@ export default function TopHUD() {
       <div className="whitespace-nowrap label-mono text-[9px] text-ink/70" title="Simulated operating time">
         T+{fmtSimTime(simSeconds)}
       </div>
+
+      {/* Only ever rendered when a write genuinely failed. It stays put rather
+          than passing by as a toast: this is a condition, not an event, and it
+          holds until a save succeeds. */}
+      {saveError && (
+        <div
+          role="alert"
+          title={saveError}
+          className="whitespace-nowrap label-mono text-[9px] text-crit border border-crit/50 bg-crit/15 rounded-full px-2.5 h-6 inline-flex items-center gap-1.5"
+        >
+          <span aria-hidden="true">▲</span>
+          <span>Not saving</span>
+          <span className="sr-only">{saveError}</span>
+        </div>
+      )}
 
       <div className="flex-1" />
 

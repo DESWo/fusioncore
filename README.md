@@ -45,7 +45,10 @@ Every constant traces to a source. `src/data/sources.json` has the citations,
 and the game shows them inline rather than in a footnote.
 
 **Fusion power.** P = ¼ n² ⟨σv⟩ E V, with ⟨σv⟩ a 5th-degree log-log polynomial
-fitted through six NRL Plasma Formulary points between 1 and 50 keV.
+fitted through six NRL Plasma Formulary points between 1 and 50 keV. The check
+suite pins the fit against the Bosch–Hale parameterization at eight off-anchor
+temperatures (within 10%, 3–40 keV) and asserts it stays monotonic, so an
+anchor typo cannot bend the curve unnoticed.
 
 **Confinement.** An IPB98(y,2)-inspired scaling:
 τ_E = H · c₁ · B^0.15 · P^−0.69 · n^0.41, with machine size folded into c₁.
@@ -99,6 +102,7 @@ There is no typechecker, so the check scripts are the safety net:
 ```bash
 npm run balance   # proves all 8 levels are winnable inside the slider bounds
 npm run career    # career systems against the written spec
+npm run tokens    # palette contrast claims, measured (chained into balance)
 ```
 
 `balance` runs the same pure engine modules in Node that the browser runs, so a
@@ -110,7 +114,8 @@ someone's playthrough.
 Text-to-speech on every message, three colourblind palettes with shape-coded
 status (never colour alone), reduced-motion support, a locally hosted
 OpenDyslexic option, UI scaling from 75% to 150%, and full keyboard operation.
-Contrast is asserted by script rather than eyeballed.
+Contrast is asserted by script rather than eyeballed: `scripts/tokens_check.mjs`
+reads the live palette and fails the build if any documented ratio drifts.
 
 ## Running it locally
 

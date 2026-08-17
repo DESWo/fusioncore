@@ -2,12 +2,17 @@ import { useReactorStore } from '../../store/reactorStore.js';
 import { useTTS, ttsSupported } from '../../hooks/useTTS.js';
 import Icon from '../common/Icon.jsx';
 
+// A real <label>, not a styled div: every row holds exactly one form control,
+// and wrapping it is what gives that control its accessible name. Before this,
+// five checkboxes, the palette select and the UI-scale slider in the
+// accessibility panel itself were anonymous to a screen reader. It also makes
+// the row text a click target for the checkbox, which is the convention anyway.
 function Row({ label, children }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-1.5">
+    <label className="flex items-center justify-between gap-3 py-1.5">
       <span className="text-xs text-ink/85">{label}</span>
       <div className="flex items-center gap-2">{children}</div>
-    </div>
+    </label>
   );
 }
 
@@ -96,8 +101,8 @@ export default function SettingsModal() {
             )}
           </>
         ) : (
-          <p className="text-[10px] text-ink/55 italic py-1" title="Text-to-Speech engine unresolved by current browser architecture.">
-            Text-to-Speech engine unresolved by current browser architecture.
+          <p className="text-[10px] text-ink/55 italic py-1">
+            Text-to-speech is not available: this browser does not expose a speech synthesis engine.
           </p>
         )}
         <Row label="Colorblind palette">

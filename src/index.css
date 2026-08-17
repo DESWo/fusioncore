@@ -28,8 +28,8 @@
   --color-panel: #191E27;     /* panel surfaces */
   --color-raise: #242B37;     /* raised elements on panels */
   --color-raise-hi: #313A49;  /* the step above raise: slider tracks, edges */
-  --color-ink: #E6E9EF;       /* off-white typography, 14.2:1 on panel */
-  --color-accent: #B9C7FF;    /* data / interactive, 10.4:1 on panel */
+  --color-ink: #E6E9EF;       /* off-white typography, 13.7:1 on panel */
+  --color-accent: #B9C7FF;    /* data / interactive, 10.1:1 on panel */
   --color-safe: #22C55E;      /* safe operating */
   --color-warn: #F59E0B;      /* warning threshold */
   --color-crit: #EF4444;      /* critical fault */

@@ -30,7 +30,7 @@ export default function AckModal() {
         <button
           onClick={() => ack(note.id)}
           autoFocus
-          className="mt-4 w-full py-2 bg-crit text-white font-bold text-sm hover:brightness-110"
+          className="mt-4 w-full py-2 bg-crit text-base font-bold text-sm hover:brightness-110"
         >
           ACKNOWLEDGE: RESUME OPERATIONS
         </button>

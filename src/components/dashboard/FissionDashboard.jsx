@@ -443,7 +443,7 @@ function FissionStructurePanel({ plant }) {
         {p.critical ? (
           <button
             onClick={scram}
-            className="text-[9px] font-bold px-2 py-1 rounded bg-crit text-white hover:brightness-110"
+            className="text-[9px] font-bold px-2 py-1 rounded bg-crit text-base hover:brightness-110"
             title="Insert all rods immediately"
           >
             SCRAM

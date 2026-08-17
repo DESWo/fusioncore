@@ -34,8 +34,9 @@ jobs:
         run: npm ci
 
       - name: Verify the physics still balances
-        # 59 headless checks over the reactor engine, the level progression,
-        # the tolerance model and the scorecard. A red suite must not ship.
+        # Headless checks over the reactor engine, the level progression, the
+        # tolerance model, the scorecard, the alarm board, number formatting
+        # and the palette contrast claims. A red suite must not ship.
         run: npm run balance
 
       - name: Verify the career systems still hold

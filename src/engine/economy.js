@@ -29,7 +29,9 @@ export function econTick(econ, sim, rng = Math.random) {
   const e = { ...econ };
   const dtH = SIM_DT_S / 3600;
 
-  // Spot price random walk, updated every 30 operating seconds (spec §7)
+  // Spot price: an independent gaussian draw around the base every 30 operating
+  // seconds, clamped to ±10% (spec §7). Not a random walk: the price has no
+  // memory, so it cannot drift away from $50 over a long campaign.
   if (sim.time.simSeconds - e.lastPriceUpdate >= PRICE_UPDATE_SIM_S) {
     e.lastPriceUpdate = sim.time.simSeconds;
     const p = BASE_PRICE_MWH * (1 + gaussNoise(rng) * PRICE_NOISE_SD);

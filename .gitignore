@@ -3,6 +3,11 @@ dist
 .DS_Store
 *.local
 
+# Playwright run artifacts (traces, reports). The suite itself is tracked in
+# tests/e2e; its output is not.
+test-results/
+playwright-report/
+
 # Pages is built and published by .github/workflows/deploy-pages.yml.
 # Never commit a build: the old committed docs/ drifted six days behind source.
 docs

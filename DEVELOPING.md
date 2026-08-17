@@ -12,6 +12,7 @@ npm run balance      # the verification loop, see below
 npm run career       # career-mode systems against the spec
 npm run annunciator  # alarm-board logic only (also runs inside balance)
 npm run units        # number formatting rules (also runs inside balance)
+npm run tokens       # palette contrast claims (also runs inside balance)
 ```
 
 **`npm run balance` is the loop that matters.** It proves every level is still
