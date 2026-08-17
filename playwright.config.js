@@ -14,6 +14,12 @@ export default defineConfig({
   fullyParallel: false, // one preview server, few tests; ordering keeps output readable
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0, // one retry in CI absorbs slow-runner flake; locally flake should be visible
+  // Two workers, not one-per-core. The app runs a 3D scene plus a 10 Hz-per-1x
+  // simulation loop; with every core saturated by parallel workers the page's
+  // main thread stops servicing driver calls entirely (observed: a 15 s poll
+  // loop in which the callback never ran once). Two keeps cross-project
+  // parallelism without starving the pages being tested.
+  workers: 2,
   timeout: 90_000,
   use: {
     baseURL: 'http://localhost:4173',

@@ -14,9 +14,33 @@ export function createEconState() {
     capitalCum: 0,
     mwhCum: 0,
     lcoe: null,
+    // Two LCOEs with two jobs. `lcoe` is the plant's lifetime books: every
+    // dollar since construction over every MWh ever sold. Early mistakes haunt
+    // it forever, which is the lesson the ledger teaches. `missionLcoe` is the
+    // same ratio measured only inside the current mission window, and it is
+    // what mission objectives gate on: a single $200M learning-phase repair
+    // otherwise needs ~2,000,000 exported MWh (days of play) to dilute below
+    // the $100/MWh bar, so the lifetime number would grade the player's past,
+    // not the operating regime the mission asks them to demonstrate.
+    missionLcoe: null,
+    // Cumulative-counter snapshot taken when the current mission began.
+    missionStart: { opexCum: 0, capitalCum: 0, mwhCum: 0 },
     maintMult: 1.0,
     lastPriceUpdate: 0,
     incomeRate: 0, // $/sim-hour, for the ledger display
+  };
+}
+
+/**
+ * Open a fresh mission accounting window: mission LCOE measures spend and
+ * exports from this moment on. The store calls it on every mission advance;
+ * the headless walkthrough mirrors it at each phase boundary.
+ */
+export function beginMissionWindow(econ) {
+  return {
+    ...econ,
+    missionLcoe: null,
+    missionStart: { opexCum: econ.opexCum, capitalCum: econ.capitalCum, mwhCum: econ.mwhCum },
   };
 }
 
@@ -59,6 +83,14 @@ export function econTick(econ, sim, rng = Math.random) {
 
   e.incomeRate = flow / dtH - MAINT_PER_SIM_HOUR * e.maintMult;
   e.lcoe = e.mwhCum > 1 ? (e.capitalCum + e.opexCum) / e.mwhCum : null;
+  // Mission window: identical formula over the deltas since the mission began.
+  // Saves from before this field existed lack the snapshot; they get one
+  // stamped at load, so the fallback zeros only ever cover a single tick.
+  const w = e.missionStart ?? { opexCum: 0, capitalCum: 0, mwhCum: 0 };
+  const missionMwh = e.mwhCum - w.mwhCum;
+  e.missionLcoe = missionMwh > 1
+    ? ((e.capitalCum - w.capitalCum) + (e.opexCum - w.opexCum)) / missionMwh
+    : null;
   return e;
 }
 

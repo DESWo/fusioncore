@@ -14,7 +14,9 @@ export const LEVELS = [
     // "10 seconds", which matched neither the sim clock (5 minutes) nor the wall
     // clock (5 seconds); units_check now ties this sentence to sustainTicks.
     objective: 'Hold a stable plasma for 5 minutes',
-    hint: 'Field up, then heating.',
+    // The parenthetical is load-bearing: units_check parses "N real seconds at
+    // 1x" out of the copy and fails if it stops matching sustainTicks*TICK_MS.
+    hint: 'Field up, then heating. Five plant-minutes (5 real seconds at 1x).',
     why: 'No plasma, no fusion.',
     brief: 'Field to 6 T, heating to 15 MW.',
     terms: [],
@@ -154,17 +156,23 @@ export const LEVELS = [
   {
     id: 8,
     name: 'Commercial Era',
-    objective: 'LCOE under $100/MWh while exporting',
-    hint: 'Run big, break nothing.',
+    objective: 'Mission LCOE under $100/MWh while exporting',
+    hint: 'Run big, break nothing. The meter starts now.',
     why: 'Cheaper than gas is the industry’s finish line.',
-    brief: 'Sustain exports. Avoid repairs. Boring is profitable.',
+    brief: 'Sustain exports. Avoid repairs. Boring is profitable. Costs and sales count from this mission’s start; the lifetime books stay on the ledger.',
     terms: [
       { term: 'stellarator', def: 'twisted-coil core that cannot disrupt.' },
     ],
     unlocks: ['sandbox', 'stellarator'],
     unlockText: 'Full sandbox configuration · Stellarator conversion',
     sustainTicks: LEVEL_SUSTAIN_TICKS,
-    check: ({ physics, econ }) => econ.lcoe !== null && econ.lcoe <= 100 && physics.netElecMW > 0,
+    // Gates on the mission window, not the lifetime books: the brief promises
+    // "avoid repairs", present tense, and a $200M repair made while LEARNING
+    // (missions 1-7) would otherwise need ~2,000,000 exported MWh to dilute
+    // below the bar - grading the player's past instead of the operating
+    // regime this mission asks them to demonstrate. Lifetime LCOE remains on
+    // the financial ledger as the plant's book statistic.
+    check: ({ physics, econ }) => econ.missionLcoe != null && econ.missionLcoe <= 100 && physics.netElecMW > 0,
     cutscene: 'Utilities sign forty-year contracts. The fusion era begins.',
   },
 ];

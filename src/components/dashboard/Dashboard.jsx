@@ -39,13 +39,13 @@ export function CampaignMap() {
   const levels = levelsFor(mode, plantKey);
   return (
     <div className="bg-panel px-3 py-2">
-      <div className="text-[9px] uppercase tracking-widest text-ink/70">
+      <h2 className="text-[9px] uppercase tracking-widest text-ink/70">
         {mode !== 'fission'
           ? 'Campaign goal: take fusion from first plasma to cheaper-than-gas commercial power'
           : plantKey === 'research'
             ? 'Posting goal: qualify as a reactor operator on the training pool'
             : 'Campaign goal: take a fission core from first criticality through a full fuel cycle'}
-      </div>
+      </h2>
       <div className="flex items-start gap-1 mt-1.5 overflow-x-auto pb-0.5">
         {levels.map((l, i) => {
           const done = completed || l.id < levelId;
@@ -213,9 +213,11 @@ export function ObjectiveBanner() {
   return (
     <div className="bg-panel p-3 border border-accent/30">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-widest text-accent">
+        {/* h2 under the app's h1: "which mission am I on" is the question a
+            screen-reader user jumps to headings to answer. */}
+        <h2 className="text-[10px] uppercase tracking-widest text-accent">
           Mission {level.id}: {level.name}
-        </span>
+        </h2>
         <SpeakerIcon text={`Mission ${level.id}, ${level.name}. Objective: ${level.objective}. ${showBrief ? level.brief : (level.hint ?? '')}`} />
       </div>
       <p className="text-xs font-semibold mt-1">{level.objective}</p>

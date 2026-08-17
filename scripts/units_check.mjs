@@ -123,6 +123,35 @@ eq(fmtMoney(19_800_000_000), '$19.80B', 'money is unchanged');
     `levels: every stated hold time matches its sustainTicks (${checked} checked, in sim seconds)`);
 }
 
+// ---- a stated real-time conversion must match the actual tick rate ----
+// Mission 1's hint tells the player what the sim clock means ("5 real seconds
+// at 1x"). That sentence encodes sustainTicks * TICK_MS, so if either constant
+// moves, the prose is now lying to the player - which is exactly the drift
+// this suite exists to catch. Any level is free to make such a claim; every
+// claim made is checked.
+{
+  const { LEVELS } = await import('../src/engine/levels.js');
+  const { TICK_MS } = await import('../src/engine/constants.js');
+
+  let consistent = true;
+  let claims = 0;
+  for (const lvl of LEVELS) {
+    for (const copy of [lvl.objective, lvl.hint, lvl.brief]) {
+      const m = /(\d+(?:\.\d+)?)\s*real\s*seconds?\s*at\s*1x/i.exec(copy ?? '');
+      if (!m) continue;
+      claims++;
+      const statedRealS = Number(m[1]);
+      const actualRealS = (lvl.sustainTicks * TICK_MS) / 1000;
+      if (statedRealS !== actualRealS) {
+        consistent = false;
+        console.log(`      level ${lvl.id} ${lvl.name}: copy claims ${statedRealS}s real but ${lvl.sustainTicks} ticks x ${TICK_MS}ms = ${actualRealS}s`);
+      }
+    }
+  }
+  ok(consistent && claims > 0,
+    `levels: every real-time conversion in mission copy matches sustainTicks x TICK_MS (${claims} claim(s) checked)`);
+}
+
 
 // ---- progressive disclosure: the arc has to actually be an arc ----
 // The point of three states is that groups recede. If nothing ever steps back,

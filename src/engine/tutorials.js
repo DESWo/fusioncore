@@ -27,7 +27,7 @@ export const TUTORIALS = {
     },
     {
       say: 'You are running a star.',
-      detail: 'Hold it steady and Mission 1 is yours. Try the PHYSICS view up in the corner to watch the fuel ions spiral along the field lines you just energized.',
+      detail: 'Hold it steady and Mission 1 is yours. One note on the clock: the T+ readout is plant time, and one real second is one plant minute at 1x. The speed buttons change how fast you watch, never what the plasma does. Try the PHYSICS view up in the corner to watch the fuel ions spiral along the field lines you just energized.',
       ack: true,
     },
   ],

@@ -61,9 +61,12 @@ export default function TopHUD() {
 
   return (
     <header className="h-11 shrink-0 glass border-b-0 flex items-center gap-4 px-4 text-xs overflow-x-auto z-30">
-      <div className="label-mono text-[12px] font-medium text-ink whitespace-nowrap">
+      {/* The page heading. Tailwind's preflight makes h1 inherit size and
+          weight, so this renders identically to the div it replaced while
+          giving assistive tech a page title to anchor on. */}
+      <h1 className="label-mono text-[12px] font-medium text-ink whitespace-nowrap">
         FUSION<span className="text-accent">CORE</span>
-      </div>
+      </h1>
 
       {career && (
         <button
@@ -98,8 +101,14 @@ export default function TopHUD() {
         <span className={integrityClass(integrity)}>{integrity.toFixed(0)}%</span>
       </div>
 
-      <div className="whitespace-nowrap label-mono text-[9px] text-ink/70" title="Simulated operating time">
-        T+{fmtSimTime(simSeconds)}
+      {/* Plant time, not wall time. The SIM prefix plus the tooltip is the
+          persistent answer to "is T+05M five real minutes?": no, and at 1x it
+          is five real seconds. Speed buttons change playback, not physics. */}
+      <div
+        className="whitespace-nowrap label-mono text-[9px] text-ink/70"
+        title="Plant time, not wall clock: 1 real second = 1 plant minute at 1x. Speed changes playback, never the physics."
+      >
+        <span className="text-ink/45">SIM </span>T+{fmtSimTime(simSeconds)}
       </div>
 
       {/* Only ever rendered when a write genuinely failed. It stays put rather

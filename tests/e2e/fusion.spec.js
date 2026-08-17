@@ -29,19 +29,29 @@ test.describe('fusion campaign', () => {
     await expect(page.getByText(/annunciator/i).first()).toBeVisible();
     await expectEstopReachable(page);
     await expectNoPageOverflow(page, 'fusion dashboard');
+
+    // Semantic structure: the page heading, the mission heading, and the main
+    // landmark exist, so assistive tech can actually navigate the game screen.
+    await expect(page.getByRole('heading', { level: 1, name: /fusioncore/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: /mission 1/i })).toBeVisible();
+    await expect(page.getByRole('main')).toBeVisible();
   });
 
   test('simulation runs, the clock advances, and Mission 1 completes', async ({ page }) => {
     await startCampaign(page, 'fusion');
     await skipTutorial(page);
+    // Freeze before touching anything: at 1x the baseline settings finish the
+    // mission in ~5 real seconds, faster than slow CI fills the sliders.
+    await pauseSim(page);
 
     // The mission brief's own settings: field 6 T, heating 15 MW.
     await page.locator('#ctl-B').fill('6');
     await page.locator('#ctl-heat').fill('15');
 
     const t0 = await readSimClock(page);
-    // The speed buttons' accessible name is their aria-label, which spells out
-    // the risk tradeoff - not the visible "8x" glyph.
+    // Selecting a speed resumes the frozen sim. The speed buttons' accessible
+    // name is their aria-label, which spells out the risk tradeoff - not the
+    // visible "8x" glyph.
     await page.getByRole('button', { name: /set simulation speed 8x/i }).click();
 
     // The sim clock must move: proves the worker loop ticks the engine.

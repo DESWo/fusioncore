@@ -49,6 +49,22 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Browser smoke layer: boots the built app in headless Chromium at
+      # desktop and phone widths, completes Mission 1, and fails on any
+      # uncaught page error. The node suites above prove the model; this
+      # proves the application. A build that cannot boot must not deploy.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify the app boots and plays (smoke)
+        run: npx playwright test
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

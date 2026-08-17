@@ -5,7 +5,7 @@ import { createSimState, physicsTick } from '../src/engine/physics.js';
 import { createFissionState, fissionTick, enrichExcessFactor, fuelOrderCost } from '../src/engine/fission.js';
 import { fissionAnalysis, fusionAnalysis } from '../src/engine/structural.js';
 import { FISSION_LEVELS, RESEARCH_LEVELS } from '../src/engine/fission_levels.js';
-import { createEconState, econTick } from '../src/engine/economy.js';
+import { createEconState, econTick, beginMissionWindow } from '../src/engine/economy.js';
 import { LEVELS } from '../src/engine/levels.js';
 import { getTech, TECH_TREE } from '../src/engine/tech.js';
 import { sigmaV } from '../src/engine/reactivity.js';
@@ -78,6 +78,10 @@ function sustained(level, ticks) {
 
 function phase(levelId, label, controls, techIds, settleTicks, windowTicks) {
   const level = LEVELS[levelId - 1];
+  // Mirror the store: every mission advance opens a fresh accounting window,
+  // so the L8 check grades this phase's operating regime, not the whole
+  // walkthrough's learning history.
+  econ = beginMissionWindow(econ);
   for (const id of techIds) applyTechById(id);
   applyControls(controls);
   run(settleTicks);
@@ -185,9 +189,10 @@ phase(5, 'Endurance', { B: 11.4, density: 1.0, heat: 40, cooling: 40 }, ['hmode'
 phase(6, 'First Customers', { B: 16, density: 2.0, heat: 50, cooling: 80 }, ['hts'], 60, 400);
 phase(7, 'City Scale', { B: 19.4, density: 3.0, heat: 50, cooling: 100 }, ['shaping', 'blanket'], 100, 400);
 
-// L8: keep running at scale and watch cumulative LCOE fall under $100/MWh
+// L8: keep running at scale until mission LCOE settles under $100/MWh
 {
   const level = LEVELS[7];
+  econ = beginMissionWindow(econ); // the store stamps this on every advance
   let ok = false;
   for (let h = 0; h < 200 && !ok; h++) {
     run(600); // 1 sim-hour
@@ -195,10 +200,89 @@ phase(7, 'City Scale', { B: 19.4, density: 3.0, heat: 50, cooling: 100 }, ['shap
   }
   if (ok) ok = sustained(level, 200);
   console.log(
-    `${ok ? 'PASS' : 'FAIL'}  L8 Commercial Era   LCOE=$${econ.lcoe?.toFixed(0)}/MWh  ` +
-    `net=${sim.physics.netElecMW.toFixed(0)}MWe  funds=$${(econ.funds / 1e9).toFixed(2)}B`,
+    `${ok ? 'PASS' : 'FAIL'}  L8 Commercial Era   mission LCOE=$${econ.missionLcoe?.toFixed(0)}/MWh  ` +
+    `lifetime=$${econ.lcoe?.toFixed(0)}/MWh  net=${sim.physics.netElecMW.toFixed(0)}MWe  funds=$${(econ.funds / 1e9).toFixed(2)}B`,
   );
   if (!ok) failures++;
+}
+
+// ---- Mission-window LCOE accounting ----
+// The contract: mission LCOE grades only what happens inside the current
+// mission window; lifetime LCOE never forgets. A learning-phase repair before
+// mission 8 must move the second and not the first, because mission 8's brief
+// promises "avoid repairs" in the present tense and a $200M pre-mission repair
+// would otherwise take ~2,000,000 exported MWh to dilute below the bar.
+{
+  const exportSim = {
+    time: { simSeconds: 1e6 },
+    physics: { netElecMW: 900 },
+  };
+  const steady = () => 0.5; // pins the spot price at $50
+  const runEcon = (e, hours) => {
+    let out = e;
+    for (let i = 0; i < hours * 600; i++) {
+      out = econTick(out, {
+        ...exportSim,
+        time: { simSeconds: exportSim.time.simSeconds + i * 6 },
+      }, steady);
+    }
+    return out;
+  };
+
+  // Two campaigns, identical except one repaired a meltdown ($200M opex)
+  // while learning. Both then run mission 8 identically.
+  const clean = { ...createEconState(), mwhCum: 5000, opexCum: 5e6, capitalCum: 2e6 };
+  const scarred = { ...clean, opexCum: clean.opexCum + 200e6, funds: clean.funds - 200e6 };
+  const cleanM8 = runEcon(beginMissionWindow(clean), 10);
+  const scarredM8 = runEcon(beginMissionWindow(scarred), 10);
+
+  const isolated = Math.abs(cleanM8.missionLcoe - scarredM8.missionLcoe) < 1e-9;
+  console.log(`${isolated ? 'PASS' : 'FAIL'}  mission LCOE: a pre-mission $200M repair does not contaminate the mission window ` +
+    `(clean $${cleanM8.missionLcoe?.toFixed(2)}, scarred $${scarredM8.missionLcoe?.toFixed(2)})`);
+  if (!isolated) failures++;
+
+  const remembers = scarredM8.lcoe > cleanM8.lcoe + 1;
+  console.log(`${remembers ? 'PASS' : 'FAIL'}  lifetime LCOE: the same repair stays on the lifetime books ` +
+    `(clean $${cleanM8.lcoe?.toFixed(0)}, scarred $${scarredM8.lcoe?.toFixed(0)})`);
+  if (!remembers) failures++;
+
+  // The mission gate itself: the scarred campaign must pass level 8 on a clean
+  // operating window. Under the old lifetime-gated check this exact state
+  // fails (lifetime $${...} >> 100), which is the regression being locked out.
+  const gate = LEVELS[7].check({
+    physics: { netElecMW: 900 },
+    structure: { firstWall: 100, divertor: 100, magnets: 100 },
+    econ: scarredM8,
+  });
+  console.log(`${gate ? 'PASS' : 'FAIL'}  level 8 passes on the mission window despite the scarred lifetime books ` +
+    `(mission $${scarredM8.missionLcoe?.toFixed(0)} <= 100 < lifetime $${scarredM8.lcoe?.toFixed(0)})`);
+  if (!gate) failures++;
+
+  // Unit consistency: the windowed number equals an independent recomputation
+  // of (delta cost)/(delta MWh) from the snapshot the window carries.
+  const w = scarredM8.missionStart;
+  const independent = ((scarredM8.capitalCum - w.capitalCum) + (scarredM8.opexCum - w.opexCum))
+    / (scarredM8.mwhCum - w.mwhCum);
+  const consistent = Math.abs(independent - scarredM8.missionLcoe) < 1e-9;
+  console.log(`${consistent ? 'PASS' : 'FAIL'}  mission LCOE equals delta-cost over delta-MWh recomputed independently`);
+  if (!consistent) failures++;
+
+  // A fresh campaign's two metrics agree until the first mission advance:
+  // the window opens at construction, so there is nothing to differ over.
+  let fresh = createEconState();
+  fresh = runEcon(fresh, 3);
+  const freshAgree = Math.abs(fresh.missionLcoe - fresh.lcoe) < 1e-9;
+  console.log(`${freshAgree ? 'PASS' : 'FAIL'}  a fresh campaign's mission and lifetime LCOE agree until the first advance`);
+  if (!freshAgree) failures++;
+
+  // Save/load: the snapshot rides inside econ, so a JSON round trip must
+  // preserve the window rather than silently reopening it.
+  const reloaded = JSON.parse(JSON.stringify(scarredM8));
+  const survives = reloaded.missionStart
+    && reloaded.missionStart.opexCum === scarredM8.missionStart.opexCum
+    && reloaded.missionStart.mwhCum === scarredM8.missionStart.mwhCum;
+  console.log(`${survives ? 'PASS' : 'FAIL'}  the mission window survives a save/load round trip inside econ`);
+  if (!survives) failures++;
 }
 
 // ---- Campaign scorecard ----

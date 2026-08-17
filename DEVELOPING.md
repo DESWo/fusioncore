@@ -13,6 +13,8 @@ npm run career       # career-mode systems against the spec
 npm run annunciator  # alarm-board logic only (also runs inside balance)
 npm run units        # number formatting rules (also runs inside balance)
 npm run tokens       # palette contrast claims (also runs inside balance)
+npm run test:e2e     # builds, then Playwright smoke: boot, play, containment
+
 ```
 
 **`npm run balance` is the loop that matters.** It proves every level is still
@@ -20,6 +22,13 @@ winnable inside the slider bounds, and it chains the annunciator and unit
 checks. A tuning change that makes a level unreachable passes every visual
 inspection and fails here. Run it after touching the engine, any level
 definition, or any constant.
+
+**`npm run test:e2e` proves the application, not the model.** Headless
+Chromium boots the production build at 1280/375/320 px, completes Mission 1,
+exercises fission and career character creation, and fails on any uncaught
+page error or on the page overflowing the viewport (the E-stop must stay
+reachable at every width). It runs in CI before deploy. The node suites and
+the browser suite answer different questions; neither replaces the other.
 
 **`npm run career` is green, and it gates deploys too.** Both suites run in
 `.github/workflows/deploy-pages.yml` before anything is published. It used to

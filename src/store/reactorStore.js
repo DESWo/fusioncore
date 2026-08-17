@@ -9,7 +9,7 @@ import {
 import { FUSION_SCENARIOS } from '../engine/physics.js';
 import { fissionLevelsFor, getFissionLevel } from '../engine/fission_levels.js';
 import fissionTriggers from '../data/fission_triggers.json';
-import { createEconState, econTick, buyTritium } from '../engine/economy.js';
+import { createEconState, econTick, buyTritium, beginMissionWindow } from '../engine/economy.js';
 import { LEVELS, getLevel, unlockedFeatures } from '../engine/levels.js';
 import { TECH_TREE, getTech, techAvailable } from '../engine/tech.js';
 import { buildAdvisorContext, evaluateTriggers } from '../engine/advisor.js';
@@ -466,6 +466,13 @@ export const useReactorStore = create((set, get) => ({
     if (save.sim && !save.sim.difficulty) {
       save.sim.difficulty = DIFFICULTIES.operator;
     }
+    // v5 migration: mission-window accounting. Saves that predate it get a
+    // window opened at load, so mission LCOE measures from "now" rather than
+    // inheriting the whole campaign's books - the closest available meaning
+    // for a save whose mission start was never recorded.
+    if (save.econ && !save.econ.missionStart) {
+      save.econ = beginMissionWindow(save.econ);
+    }
     if (save.mode === 'fission' && save.sim && !save.sim.design) {
       save.sim.design = { vesselT: 0.22, material: 'sa508' };
     }
@@ -555,7 +562,7 @@ export const useReactorStore = create((set, get) => ({
       // migrations in continueGame sniff for the fields they add and so handle a
       // save from any build. It is written for the case where that stops being
       // enough, and it is kept honest with the migrations that exist.
-      version: 4,
+      version: 5,
       savedAt: Date.now(),
       mode: s.mode,
       career: s.career,
@@ -743,6 +750,9 @@ export const useReactorStore = create((set, get) => ({
       sim,
       level: { id: levels.length, sustain: 0, completed: true },
       rd: sc.techIds ? { ...s.rd, unlocked: [...new Set([...s.rd.unlocked, ...sc.techIds])] } : s.rd,
+      // A scenario is its own operating window: without this the ledger's
+      // "Mission LCOE" would keep measuring from the last campaign mission.
+      econ: beginMissionWindow(s.econ),
       speed: 1,
       prevSpeed: 1,
       history: [],
@@ -1436,6 +1446,10 @@ export const useReactorStore = create((set, get) => ({
       set({
         level: { id: nextId, sustain: 0, completed: isLast },
         rd: { ...get().rd, points: get().rd.points + RD_BONUS_LEVEL },
+        // Each mission opens a fresh accounting window: mission LCOE grades
+        // the operating regime being demonstrated now, while the lifetime
+        // ledger keeps the whole history.
+        econ: beginMissionWindow(econ),
         pendingCutscene: level,
         speed: 0,
       });

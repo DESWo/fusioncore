@@ -143,8 +143,10 @@ export default function App() {
   return (
     <div className="h-full flex flex-col bg-base text-ink overflow-hidden">
       <TopHUD />
-      {/* The stage: the machine full-bleed on desktop, top block on tablet */}
-      <div className="flex-1 relative min-h-0">
+      {/* The stage: the machine full-bleed on desktop, top block on tablet.
+          <main> because this IS the page: machine, mission and controls all
+          live inside it, so a screen reader's jump-to-main lands on the game. */}
+      <main className="flex-1 relative min-h-0">
         <div className="h-[38%] lg:h-full lg:absolute lg:inset-0">
           <Suspense fallback={<SceneFallback />}>
             {mode === 'fission' ? <FissionScene /> : <ReactorScene />}
@@ -172,7 +174,11 @@ export default function App() {
         {/* The sheet is square-cornered below lg and rounded above it, so the
             brackets sit flush on mobile and step inside the radius on desktop.
             Both stay >= 0 because the panel clips its overflow. */}
-        <div className="absolute inset-x-0 bottom-0 top-[38%] lg:left-auto lg:top-3 lg:right-3 lg:bottom-3 lg:w-[404px] z-10 flex flex-col min-h-0 lg:glass overflow-hidden framed [--frame-inset:0px] lg:[--frame-inset:7px]">
+        {/* A named region: everything operable lives in this column, and
+            "controls and diagnostics" is what its tabs actually contain. */}
+        <section
+          aria-label="Controls and diagnostics"
+          className="absolute inset-x-0 bottom-0 top-[38%] lg:left-auto lg:top-3 lg:right-3 lg:bottom-3 lg:w-[404px] z-10 flex flex-col min-h-0 lg:glass overflow-hidden framed [--frame-inset:0px] lg:[--frame-inset:7px]">
           <div className="flex border-b border-raise/60 shrink-0">
             {TABS.map((t) => (
               <button
@@ -202,8 +208,8 @@ export default function App() {
               <SourcesFooter />
             </>
           )}
-        </div>
-      </div>
+        </section>
+      </main>
 
       {pendingCutscene && <LevelUpCutscene />}
       <Suspense fallback={null}>

@@ -29,7 +29,7 @@ Eight missions, each one a real milestone in the history of the field:
 | 5 · Endurance | One hour without breaking the machine |
 | 6 · First Customers | Net electricity to the grid |
 | 7 · City Scale | Power a million homes |
-| 8 · Commercial Era | Beat $100/MWh over the plant's life |
+| 8 · Commercial Era | Beat $100/MWh at commercial scale |
 
 R&D points buy real technology: H-mode confinement, REBCO high-temperature
 superconducting magnets, tungsten divertors, lithium breeding blankets, a
@@ -59,7 +59,9 @@ First-wall neutron damage depletes over 120 minutes at 500 MW.
 
 **Economy.** $50/MWh spot with noise, $30,000/g tritium, 35% thermal
 conversion, and recirculating power taken off the top before anything reaches
-the meter.
+the meter. Two LCOE figures with two jobs: lifetime LCOE keeps the plant's
+whole books (early mistakes included, deliberately), while mission objectives
+grade a mission-window LCOE that starts counting when the mission does.
 
 **Fission.** Point kinetics with delayed neutrons under the prompt-jump
 approximation, Doppler and coolant temperature feedback, xenon poisoning,
@@ -103,6 +105,7 @@ There is no typechecker, so the check scripts are the safety net:
 npm run balance   # proves all 8 levels are winnable inside the slider bounds
 npm run career    # career systems against the written spec
 npm run tokens    # palette contrast claims, measured (chained into balance)
+npm run test:e2e  # browser smoke: boots and plays the real app at 3 widths
 ```
 
 `balance` runs the same pure engine modules in Node that the browser runs, so a
