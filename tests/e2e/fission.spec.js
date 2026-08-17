@@ -19,7 +19,7 @@ test.describe('fission campaign', () => {
 
     // Run the sim and prove the loop ticks in fission mode too.
     const t0 = await readSimClock(page);
-    await page.getByRole('button', { name: /^8x/ }).click();
+    await page.getByRole('button', { name: /set simulation speed 8x/i }).click();
     await expect(async () => {
       expect(await readSimClock(page)).not.toBe(t0);
     }).toPass({ timeout: 10_000 });

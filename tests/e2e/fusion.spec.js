@@ -1,5 +1,5 @@
 import {
-  test, expect, startCampaign, skipTutorial, readSimClock,
+  test, expect, startCampaign, skipTutorial, pauseSim, readSimClock,
   expectNoPageOverflow, expectEstopReachable,
 } from './helpers.js';
 
@@ -10,6 +10,7 @@ test.describe('fusion campaign', () => {
   test('boots into Mission 1 with a rendered dashboard', async ({ page }) => {
     await startCampaign(page, 'fusion');
     await skipTutorial(page);
+    await pauseSim(page); // static assertions must not race the running mission
 
     // Mission interface
     await expect(page.getByText(/mission 1: first light/i).first()).toBeVisible();
@@ -38,7 +39,9 @@ test.describe('fusion campaign', () => {
     await page.locator('#ctl-heat').fill('15');
 
     const t0 = await readSimClock(page);
-    await page.getByRole('button', { name: /^8x/ }).click();
+    // The speed buttons' accessible name is their aria-label, which spells out
+    // the risk tradeoff - not the visible "8x" glyph.
+    await page.getByRole('button', { name: /set simulation speed 8x/i }).click();
 
     // The sim clock must move: proves the worker loop ticks the engine.
     await expect(async () => {

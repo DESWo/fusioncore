@@ -1,5 +1,5 @@
 import {
-  test, expect, startCampaign, skipTutorial,
+  test, expect, startCampaign, skipTutorial, pauseSim,
   expectNoPageOverflow, expectEstopReachable,
 } from './helpers.js';
 
@@ -23,6 +23,7 @@ test.describe('viewport containment', () => {
   test('fusion dashboard is contained and the E-stop stays reachable', async ({ page }) => {
     await startCampaign(page, 'fusion');
     await skipTutorial(page);
+    await pauseSim(page); // keep mission-1 UI stable while measuring
     await expectNoPageOverflow(page, 'fusion dashboard');
     await expectEstopReachable(page);
 

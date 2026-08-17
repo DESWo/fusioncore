@@ -86,6 +86,16 @@ export async function skipTutorial(page) {
   await skip.click();
 }
 
+/**
+ * Freeze the simulation. Skipping the tutorial leaves the sim running at 1x
+ * with the mission-1 baseline settings applied, and those settings complete
+ * First Light hands-free in about five real seconds - so any test asserting
+ * static mission-1 UI must pause first or it races the mission itself.
+ */
+export async function pauseSim(page) {
+  await page.getByRole('button', { name: /pause simulation/i }).click();
+}
+
 /** Read the sim clock ("T+0H 05M") out of the HUD. */
 export async function readSimClock(page) {
   const hud = page.locator('header');
