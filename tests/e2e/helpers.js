@@ -91,9 +91,13 @@ export async function skipTutorial(page) {
  * with the mission-1 baseline settings applied, and those settings complete
  * First Light hands-free in about five real seconds - so any test asserting
  * static mission-1 UI must pause first or it races the mission itself.
+ * Space is the pause shortcut; it beats a button click here because it needs
+ * no locator resolution, which under CI worker contention can take longer
+ * than the mission does. The paused pill then confirms the freeze landed.
  */
 export async function pauseSim(page) {
-  await page.getByRole('button', { name: /pause simulation/i }).click();
+  await page.keyboard.press('Space');
+  await expect(page.getByText(/paused \/ press 1x or space/i)).toBeVisible();
 }
 
 /** Read the sim clock ("T+0H 05M") out of the HUD. */
