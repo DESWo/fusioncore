@@ -5,7 +5,7 @@ Confine a star, keep it lit, and sell the power.
 A browser game about operating a fusion reactor, where the physics is real
 enough to teach you something and honest about where it isn't.
 
-**[Play it](https://deswo.github.io/fusioncore/)** · no install, saves in your browser
+**[Play it](https://fusioncore.wongdesmond.com/)** · no install, saves in your browser
 
 ## What you actually do
 

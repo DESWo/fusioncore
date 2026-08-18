@@ -23,7 +23,7 @@ Do not recruit anyone who has watched the game being developed.
 
 ## Session structure
 
-**Setup (2 min).** Fresh browser profile, `https://deswo.github.io/fusioncore/`
+**Setup (2 min).** Fresh browser profile, `https://fusioncore.wongdesmond.com/`
 full screen, phone put away. One sentence of framing, verbatim: *"This is a
 game about running a reactor. Play however you like; I can't answer questions
 while you play, but say whatever you're thinking out loud."* Nothing else. If

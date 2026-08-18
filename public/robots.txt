@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://deswo.github.io/fusioncore/sitemap.xml
+Sitemap: https://fusioncore.wongdesmond.com/sitemap.xml
